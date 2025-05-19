@@ -6,22 +6,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { signIn } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
     
-    // In a real implementation, we would handle login with Supabase
-    // For now, simulate a delay
-    setTimeout(() => {
+    try {
+      const { error: signInError } = await signIn(email, password);
+      
+      if (signInError) {
+        setError(signInError.message || "Failed to log in. Please check your credentials.");
+        setIsLoading(false);
+      }
+      // No need to redirect here as the auth context handles the role-based redirect
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
-      // Redirect would happen after successful login
-    }, 1500);
+    }
   };
 
   return (
@@ -50,6 +63,11 @@ export default function LoginPage() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-5">
+              {error && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email" className="font-medium text-sm">Email</Label>
                 <Input 

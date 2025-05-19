@@ -216,7 +216,7 @@ export default function DashboardLayout({
             <NotificationsDropdown />
             
             {/* Role switcher (for demo purposes) */}
-            <div className="mr-4">
+            {/* <div className="mr-4">
               <select 
                 className="px-2 py-1 border rounded-md text-sm"
                 defaultValue={userRole}
@@ -228,7 +228,7 @@ export default function DashboardLayout({
                 <option value="school-leader">School Leader</option>
                 <option value="teacher">Teacher</option>
               </select>
-            </div>
+            </div> */}
             
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">

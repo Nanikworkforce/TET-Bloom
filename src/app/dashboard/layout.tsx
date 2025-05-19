@@ -1,345 +1,89 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import React from "react";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import { useAuthPermissions } from "@/lib/auth-permissions";
+import { useAuth } from "@/lib/auth-context";
+import * as Icons from 'lucide-react';
 import { NotificationsDropdown } from "@/components/ui/notifications";
-
-interface NavItemProps {
-  href: string;
-  icon: string;
-  label: string;
-  active: boolean;
-  onClick?: () => void;
-}
-
-function NavItem({ href, icon, label, active, onClick }: NavItemProps) {
-  return (
-    <Link
-      href={href}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-        active 
-          ? "bg-primary text-white shadow-md" 
-          : "text-gray-600 hover:bg-primary/10 hover:text-primary"
-      }`}
-      onClick={onClick}
-    >
-      <span className="text-xl">{icon}</span>
-      <span className="font-medium">{label}</span>
-    </Link>
-  );
-}
-
-const adminNav = [
-  {
-    label: "Dashboard",
-    href: "/dashboard/school-leader",
-    icon: "📊",
-  },
-  {
-    label: "Teachers",
-    href: "/dashboard/school-leader/teachers",
-    icon: "👩‍🏫",
-  },
-  {
-    label: "Observations",
-    href: "/dashboard/school-leader/observations",
-    icon: "👁️",
-  },
-  {
-    label: "Feedback",
-    href: "/dashboard/school-leader/feedback",
-    icon: "💬",
-  },
-  {
-    label: "Reports",
-    href: "/dashboard/school-leader/reports",
-    icon: "📝",
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/school-leader/settings",
-    icon: "⚙️",
-  },
-  {
-    label: "Help & Docs",
-    href: "/dashboard/school-leader/help",
-    icon: "❓",
-  },
-];
-
-const superUserNav = [
-  {
-    label: "Dashboard",
-    href: "/dashboard/super",
-    icon: "📊",
-  },
-  {
-    label: "User Management",
-    href: "/dashboard/super/users",
-    icon: "👥",
-  },
-  {
-    label: "Observation Groups",
-    href: "/dashboard/super/groups",
-    icon: "👪",
-  },
-  {
-    label: "System Settings",
-    href: "/dashboard/super/settings",
-    icon: "⚙️",
-  },
-  {
-    label: "Help & Docs",
-    href: "/dashboard/super/help",
-    icon: "❓",
-  },
-];
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
+  const { user } = useAuth();
+  const { userRole } = useAuthPermissions();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
-  
-  // Determine if current path is for principal or teacher
-  const isSchoolLeader = pathname.includes('/school-leader');
-  const isTeacher = pathname.includes('/teacher');
-  const isSuperUser = pathname.includes('/super');
-  
-  // Default to principal if neither is in the path
-  const userRole = isTeacher ? "teacher" : isSchoolLeader ? "school-leader" : "super";
-
-  // Navigation items based on role
-  const schoolLeaderNavItems = [
-    {
-      href: "/dashboard/school-leader",
-      icon: "📊",
-      label: "Overview",
-    },
-    {
-      href: "/dashboard/school-leader/teachers",
-      icon: "👩‍🏫",
-      label: "Teachers",
-    },
-    {
-      href: "/dashboard/school-leader/observations",
-      icon: "👁️",
-      label: "Observations",
-    },
-    {
-      href: "/dashboard/school-leader/feedback",
-      icon: "💬",
-      label: "Feedback",
-    },
-    {
-      href: "/dashboard/school-leader/reports",
-      icon: "📝",
-      label: "Reports",
-    },
-    {
-      href: "/dashboard/school-leader/settings",
-      icon: "⚙️",
-      label: "Settings",
-    },
-    {
-      href: "/dashboard/school-leader/help",
-      icon: "❓",
-      label: "Help & Docs",
-    },
-  ];
-  
-  const teacherNavItems = [
-    {
-      href: "/dashboard/teacher",
-      icon: "📊",
-      label: "Overview",
-    },
-    {
-      href: "/dashboard/teacher/observations",
-      icon: "👁️",
-      label: "Observations",
-    },
-    {
-      href: "/dashboard/teacher/feedback",
-      icon: "💬",
-      label: "Feedback",
-    },
-    {
-      href: "/dashboard/teacher/development",
-      icon: "🎓",
-      label: "Development",
-    },
-    {
-      href: "/dashboard/teacher/lesson-plans",
-      icon: "📝",
-      label: "Lesson Plans",
-    },
-    {
-      href: "/dashboard/teacher/settings",
-      icon: "⚙️",
-      label: "Settings",
-    },
-    {
-      href: "/dashboard/teacher/help",
-      icon: "❓",
-      label: "Help & Docs",
-    },
-  ];
-  
-  const navItems = userRole === "teacher" ? teacherNavItems : isSchoolLeader ? schoolLeaderNavItems : superUserNav;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-primary">TET</span>
-            <span className="text-2xl font-semibold">Bloom</span>
-          </div>
-          
-          {/* Mobile menu button */}
-          <button 
-            className="md:hidden p-2 rounded-full hover:bg-gray-100"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? "✕" : "☰"}
-          </button>
-          
-          {/* User menu */}
-          <div className="hidden md:flex items-center gap-4">
-            <NotificationsDropdown />
-            
-            {/* Role switcher (for demo purposes) */}
-            <div className="mr-4">
-              <select 
-                className="px-2 py-1 border rounded-md text-sm"
-                defaultValue={userRole}
-                onChange={(e) => {
-                  const newRole = e.target.value;
-                  window.location.href = `/dashboard/${newRole}`;
-                }}
-              >
-                <option value="school-leader">School Leader</option>
-                <option value="teacher">Teacher</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : "S"}
-              </div>
-              <span className="font-medium">{userRole === "school-leader" ? "School Leader" : userRole === "teacher" ? "Ms. Chen" : "Super User"}</span>
-            </div>
-          </div>
+    <ProtectedRoute>
+      <div className="min-h-screen flex">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
+          <Sidebar />
         </div>
-      </header>
 
-      <div className="flex-1 flex">
-        {/* Sidebar - Desktop */}
-        <aside className="hidden md:block w-64 border-r bg-white p-4 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-          <nav className="flex flex-col gap-1">
-            {navItems.map((item) => (
-              <NavItem
-                key={item.href}
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-                active={pathname === item.href}
-              />
-            ))}
-          </nav>
-          
-          <div className="mt-8 pt-4 border-t">
-            <NavItem
-              href="/logout"
-              icon="🚪"
-              label="Log out"
-              active={false}
-            />
-          </div>
-        </aside>
-
-        {/* Mobile navigation overlay */}
+        {/* Mobile sidebar overlay */}
         {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 bg-black/50 z-20" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="bg-white w-64 h-full p-4" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-primary">TET</span>
-                  <span className="text-xl font-semibold">Bloom</span>
-                </div>
-                <button 
-                  className="p-2 rounded-full hover:bg-gray-100"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  ✕
-                </button>
-              </div>
-              
-              {/* User info in mobile menu */}
-              <div className="flex items-center gap-2 mb-6 p-2 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                  {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : "S"}
-                </div>
-                <div>
-                  <div className="font-medium">{userRole === "school-leader" ? "School Leader" : userRole === "teacher" ? "Ms. Chen" : "Super User"}</div>
-                  <div className="text-xs text-gray-500">{userRole === "school-leader" ? "Administrator" : userRole === "teacher" ? "Mathematics Teacher" : "Super User"}</div>
-                </div>
-              </div>
-              
-              {/* Role switcher in mobile menu */}
-              <div className="mb-6">
-                <select 
-                  className="w-full px-3 py-2 border rounded-md text-sm"
-                  defaultValue={userRole}
-                  onChange={(e) => {
-                    const newRole = e.target.value;
-                    window.location.href = `/dashboard/${newRole}`;
-                  }}
-                >
-                  <option value="school-leader">School Leader View</option>
-                  <option value="teacher">Teacher View</option>
-                  <option value="super">Super User View</option>
-                </select>
-              </div>
-              
-              <nav className="flex flex-col gap-1">
-                {navItems.map((item) => (
-                  <NavItem
-                    key={item.href}
-                    href={item.href}
-                    icon={item.icon}
-                    label={item.label}
-                    active={pathname === item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  />
-                ))}
-                
-                <div className="mt-8 pt-4 border-t">
-                  <NavItem
-                    href="/logout"
-                    icon="🚪"
-                    label="Log out"
-                    active={false}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  />
-                </div>
-              </nav>
+          <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="w-64 h-full" onClick={(e) => e.stopPropagation()}>
+              <Sidebar />
             </div>
           </div>
         )}
 
-        {/* Main content */}
-        <main className="flex-1 p-4 md:p-6 bg-gray-50">
-          {children}
-        </main>
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col min-h-screen">
+          {/* Header */}
+          <header className="h-16 border-b bg-white flex items-center justify-between px-4 sticky top-0 z-30">
+            <div className="flex items-center gap-2">
+              {/* Mobile menu toggle */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Icons.Menu size={20} />
+              </Button>
+              
+              <div className="md:hidden flex items-center gap-1">
+                <span className="font-bold text-primary">TET</span>
+                <span className="font-semibold">Bloom</span>
+              </div>
+              
+              {/* Page title - could be dynamic based on route */}
+              <h1 className="text-lg font-semibold hidden md:block">
+                {userRole === 'super_user' 
+                  ? 'Admin Dashboard' 
+                  : userRole === 'school_leader' 
+                    ? 'School Leader Dashboard' 
+                    : 'Teacher Dashboard'}
+              </h1>
+            </div>
+
+            {/* User actions */}
+            <div className="flex items-center gap-4">
+              <NotificationsDropdown />
+              
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                  <Icons.User size={16} />
+                </div>
+                <span className="font-medium text-sm">{user?.fullName || 'User'}</span>
+              </div>
+            </div>
+          </header>
+
+          {/* Main content */}
+          <main className="flex-1 p-4 md:p-6 lg:p-8 bg-gray-50">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 } 
