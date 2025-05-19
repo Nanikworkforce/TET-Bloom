@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient background -->
+  <rect width="512" height="512" rx="128" fill="url(#paint0_linear)" />
+  
+  <!-- "T" for TET -->
+  <path d="M150 120H250V160H220V360H180V160H150V120Z" fill="white"/>
+  
+  <!-- "B" for Bloom -->
+  <path d="M280 120H390C405.464 120 418 132.536 418 148V200C418 215.464 405.464 228 390 228C405.464 228 418 240.536 418 256V332C418 347.464 405.464 360 390 360H280V120ZM320 160V220H370V160H320ZM320 260V320H370V260H320Z" fill="white"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5" />
+      <stop offset="1" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+</svg> 
