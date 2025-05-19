@@ -13,7 +13,7 @@ const developmentGoals = [
     progress: 60,
     dueDate: "Jun 15, 2023",
     createdDate: "Jan 10, 2023",
-    relatedTo: "Feedback from Principal Johnson",
+    relatedTo: "Feedback from School Leader Johnson",
     category: "Teaching Methods",
     tasks: [
       { title: "Research PBL techniques for mathematics", completed: true },

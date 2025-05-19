@@ -123,7 +123,7 @@ export default function TeacherDashboard() {
             <p className="text-4xl font-bold">{upcomingObservations.length}</p>
             <p className="text-gray-600 mt-1">Next: {upcomingObservations[0]?.date}</p>
             <div className="mt-auto pt-4">
-              <Link href="/dashboard/teacher/observations">
+              <Link href="/teacher/observations">
                 <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
                   View Schedule <span className="ml-1">→</span>
                 </Button>
@@ -143,7 +143,7 @@ export default function TeacherDashboard() {
             <p className="text-4xl font-bold">4.5/5</p>
             <p className="text-gray-600 mt-1">Based on last 5 observations</p>
             <div className="mt-auto pt-4">
-              <Link href="/dashboard/teacher/feedback">
+              <Link href="/teacher/feedback">
                 <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
                   View Feedback <span className="ml-1">→</span>
                 </Button>
@@ -163,7 +163,7 @@ export default function TeacherDashboard() {
             <p className="text-4xl font-bold">{professionalDevelopment.length}</p>
             <p className="text-gray-600 mt-1">Learning opportunities available</p>
             <div className="mt-auto pt-4">
-              <Link href="/dashboard/teacher/development">
+              <Link href="/teacher/development">
                 <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
                   Explore Opportunities <span className="ml-1">→</span>
                 </Button>
@@ -178,7 +178,7 @@ export default function TeacherDashboard() {
         <div className="border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-secondary/5">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Upcoming Observations</h2>
-            <Link href="/dashboard/teacher/observations" className="text-primary text-sm font-medium hover:underline">
+            <Link href="/teacher/observations" className="text-primary text-sm font-medium hover:underline">
               View All
             </Link>
           </div>
@@ -202,12 +202,12 @@ export default function TeacherDashboard() {
                   <div>{observation.date}, {observation.time}</div>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <Link href={`/dashboard/teacher/observations/${observation.id}`}>
+                  <Link href={`/teacher/observations/${observation.id}`}>
                     <Button size="sm" variant="outline" className="rounded-full text-xs">
                       View Details
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/teacher/lesson-plans/create?observation=${observation.id}`}>
+                  <Link href={`/teacher/lesson-plans/create?observation=${observation.id}`}>
                     <Button size="sm" className="rounded-full text-xs">
                       Submit Lesson Plan
                     </Button>
@@ -232,7 +232,7 @@ export default function TeacherDashboard() {
           <div className="border-b px-4 py-3 bg-gradient-to-r from-secondary/5 to-primary/5">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-lg">Recent Feedback</h2>
-              <Link href="/dashboard/teacher/feedback" className="text-primary text-sm font-medium hover:underline">
+              <Link href="/teacher/feedback" className="text-primary text-sm font-medium hover:underline">
                 View All
               </Link>
             </div>
@@ -253,7 +253,7 @@ export default function TeacherDashboard() {
                   </div>
                 </div>
                 <div className="mt-3">
-                  <Link href={`/dashboard/teacher/feedback/${feedback.id}`}>
+                  <Link href={`/teacher/feedback/${feedback.id}`}>
                     <Button size="sm" variant="outline" className="rounded-full text-xs w-full">
                       View Full Feedback
                     </Button>
@@ -269,7 +269,7 @@ export default function TeacherDashboard() {
           <div className="border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-secondary/5">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-lg">Professional Development</h2>
-              <Link href="/dashboard/teacher/development" className="text-primary text-sm font-medium hover:underline">
+              <Link href="/teacher/development" className="text-primary text-sm font-medium hover:underline">
                 View All
               </Link>
             </div>

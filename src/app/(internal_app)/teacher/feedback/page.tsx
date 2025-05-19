@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 const feedbackEntries = [
   {
     id: "1",
-    observer: "Principal Johnson",
+    observer: "School Leader Johnson",
     date: "Feb 20, 2023",
     class: "Mathematics 101",
     grade: "7th Grade",
@@ -36,7 +36,7 @@ const feedbackEntries = [
   },
   {
     id: "2",
-    observer: "Vice Principal Smith",
+    observer: "Vice School Leader Smith",
     date: "Jan 30, 2023",
     class: "Mathematics 103",
     grade: "7th Grade",

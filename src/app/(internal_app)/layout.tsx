@@ -34,37 +34,37 @@ function NavItem({ href, icon, label, active, onClick }: NavItemProps) {
 const adminNav = [
   {
     label: "Dashboard",
-    href: "/dashboard/school-leader",
+    href: "/school-leader",
     icon: "📊",
   },
   {
     label: "Teachers",
-    href: "/dashboard/school-leader/teachers",
+    href: "/school-leader/teachers",
     icon: "👩‍🏫",
   },
   {
     label: "Observations",
-    href: "/dashboard/school-leader/observations",
+    href: "/school-leader/observations",
     icon: "👁️",
   },
   {
     label: "Feedback",
-    href: "/dashboard/school-leader/feedback",
+    href: "/school-leader/feedback",
     icon: "💬",
   },
   {
     label: "Reports",
-    href: "/dashboard/school-leader/reports",
+    href: "/school-leader/reports",
     icon: "📝",
   },
   {
     label: "Settings",
-    href: "/dashboard/school-leader/settings",
+    href: "/school-leader/settings",
     icon: "⚙️",
   },
   {
     label: "Help & Docs",
-    href: "/dashboard/school-leader/help",
+    href: "/school-leader/help",
     icon: "❓",
   },
 ];
@@ -72,27 +72,27 @@ const adminNav = [
 const superUserNav = [
   {
     label: "Dashboard",
-    href: "/dashboard/super",
+    href: "/super",
     icon: "📊",
   },
   {
     label: "User Management",
-    href: "/dashboard/super/users",
+    href: "/super/users",
     icon: "👥",
   },
   {
     label: "Observation Groups",
-    href: "/dashboard/super/groups",
+    href: "/super/groups",
     icon: "👪",
   },
   {
     label: "System Settings",
-    href: "/dashboard/super/settings",
+    href: "/super/settings",
     icon: "⚙️",
   },
   {
     label: "Help & Docs",
-    href: "/dashboard/super/help",
+    href: "/super/help",
     icon: "❓",
   },
 ];
@@ -106,48 +106,48 @@ export default function DashboardLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   
-  // Determine if current path is for principal or teacher
+  // Determine if current path is for school-leader or teacher
   const isSchoolLeader = pathname.includes('/school-leader');
   const isTeacher = pathname.includes('/teacher');
   const isSuperUser = pathname.includes('/super');
   
-  // Default to principal if neither is in the path
+  // Default to school-leader if neither is in the path
   const userRole = isTeacher ? "teacher" : isSchoolLeader ? "school-leader" : "super";
 
   // Navigation items based on role
   const schoolLeaderNavItems = [
     {
-      href: "/dashboard/school-leader",
+      href: "/school-leader",
       icon: "📊",
       label: "Overview",
     },
     {
-      href: "/dashboard/school-leader/teachers",
+      href: "/school-leader/teachers",
       icon: "👩‍🏫",
       label: "Teachers",
     },
     {
-      href: "/dashboard/school-leader/observations",
+      href: "/school-leader/observations",
       icon: "👁️",
       label: "Observations",
     },
     {
-      href: "/dashboard/school-leader/feedback",
+      href: "/school-leader/feedback",
       icon: "💬",
       label: "Feedback",
     },
     {
-      href: "/dashboard/school-leader/reports",
+      href: "/school-leader/reports",
       icon: "📝",
       label: "Reports",
     },
     {
-      href: "/dashboard/school-leader/settings",
+      href: "/school-leader/settings",
       icon: "⚙️",
       label: "Settings",
     },
     {
-      href: "/dashboard/school-leader/help",
+      href: "/school-leader/help",
       icon: "❓",
       label: "Help & Docs",
     },
@@ -155,43 +155,43 @@ export default function DashboardLayout({
   
   const teacherNavItems = [
     {
-      href: "/dashboard/teacher",
+      href: "/teacher",
       icon: "📊",
       label: "Overview",
     },
     {
-      href: "/dashboard/teacher/observations",
+      href: "/teacher/observations",
       icon: "👁️",
       label: "Observations",
     },
     {
-      href: "/dashboard/teacher/feedback",
+      href: "/teacher/feedback",
       icon: "💬",
       label: "Feedback",
     },
     {
-      href: "/dashboard/teacher/development",
+      href: "/teacher/development",
       icon: "🎓",
       label: "Development",
     },
     {
-      href: "/dashboard/teacher/lesson-plans",
+      href: "/teacher/lesson-plans",
       icon: "📝",
       label: "Lesson Plans",
     },
     {
-      href: "/dashboard/teacher/settings",
+      href: "/teacher/settings",
       icon: "⚙️",
       label: "Settings",
     },
     {
-      href: "/dashboard/teacher/help",
+      href: "/teacher/help",
       icon: "❓",
       label: "Help & Docs",
     },
   ];
   
-  const navItems = userRole === "teacher" ? teacherNavItems : isSchoolLeader ? schoolLeaderNavItems : superUserNav;
+  const navItems = userRole === "teacher" ? teacherNavItems : isSchoolLeader ? adminNav : superUserNav;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -222,7 +222,7 @@ export default function DashboardLayout({
                 defaultValue={userRole}
                 onChange={(e) => {
                   const newRole = e.target.value;
-                  window.location.href = `/dashboard/${newRole}`;
+                  window.location.href = `/${newRole}`;
                 }}
               >
                 <option value="school-leader">School Leader</option>
@@ -300,7 +300,7 @@ export default function DashboardLayout({
                   defaultValue={userRole}
                   onChange={(e) => {
                     const newRole = e.target.value;
-                    window.location.href = `/dashboard/${newRole}`;
+                    window.location.href = `/${newRole}`;
                   }}
                 >
                   <option value="school-leader">School Leader View</option>

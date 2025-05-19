@@ -152,7 +152,7 @@ export default function ScheduleObservationPage() {
     
     // Redirect after 2 seconds
     setTimeout(() => {
-      router.push('/dashboard/principal/observations');
+      router.push('/dashboard/school-leader/observations');
     }, 2000);
   };
   
@@ -227,7 +227,7 @@ export default function ScheduleObservationPage() {
           <p className="text-gray-600">{editId ? 'Update an existing observation' : 'Plan a new teacher observation session'}</p>
         </div>
         <div>
-          <Link href="/dashboard/principal/observations">
+          <Link href="/dashboard/school-leader/observations">
             <Button variant="outline" className="rounded-full">
               Cancel
             </Button>
@@ -538,7 +538,7 @@ export default function ScheduleObservationPage() {
 
           {/* Submit Buttons */}
           <div className="pt-6 border-t border-gray-200 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-            <Link href="/dashboard/principal/observations">
+            <Link href="/dashboard/school-leader/observations">
               <Button variant="outline" className="w-full sm:w-auto rounded-full">
                 Cancel
               </Button>
