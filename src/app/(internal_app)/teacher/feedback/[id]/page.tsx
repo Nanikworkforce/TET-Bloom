@@ -48,6 +48,7 @@ const feedbackData = {
 
 export default function FeedbackDetailPage() {
   const params = useParams();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const feedbackId = params.id as string;
   
   const [showApprovalForm, setShowApprovalForm] = useState(false);

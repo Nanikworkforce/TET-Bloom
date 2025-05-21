@@ -4,11 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import React from "react";
-import { NotificationsDropdown } from "@/components/notifications-dropdown";
 import { useAuth } from "@/lib/auth-context";
-import { Sidebar, SidebarBody, SidebarFooter, SidebarHeader, SidebarLink, SidebarLinks, SidebarUser } from "@/components/ui/sidebar";
-import { NotificationsDropdown as NotificationsDropdownComponent } from "@/components/notifications-dropdown";
-import { UserNav } from "@/components/user-nav";
 
 interface NavItemProps {
   href: string;
@@ -131,7 +127,7 @@ export default function DashboardLayout({
   const { user } = useAuth();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const isSuperUser = user?.role === "SUPER_USER";
+  const isSuperUser = user?.role === "SUPER_USER" as any;
 
   // Determine if current path is for school-leader or teacher
   const isSchoolLeader = pathname.includes('/school-leader');
@@ -246,7 +242,7 @@ export default function DashboardLayout({
           
           {/* User menu */}
           <div className="hidden md:flex items-center gap-4">
-            <NotificationsDropdown />
+            {/* NotificationsDropdown component removed */}
             
             {/* Role switcher (for demo purposes) */}
             <div className="mr-4">

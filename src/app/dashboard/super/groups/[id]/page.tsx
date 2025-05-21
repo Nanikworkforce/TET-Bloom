@@ -115,7 +115,8 @@ const recentObservations = [
 
 export default function ObservationGroupDetailsPage() {
   const params = useParams();
-  const groupId = params.id;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const groupId = params.id as string;
   
   const [isEditing, setIsEditing] = useState(false);
   const [showAddTeachers, setShowAddTeachers] = useState(false);

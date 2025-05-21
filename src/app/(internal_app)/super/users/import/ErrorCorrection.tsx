@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from "sonner";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,14 +16,12 @@ interface ErrorCorrectionProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rowData: any; // Use a more specific type if possible
   }[];
-  onCorrect: (rowIndex: number, column: string, newValue: string) => void;
   onFixAndRetry: (fixedData: any[]) => void;
   onCancel: () => void;
 }
 
 const ErrorCorrection: React.FC<ErrorCorrectionProps> = ({
   errors,
-  onCorrect,
   onFixAndRetry,
   onCancel
 }) => {
@@ -33,7 +29,7 @@ const ErrorCorrection: React.FC<ErrorCorrectionProps> = ({
     errors.map(error => ({
       ...error,
       fixed: false,
-      correctedValue: error.error.includes('email') ? '' : error.error.includes('name') ? '' : ''
+      correctedValue: error.message.includes('email') ? '' : error.message.includes('name') ? '' : ''
     }))
   );
 
@@ -49,10 +45,10 @@ const ErrorCorrection: React.FC<ErrorCorrectionProps> = ({
     const fixedData = correctedData.map(item => {
       const updatedItem = { ...item };
       
-      if (item.error.includes('email') && item.fixed) {
-        updatedItem.email = item.correctedValue;
-      } else if (item.error.includes('name') && item.fixed) {
-        updatedItem.name = item.correctedValue;
+      if (item.message.includes('email') && item.fixed) {
+        updatedItem.rowData.email = item.correctedValue;
+      } else if (item.message.includes('name') && item.fixed) {
+        updatedItem.rowData.name = item.correctedValue;
       }
       
       return updatedItem;
@@ -78,10 +74,10 @@ const ErrorCorrection: React.FC<ErrorCorrectionProps> = ({
             <div key={index} className="p-4 border rounded-lg bg-gray-50">
               <div className="flex flex-wrap gap-2 mb-3 text-sm text-gray-700">
                 <span className="font-medium">Row {error.row}:</span>
-                <span className="text-red-600">{error.error}</span>
+                <span className="text-red-600">{error.message}</span>
               </div>
               
-              {error.error.includes('email') && (
+              {error.message.includes('email') && (
                 <div className="space-y-2">
                   <Label htmlFor={`corrected-email-${index}`}>Corrected Email:</Label>
                   <div className="flex flex-col sm:flex-row gap-2">
@@ -99,12 +95,12 @@ const ErrorCorrection: React.FC<ErrorCorrectionProps> = ({
                     </div>
                   </div>
                   <div className="flex mt-1">
-                    <div className="text-sm text-gray-500">Original: <span className="text-red-600">{error.email}</span></div>
+                    <div className="text-sm text-gray-500">Original: <span className="text-red-600">{error.rowData.email}</span></div>
                   </div>
                 </div>
               )}
               
-              {error.error.includes('name') && (
+              {error.message.includes('name') && (
                 <div className="space-y-2">
                   <Label htmlFor={`corrected-name-${index}`}>Corrected Name:</Label>
                   <div className="flex flex-col sm:flex-row gap-2">

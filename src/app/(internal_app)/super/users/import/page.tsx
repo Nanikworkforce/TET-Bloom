@@ -9,6 +9,12 @@ import TemplateGuide from "./TemplateGuide";
 import ErrorCorrection from "./ErrorCorrection";
 import * as XLSX from 'xlsx';
 
+interface RowData {
+  [key: string]: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  __rowNum__: any;
+}
+
 export default function ImportUsersPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -668,8 +674,27 @@ export default function ImportUsersPage() {
             {/* Error Correction UI */}
             {showErrorCorrection && errorData.length > 0 && (
               <div className="mt-4">
-                <ErrorCorrection 
-                  errors={errorData}
+                <ErrorCorrection
+                  errors={errorData.map(err => {
+                    let column = '';
+                    let value = '';
+                    if (err.error.includes('email')) {
+                      column = 'email';
+                      value = err.email;
+                    } else if (err.error.includes('name')) {
+                      column = 'name';
+                      value = err.name;
+                    }
+                    // Add more conditions for other columns if needed
+
+                    return {
+                      row: err.row,
+                      column,
+                      message: err.error,
+                      value,
+                      rowData: err 
+                    };
+                  })}
                   onFixAndRetry={handleFixAndRetry}
                   onCancel={() => setShowErrorCorrection(false)}
                 />

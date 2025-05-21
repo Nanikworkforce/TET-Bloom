@@ -24,6 +24,7 @@ const observationData = {
 
 export default function ObservationDetailPage() {
   const params = useParams();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const observationId = params.id as string;
   
   const [files, setFiles] = useState<File[]>([]);
