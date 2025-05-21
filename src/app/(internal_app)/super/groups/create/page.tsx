@@ -168,9 +168,9 @@ export default function CreateObservationGroupPage() {
                   required
                 >
                   <option value="" disabled>Select an observer</option>
-                  {mockSchoolLeaders.map((school-leader) => (
-                    <option key={school-leader.id} value={school-leader.id}>
-                      {school-leader.name} ({school-leader.role})
+                  {mockSchoolLeaders.map((schoolLeader) => (
+                    <option key={schoolLeader.id} value={schoolLeader.id}>
+                      {schoolLeader.name} ({schoolLeader.role})
                     </option>
                   ))}
                 </select>

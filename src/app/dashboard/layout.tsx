@@ -59,7 +59,7 @@ export default function DashboardLayout({
               <h1 className="text-lg font-semibold hidden md:block">
                 {userRole === 'super_user' 
                   ? 'Admin Dashboard' 
-                  : userRole === 'school_leader' 
+                  : userRole === 'principal' 
                     ? 'School Leader Dashboard' 
                     : 'Teacher Dashboard'}
               </h1>

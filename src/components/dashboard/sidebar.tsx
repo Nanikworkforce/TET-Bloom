@@ -9,9 +9,14 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export const Sidebar = () => {
-  const { sidebarItems } = useAuthPermissions();
+  const { sidebarItems, userRole } = useAuthPermissions();
   const { user, signOut } = useAuth();
   const pathname = usePathname();
+
+  console.log('USER ROLE:', user?.role);
+  console.log('USER ROLE FROM PERMISSIONS:', userRole);
+  console.log('SIDEBAR ITEMS:', sidebarItems);
+  console.log('CURRENT PATH:', pathname);
 
   // Map string icon names to actual Lucide icons
   const iconMap: Record<string, React.ElementType> = {
@@ -46,8 +51,8 @@ export const Sidebar = () => {
             <p className="text-xs text-gray-500">
               {user?.role === 'super_user' 
                 ? 'Super Admin' 
-                : user?.role === 'school_leader' 
-                  ? 'School Leader' 
+                : user?.role === 'principal' 
+                  ? 'Principal' 
                   : 'Teacher'}
             </p>
           </div>

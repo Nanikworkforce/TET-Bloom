@@ -242,12 +242,12 @@ export default function FeedbackPage() {
 
             {/* Actions */}
             <div className="flex justify-end gap-2 p-3 bg-gray-50 border-t">
-              <Link href={`/dashboard/school-leader/feedback/${feedback.id}`}>
+              <Link href={`/school-leader/feedback/${feedback.id}`}>
                 <Button size="sm" variant="outline" className="rounded-full">
                   View Full Details
                 </Button>
               </Link>
-              <Link href={`/dashboard/school-leader/feedback/${feedback.id}/edit`}>
+              <Link href={`/school-leader/feedback/${feedback.id}/edit`}>
                 <Button size="sm" className="rounded-full">
                   <span className="mr-1">✏️</span> Edit Feedback
                 </Button>

@@ -286,7 +286,7 @@ export default function SuperUserHelpPage() {
                 </p>
 
                 <ol className="space-y-2 list-decimal pl-6">
-                  <li>Navigate to System Settings > Evaluation Frameworks</li>
+                  <li>Navigate to System Settings {`>`} Evaluation Frameworks</li>
                   <li>Select an existing framework or create a new one</li>
                   <li>Define domains, components, and elements</li>
                   <li>Configure rating scales and descriptors</li>
@@ -412,7 +412,7 @@ export default function SuperUserHelpPage() {
                   </AccordionTrigger>
                   <AccordionContent>
                     <p className="text-gray-600">
-                      Yes, you can customize notification emails. Go to System Settings > Email Templates to access
+                      Yes, you can customize notification emails. Go to System Settings {`>`} Email Templates to access
                       the email editor. You can modify the content, formatting, and timing of various notification
                       types, such as observation reminders, feedback alerts, and account notifications. You can include
                       dynamic fields that will be populated with user-specific information. Always test your customized
@@ -427,7 +427,7 @@ export default function SuperUserHelpPage() {
                   </AccordionTrigger>
                   <AccordionContent>
                     <p className="text-gray-600">
-                      To add a new observation form or rubric, go to System Settings > Evaluation Frameworks.
+                      To add a new observation form or rubric, go to System Settings {`>`} Evaluation Frameworks.
                       Click "Create New Framework" and use the form builder to design your observation template.
                       You can define domains, components, rating scales, and evidence requirements. Once created,
                       you can assign the new framework to specific observation types or groups. Consider piloting
@@ -458,7 +458,7 @@ export default function SuperUserHelpPage() {
                   <AccordionContent>
                     <p className="text-gray-600">
                       The system maintains an audit log and data recovery options for accidental deletions.
-                      Go to System Settings > Recovery Tools and select "Feedback Recovery." You can search
+                      Go to System Settings {`>`} Recovery Tools and select "Feedback Recovery." You can search
                       for recently deleted feedback by teacher name, date range, or observer. Locate the
                       deleted feedback item and use the "Restore" function. Note that recovery is only possible
                       for items deleted within the past 30 days, so act promptly when accidental deletions occur.

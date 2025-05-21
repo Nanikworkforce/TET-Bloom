@@ -7,24 +7,25 @@ import { UserRole } from './types';
 // Define sidebar menu items by role
 export const SIDEBAR_ITEMS = {
   super_user: [
-    { title: 'Dashboard', href: '/dashboard/super', icon: 'layout-dashboard' },
-    { title: 'User Management', href: '/dashboard/super/users', icon: 'users' },
-    { title: 'Observation Groups', href: '/dashboard/super/groups', icon: 'folder' },
-    { title: 'Observations', href: '/dashboard/super/observations', icon: 'clipboard-list' },
-    { title: 'Reports', href: '/dashboard/super/reports', icon: 'bar-chart' },
-    { title: 'Settings', href: '/dashboard/super/settings', icon: 'settings' },
+    { title: 'Dashboard', href: '/super', icon: 'layout-dashboard' },
+    { title: 'User Management', href: '/super/users', icon: 'users' },
+    { title: 'Observation Groups', href: '/super/groups', icon: 'folder' },
+    { title: 'Observations', href: '/super/observations', icon: 'clipboard-list' },
+    { title: 'Reports', href: '/super/reports', icon: 'bar-chart' },
+    { title: 'Settings', href: '/super/settings', icon: 'settings' },
   ],
-  school_leader: [
-    { title: 'Dashboard', href: '/dashboard/leader', icon: 'layout-dashboard' },
-    { title: 'Observation Groups', href: '/dashboard/leader/groups', icon: 'folder' },
-    { title: 'Observations', href: '/dashboard/leader/observations', icon: 'clipboard-list' },
-    { title: 'Reports', href: '/dashboard/leader/reports', icon: 'bar-chart' },
-    { title: 'Settings', href: '/dashboard/leader/settings', icon: 'settings' },
+  principal: [
+    { title: 'Dashboard', href: '/principal', icon: 'layout-dashboard' },
+    // { title: 'User Management', href: '/principal/users', icon: 'users' }, // This line is removed
+    { title: 'Observation Groups', href: '/principal/groups', icon: 'folder' },
+    { title: 'Observations', href: '/principal/observations', icon: 'clipboard-list' },
+    { title: 'Reports', href: '/principal/reports', icon: 'bar-chart' },
+    { title: 'Settings', href: '/principal/settings', icon: 'settings' },
   ],
   teacher: [
-    { title: 'Dashboard', href: '/dashboard/teacher', icon: 'layout-dashboard' },
-    { title: 'My Observations', href: '/dashboard/teacher/observations', icon: 'clipboard-list' },
-    { title: 'My Profile', href: '/dashboard/teacher/profile', icon: 'user' },
+    { title: 'Dashboard', href: '/teacher', icon: 'layout-dashboard' },
+    { title: 'My Observations', href: '/teacher/observations', icon: 'clipboard-list' },
+    { title: 'My Profile', href: '/teacher/profile', icon: 'user' },
   ],
 };
 
@@ -40,7 +41,7 @@ const PERMISSIONS = {
     canRequestReview: true,
     canHandleReviewRequests: true,
   },
-  school_leader: {
+  principal: {
     canManageUsers: false,
     canManageGroups: true,
     canViewAllObservations: false,

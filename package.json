@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed:users": "node scripts/seed-users.js"
+    "setup:tables": "node scripts/create-tables.js",
+    "seed:users": "node scripts/seed-users.js",
+    "setup:all": "npm run setup:tables && npm run seed:users"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

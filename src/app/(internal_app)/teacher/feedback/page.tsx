@@ -308,12 +308,12 @@ export default function TeacherFeedbackPage() {
 
             {/* Actions */}
             <div className="flex justify-end gap-2 p-3 bg-gray-50 border-t">
-              <Link href={`/dashboard/teacher/feedback/${feedback.id}`}>
+              <Link href={`/teacher/feedback/${feedback.id}`}>
                 <Button size="sm" className="rounded-full">
                   View Full Feedback
                 </Button>
               </Link>
-              <Link href={`/dashboard/teacher/development/goals/new?feedback=${feedback.id}`}>
+              <Link href={`/teacher/development/goals/new?feedback=${feedback.id}`}>
                 <Button size="sm" variant="outline" className="rounded-full">
                   <span className="mr-1">🎯</span> Set Goal Based on Feedback
                 </Button>

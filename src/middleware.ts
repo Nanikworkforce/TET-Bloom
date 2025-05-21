@@ -2,11 +2,22 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Toggle enforcement via env var (same behaviour as client-side).
+const ENFORCE_AUTH = process.env.NEXT_PUBLIC_ENFORCE_AUTH === 'true';
+
 // List of public routes that don't require authentication
 const publicRoutes = ['/', '/login', '/signup', '/forgot-password'];
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
+  
+  // --------------------------------------------------
+  // Skip all authentication checks completely when auth
+  // is disabled (local development / QA mode).
+  // --------------------------------------------------
+  if (!ENFORCE_AUTH) {
+    return res;
+  }
   
   // Get the current pathname
   const { pathname } = req.nextUrl;

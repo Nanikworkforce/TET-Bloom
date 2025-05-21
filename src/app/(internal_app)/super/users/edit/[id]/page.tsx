@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // Mock data - in a real app, this would come from your API/database
 const mockUsers = [
@@ -63,8 +64,11 @@ const mockUsers = [
   },
 ];
 
-export default function EditUserPage({ params }: { params: { id: string } }) {
+export default function EditUserPage() {
   const router = useRouter();
+  const params = useParams();
+  const userId = params.id as string;
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -78,10 +82,11 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     // In a real app, you'd fetch user data from your API/database
-    const user = mockUsers.find(u => u.id === params.id);
+    const user = mockUsers.find(u => u.id === userId);
     
     if (user) {
       setFormData({
@@ -103,7 +108,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     } else {
       setUserNotFound(true);
     }
-  }, [params.id]);
+  }, [userId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -138,7 +143,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     // Simulate API call to update user
     try {
       // In a real app, you would send formData to your backend API
-      console.log("Updating user:", params.id, "with data:", formData);
+      console.log("Updating user:", userId, "with data:", formData);
       await new Promise(resolve => setTimeout(resolve, 1500)); 
       setSuccess(true);
     } catch (err) {

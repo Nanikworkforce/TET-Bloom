@@ -19,12 +19,37 @@ This document explains how to set up test user accounts for the TET Bloom applic
    - Go to Project Settings -> API
    - Copy the values for "Project URL", "anon public" key, and "service_role" key
 
-## Running the Seed Script
+## Setup Process
 
-To create test user accounts, run:
+### 1. Create Required Tables
+
+First, you need to create the necessary database tables:
+
+```bash
+npm run setup:tables
+```
+
+If this doesn't work, you can run the SQL script directly in your Supabase SQL Editor:
+1. Go to your Supabase Dashboard
+2. Click on "SQL Editor"
+3. Create a new query
+4. Copy the contents of `scripts/create-tables-sql.sql` into the editor
+5. Run the query
+
+### 2. Seed Test Users
+
+After the tables are created, you can create test user accounts:
 
 ```bash
 npm run seed:users
+```
+
+### One-Step Setup
+
+To run both steps at once:
+
+```bash
+npm run setup:all
 ```
 
 This will create the following test accounts:
@@ -48,9 +73,9 @@ This will create the following test accounts:
 
 After running the seed script, you can log in with any of these accounts at `/login` in your application. You'll be automatically redirected to the appropriate dashboard based on your role:
 
-- Super User → `/dashboard/super`
-- School Leader → `/dashboard/leader`
-- Teacher → `/dashboard/teacher`
+- Super User → `/super`
+- School Leader → `/leader`
+- Teacher → `/teacher`
 
 ## Customizing Test Users
 

@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { नकारात्मक_अभिप्राय_द्या, सकारात्मक_अभिप्राय_द्या } from "@/lib/actions/actions";
+import { useAuth } from "@/lib/auth-context";
 
 // Mock feedback data
 const feedbackData = {

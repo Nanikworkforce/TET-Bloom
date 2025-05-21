@@ -154,7 +154,7 @@ export default function ObservationGroupDetailsPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/dashboard/super/groups">
+          <Link href="/super/groups">
             <Button variant="outline" className="rounded-full shadow-sm">
               ← Back to Groups
             </Button>
@@ -282,7 +282,7 @@ export default function ObservationGroupDetailsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Link href={`/dashboard/super/teachers/${teacher.id}`}>
+                      <Link href={`/super/teachers/${teacher.id}`}>
                         <Button variant="outline" size="sm" className="rounded-full">
                           View Profile
                         </Button>
@@ -346,7 +346,7 @@ export default function ObservationGroupDetailsPage() {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <Link href={`/dashboard/super/observations/${observation.id}`}>
+                            <Link href={`/super/observations/${observation.id}`}>
                               <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10">
                                 View Details
                               </Button>

@@ -4,7 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import React from "react";
-import { NotificationsDropdown } from "@/components/ui/notifications";
+import { NotificationsDropdown } from "@/components/notifications-dropdown";
+import { useAuth } from "@/lib/auth-context";
+import { Sidebar, SidebarBody, SidebarFooter, SidebarHeader, SidebarLink, SidebarLinks, SidebarUser } from "@/components/ui/sidebar";
+import { NotificationsDropdown as NotificationsDropdownComponent } from "@/components/notifications-dropdown";
+import { UserNav } from "@/components/user-nav";
 
 interface NavItemProps {
   href: string;
@@ -12,18 +16,31 @@ interface NavItemProps {
   label: string;
   active: boolean;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
-function NavItem({ href, icon, label, active, onClick }: NavItemProps) {
+function NavItem({ href, icon, label, active, onClick, disabled }: NavItemProps) {
   return (
     <Link
-      href={href}
+      href={disabled ? "#" : href}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
         active 
           ? "bg-primary text-white shadow-md" 
-          : "text-gray-600 hover:bg-primary/10 hover:text-primary"
+          : disabled
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-gray-600 hover:bg-primary/10 hover:text-primary"
       }`}
-      onClick={onClick}
+      onClick={(e) => {
+        if (disabled) {
+          e.preventDefault();
+          return;
+        }
+        if (onClick) {
+          onClick();
+        }
+      }}
+      aria-disabled={disabled}
+      tabIndex={disabled ? -1 : undefined}
     >
       <span className="text-xl">{icon}</span>
       <span className="font-medium">{label}</span>
@@ -34,37 +51,42 @@ function NavItem({ href, icon, label, active, onClick }: NavItemProps) {
 const adminNav = [
   {
     label: "Dashboard",
-    href: "/school-leader",
+    href: "/principal",
     icon: "📊",
   },
   {
     label: "Teachers",
-    href: "/school-leader/teachers",
+    href: "/principal/teachers",
     icon: "👩‍🏫",
   },
   {
+    label: "Observation Groups",
+    href: "/principal/groups",
+    icon: "👪",
+  },
+  {
     label: "Observations",
-    href: "/school-leader/observations",
+    href: "/principal/observations",
     icon: "👁️",
   },
   {
     label: "Feedback",
-    href: "/school-leader/feedback",
+    href: "/principal/feedback",
     icon: "💬",
   },
   {
     label: "Reports",
-    href: "/school-leader/reports",
+    href: "/principal/reports",
     icon: "📝",
   },
   {
     label: "Settings",
-    href: "/school-leader/settings",
+    href: "/principal/settings",
     icon: "⚙️",
   },
   {
     label: "Help & Docs",
-    href: "/school-leader/help",
+    href: "/principal/help",
     icon: "❓",
   },
 ];
@@ -104,54 +126,57 @@ export default function DashboardLayout({
 }>) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
-  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { user } = useAuth();
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isSuperUser = user?.role === "SUPER_USER";
+
   // Determine if current path is for school-leader or teacher
   const isSchoolLeader = pathname.includes('/school-leader');
+  const isPrincipal = pathname.includes('/principal');
   const isTeacher = pathname.includes('/teacher');
-  const isSuperUser = pathname.includes('/super');
   
-  // Default to school-leader if neither is in the path
-  const userRole = isTeacher ? "teacher" : isSchoolLeader ? "school-leader" : "super";
+  // Determine the role based on the path
+  const userRole = isTeacher 
+    ? "teacher" 
+    : isSchoolLeader 
+      ? "school-leader" 
+      : isPrincipal 
+        ? "principal" 
+        : "super";
 
   // Navigation items based on role
-  const schoolLeaderNavItems = [
+  const principalNavItems = [
     {
-      href: "/school-leader",
+      href: "/principal",
       icon: "📊",
       label: "Overview",
     },
     {
-      href: "/school-leader/teachers",
-      icon: "👩‍🏫",
-      label: "Teachers",
+      href: "/principal/groups",
+      icon: "👪",
+      label: "Observation Groups",
     },
     {
-      href: "/school-leader/observations",
+      href: "/principal/observations",
       icon: "👁️",
       label: "Observations",
     },
     {
-      href: "/school-leader/feedback",
-      icon: "💬",
-      label: "Feedback",
-    },
-    {
-      href: "/school-leader/reports",
+      href: "/principal/reports",
       icon: "📝",
       label: "Reports",
+      disabled: true,
     },
     {
-      href: "/school-leader/settings",
+      href: "/principal/settings",
       icon: "⚙️",
       label: "Settings",
     },
-    {
-      href: "/school-leader/help",
-      icon: "❓",
-      label: "Help & Docs",
-    },
   ];
+  
   
   const teacherNavItems = [
     {
@@ -178,11 +203,13 @@ export default function DashboardLayout({
       href: "/teacher/lesson-plans",
       icon: "📝",
       label: "Lesson Plans",
+      disabled: true,
     },
     {
       href: "/teacher/settings",
       icon: "⚙️",
       label: "Settings",
+      disabled: true,
     },
     {
       href: "/teacher/help",
@@ -191,7 +218,13 @@ export default function DashboardLayout({
     },
   ];
   
-  const navItems = userRole === "teacher" ? teacherNavItems : isSchoolLeader ? adminNav : superUserNav;
+  const navItems = userRole === "teacher" 
+    ? teacherNavItems 
+    : userRole === "school-leader" 
+      ? adminNav 
+      : userRole === "principal"
+        ? principalNavItems
+        : superUserNav;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -216,7 +249,7 @@ export default function DashboardLayout({
             <NotificationsDropdown />
             
             {/* Role switcher (for demo purposes) */}
-            {/* <div className="mr-4">
+            <div className="mr-4">
               <select 
                 className="px-2 py-1 border rounded-md text-sm"
                 defaultValue={userRole}
@@ -225,16 +258,25 @@ export default function DashboardLayout({
                   window.location.href = `/${newRole}`;
                 }}
               >
-                <option value="school-leader">School Leader</option>
+                <option value="principal">Principal</option>
                 <option value="teacher">Teacher</option>
+                <option value="super">Super User</option>
               </select>
-            </div> */}
+            </div> 
             
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : "S"}
+                {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : userRole === "principal" ? "P" : "S"}
               </div>
-              <span className="font-medium">{userRole === "school-leader" ? "School Leader" : userRole === "teacher" ? "Ms. Chen" : "Super User"}</span>
+              <span className="font-medium">
+                {userRole === "school-leader" 
+                  ? "School Leader" 
+                  : userRole === "teacher" 
+                    ? "Ms. Chen" 
+                    : userRole === "principal"
+                      ? "Principal"
+                      : "Super User"}
+              </span>
             </div>
           </div>
         </div>
@@ -251,6 +293,7 @@ export default function DashboardLayout({
                 icon={item.icon}
                 label={item.label}
                 active={pathname === item.href}
+                disabled={(item as NavItemProps).disabled}
               />
             ))}
           </nav>
@@ -285,11 +328,27 @@ export default function DashboardLayout({
               {/* User info in mobile menu */}
               <div className="flex items-center gap-2 mb-6 p-2 bg-gray-50 rounded-lg">
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                  {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : "S"}
+                  {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : userRole === "principal" ? "P" : "S"}
                 </div>
                 <div>
-                  <div className="font-medium">{userRole === "school-leader" ? "School Leader" : userRole === "teacher" ? "Ms. Chen" : "Super User"}</div>
-                  <div className="text-xs text-gray-500">{userRole === "school-leader" ? "Administrator" : userRole === "teacher" ? "Mathematics Teacher" : "Super User"}</div>
+                  <div className="font-medium">
+                    {userRole === "school-leader" 
+                      ? "School Leader" 
+                      : userRole === "teacher" 
+                        ? "Ms. Chen" 
+                        : userRole === "principal"
+                          ? "Principal"
+                          : "Super User"}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {userRole === "school-leader" 
+                      ? "Administrator" 
+                      : userRole === "teacher" 
+                        ? "Mathematics Teacher" 
+                        : userRole === "principal"
+                          ? "Administrator"
+                          : "Super User"}
+                  </div>
                 </div>
               </div>
               
@@ -304,6 +363,7 @@ export default function DashboardLayout({
                   }}
                 >
                   <option value="school-leader">School Leader View</option>
+                  <option value="principal">Principal View</option>
                   <option value="teacher">Teacher View</option>
                   <option value="super">Super User View</option>
                 </select>
@@ -318,6 +378,7 @@ export default function DashboardLayout({
                     label={item.label}
                     active={pathname === item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
+                    disabled={(item as NavItemProps).disabled}
                   />
                 ))}
                 

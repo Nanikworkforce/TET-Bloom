@@ -97,7 +97,7 @@ export default function ObservationsPage() {
           <p className="text-gray-600">Schedule, manage, and review observation sessions</p>
         </div>
         <div className="flex gap-3">
-          <Link href="/dashboard/school-leader/observations/schedule">
+          <Link href="/school-leader/observations/schedule">
             <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
               <span className="mr-2">➕</span> Schedule New Observation
             </Button>
@@ -206,14 +206,14 @@ export default function ObservationsPage() {
 
               {/* Right section: Action buttons - vertically centered */}
               <div className="flex items-center justify-end md:min-w-48 gap-2">
-                <Link href={`/dashboard/school-leader/observations/${observation.id}`}>
+                <Link href={`/school-leader/observations/${observation.id}`}>
                   <Button size="sm" variant="outline" className="rounded-full whitespace-nowrap">
                     View Details
                   </Button>
                 </Link>
                 {observation.status === 'scheduled' && (
                   <>
-                    <Link href={`/dashboard/school-leader/observations/schedule?edit=${observation.id}`}>
+                    <Link href={`/school-leader/observations/schedule?edit=${observation.id}`}>
                       <Button size="sm" variant="outline" className="rounded-full border-yellow-400 text-yellow-600 hover:bg-yellow-50 whitespace-nowrap">
                         <span className="mr-1">✏️</span> Reschedule
                       </Button>

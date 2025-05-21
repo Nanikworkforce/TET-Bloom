@@ -3,25 +3,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "sonner";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ErrorCorrectionProps {
   errors: {
     row: number;
-    email: string;
-    name: string;
-    role: string;
-    subject?: string;
-    grade?: string;
-    error: string;
-    resolution: string;
+    column: string;
+    message: string;
+    value: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rowData: any; // Use a more specific type if possible
   }[];
+  onCorrect: (rowIndex: number, column: string, newValue: string) => void;
   onFixAndRetry: (fixedData: any[]) => void;
   onCancel: () => void;
 }
 
 const ErrorCorrection: React.FC<ErrorCorrectionProps> = ({
   errors,
+  onCorrect,
   onFixAndRetry,
   onCancel
 }) => {

@@ -269,12 +269,12 @@ export default function TeacherDevelopmentPage() {
               </div>
               
               <div className="flex justify-end gap-2 p-3 bg-gray-50 border-t">
-                <Link href={`/dashboard/teacher/development/goals/${goal.id}`}>
+                <Link href={`/teacher/development/goals/${goal.id}`}>
                   <Button size="sm" variant="outline" className="rounded-full">
                     View Details
                   </Button>
                 </Link>
-                <Link href={`/dashboard/teacher/development/goals/${goal.id}/edit`}>
+                <Link href={`/teacher/development/goals/${goal.id}/edit`}>
                   <Button size="sm" className="rounded-full">
                     Update Progress
                   </Button>

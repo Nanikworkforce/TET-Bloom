@@ -94,7 +94,7 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 </ProtectedRoute>
 ```
 
-### 4. Navigation Sidebar (`/src/components/dashboard/sidebar.tsx`)
+### 4. Navigation Sidebar (`/src/components/sidebar.tsx`)
 
 The sidebar component:
 - Displays navigation based on user role

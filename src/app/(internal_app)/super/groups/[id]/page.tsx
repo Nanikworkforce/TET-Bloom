@@ -352,7 +352,7 @@ export default function ObservationGroupDetailsPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <Link href={`/dashboard/super/observations/${observation.id}`}>
+                          <Link href={`/super/observations/${observation.id}`}>
                             <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10">
                               View Details
                             </Button>
