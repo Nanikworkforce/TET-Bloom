@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth-context";
 
 // Mock data for observation groups
 const mockGroups = [
@@ -12,7 +13,7 @@ const mockGroups = [
     id: "1",
     name: "Math Department",
     observer: "David Wilson",
-    observerRole: "School Leader",
+    observerRole: "Administrator",
     teacherCount: 8,
     lastObservation: "Feb 24, 2023",
     status: "Active"
@@ -21,7 +22,7 @@ const mockGroups = [
     id: "2",
     name: "Science Department",
     observer: "Jessica Martinez",
-    observerRole: "Vice School Leader",
+    observerRole: "Vice Administrator",
     teacherCount: 6,
     lastObservation: "Feb 22, 2023",
     status: "Active"
@@ -30,7 +31,7 @@ const mockGroups = [
     id: "3",
     name: "English Department",
     observer: "David Wilson",
-    observerRole: "School Leader",
+    observerRole: "Administrator",
     teacherCount: 7,
     lastObservation: "Feb 18, 2023",
     status: "Active"
@@ -39,7 +40,7 @@ const mockGroups = [
     id: "4",
     name: "New Teachers",
     observer: "Jessica Martinez",
-    observerRole: "Vice School Leader",
+    observerRole: "Vice Administrator",
     teacherCount: 5,
     lastObservation: "Feb 15, 2023",
     status: "Active"
@@ -48,23 +49,89 @@ const mockGroups = [
     id: "5",
     name: "Special Education",
     observer: "David Wilson",
-    observerRole: "School Leader",
+    observerRole: "Administrator",
     teacherCount: 4,
     lastObservation: "Feb 10, 2023",
     status: "Inactive"
   },
+  {
+    id: "6",
+    name: "Elementary Math",
+    observer: "David Wilson",
+    observerRole: "Administrator",
+    teacherCount: 12,
+    lastObservation: "Mar 1, 2023",
+    status: "Active"
+  },
+  {
+    id: "7",
+    name: "High School Science",
+    observer: "Michael Johnson",
+    observerRole: "Senior Administrator",
+    teacherCount: 9,
+    lastObservation: "Feb 28, 2023",
+    status: "Active"
+  },
+  {
+    id: "8",
+    name: "Reading Intervention",
+    observer: "David Wilson",
+    observerRole: "Administrator",
+    teacherCount: 6,
+    lastObservation: "Mar 3, 2023",
+    status: "Active"
+  },
+  {
+    id: "9",
+    name: "Art & Music",
+    observer: "Sarah Thompson",
+    observerRole: "Department Head",
+    teacherCount: 4,
+    lastObservation: "Feb 20, 2023",
+    status: "Active"
+  },
+  {
+    id: "10",
+    name: "Physical Education",
+    observer: "David Wilson",
+    observerRole: "Administrator",
+    teacherCount: 3,
+    lastObservation: "Feb 25, 2023",
+    status: "Active"
+  },
 ];
 
-export default function SchoolLeaderObservationGroupsPage() {
+export default function AdministratorObservationGroupsPage() {
+  const { user, isLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [observerFilter, setObserverFilter] = useState("All");
+  const [viewMode, setViewMode] = useState<"assigned" | "all">("assigned");
+  
+  // For demo purposes, use a consistent demo user name
+  // In a real app, this would come from the user profile or database
+  const currentUserName = "David Wilson"; // Consistent for demo
+  
+  // Show loading state while auth is loading to prevent UI jumping
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading groups...</p>
+        </div>
+      </div>
+    );
+  }
   
   // Get unique observers for filter
   const observers = Array.from(new Set(mockGroups.map(group => group.observer)));
   
-  // Filter groups based on search term and filters
+  // Filter groups based on view mode, search term, and filters
   const filteredGroups = mockGroups.filter(group => {
+    // Filter by view mode (assigned vs all groups)
+    const matchesViewMode = viewMode === "all" || group.observer === currentUserName;
+    
     const matchesSearch = 
       group.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       group.observer.toLowerCase().includes(searchTerm.toLowerCase());
@@ -72,19 +139,27 @@ export default function SchoolLeaderObservationGroupsPage() {
     const matchesStatus = statusFilter === "All" || group.status === statusFilter;
     const matchesObserver = observerFilter === "All" || group.observer === observerFilter;
     
-    return matchesSearch && matchesStatus && matchesObserver;
+    return matchesViewMode && matchesSearch && matchesStatus && matchesObserver;
   });
+
+  // Count groups for the current user
+  const assignedGroupsCount = mockGroups.filter(group => group.observer === currentUserName).length;
+  const totalGroupsCount = mockGroups.length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Observation Groups (School Leader)</h1>
-          <p className="text-gray-600">Manage teacher observation groups as School Leader</p>
+          <h1 className="text-2xl font-bold text-gray-800">Observation Groups (Administrator)</h1>
+          <p className="text-gray-600">
+            {viewMode === "assigned" 
+              ? `Viewing your assigned groups (${assignedGroupsCount} of ${totalGroupsCount} total)` 
+              : "Viewing all observation groups"}
+          </p>
         </div>
         <div>
-          <Link href="/school-leader/groups/create">
+          <Link href="/administrator/groups/create">
             <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
               <span className="mr-2">➕</span> Create Observation Group
             </Button>
@@ -92,10 +167,34 @@ export default function SchoolLeaderObservationGroupsPage() {
         </div>
       </div>
 
-      {/* Filters and Search */}
+      {/* View Mode Toggle */}
       <Card className="border bg-white">
         <CardHeader className="pb-3">
-          <CardTitle>Filters</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>View Options</span>
+            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode("assigned")}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === "assigned"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                My Groups ({assignedGroupsCount})
+              </button>
+              <button
+                onClick={() => setViewMode("all")}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === "all"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                All Groups ({totalGroupsCount})
+              </button>
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -112,6 +211,7 @@ export default function SchoolLeaderObservationGroupsPage() {
                 className="w-full p-2 border rounded-lg"
                 value={observerFilter}
                 onChange={(e) => setObserverFilter(e.target.value)}
+                disabled={viewMode === "assigned"} // Disable when viewing only assigned groups
               >
                 <option value="All">All Observers</option>
                 {observers.map((observer, index) => (
@@ -164,7 +264,16 @@ export default function SchoolLeaderObservationGroupsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredGroups.map((group) => (
                 <tr key={group.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{group.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <div className="flex items-center gap-2">
+                      {group.name}
+                      {group.observer === currentUserName && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          Assigned to me
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {group.observer}
                     <div className="text-xs text-gray-400">{group.observerRole}</div>
@@ -180,16 +289,28 @@ export default function SchoolLeaderObservationGroupsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <Link href={`/school-leader/groups/${group.id}`}>
+                      <Link href={`/administrator/groups/${group.id}`}>
                         <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
                           View
                         </Button>
                       </Link>
-                      <Link href={`/school-leader/groups/edit/${group.id}`}>
-                        <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                      {group.observer === currentUserName ? (
+                        <Link href={`/administrator/groups/edit/${group.id}`}>
+                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                            Edit
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-gray-400 cursor-not-allowed" 
+                          disabled
+                          title="You can only edit groups assigned to you"
+                        >
                           Edit
                         </Button>
-                      </Link>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -199,7 +320,23 @@ export default function SchoolLeaderObservationGroupsPage() {
         </div>
         {filteredGroups.length === 0 && (
           <div className="text-center py-10">
-            <p className="text-gray-500">No observation groups found matching your filters.</p>
+            <p className="text-gray-500">
+              {viewMode === "assigned" 
+                ? "No assigned observation groups found matching your filters." 
+                : "No observation groups found matching your filters."}
+            </p>
+            {viewMode === "assigned" && assignedGroupsCount === 0 && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-400 mb-3">You don't have any assigned observation groups yet.</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewMode("all")}
+                  className="rounded-full"
+                >
+                  View All Groups
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </Card>

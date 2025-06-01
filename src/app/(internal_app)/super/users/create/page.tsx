@@ -149,7 +149,7 @@ export default function CreateUserPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Teacher">Teacher</SelectItem>
-                    <SelectItem value="School Leader">School Leader</SelectItem>
+                    <SelectItem value="Administrator">Administrator</SelectItem>
                     <SelectItem value="Super">Super User</SelectItem>
                   </SelectContent>
                 </Select>

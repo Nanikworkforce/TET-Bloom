@@ -14,13 +14,12 @@ export const SIDEBAR_ITEMS = {
     { title: 'Reports', href: '/super/reports', icon: 'bar-chart' },
     { title: 'Settings', href: '/super/settings', icon: 'settings' },
   ],
-  principal: [
-    { title: 'Dashboard', href: '/principal', icon: 'layout-dashboard' },
-    // { title: 'User Management', href: '/principal/users', icon: 'users' }, // This line is removed
-    { title: 'Observation Groups', href: '/principal/groups', icon: 'folder' },
-    { title: 'Observations', href: '/principal/observations', icon: 'clipboard-list' },
-    { title: 'Reports', href: '/principal/reports', icon: 'bar-chart' },
-    { title: 'Settings', href: '/principal/settings', icon: 'settings' },
+  administrator: [
+    { title: 'Dashboard', href: '/administrator', icon: 'layout-dashboard' },
+    { title: 'Observation Groups', href: '/administrator/groups', icon: 'folder' },
+    { title: 'Observations', href: '/administrator/observations', icon: 'clipboard-list' },
+    { title: 'Reports', href: '/administrator/reports', icon: 'bar-chart' },
+    { title: 'Settings', href: '/administrator/settings', icon: 'settings' },
   ],
   teacher: [
     { title: 'Dashboard', href: '/teacher', icon: 'layout-dashboard' },
@@ -41,7 +40,7 @@ const PERMISSIONS = {
     canRequestReview: true,
     canHandleReviewRequests: true,
   },
-  principal: {
+  administrator: {
     canManageUsers: false,
     canManageGroups: true,
     canViewAllObservations: false,

@@ -179,7 +179,7 @@ export default function SchoolLeaderFeedbackDetailPage() {
             {isEditing ? "Revise feedback based on teacher's request" : `Feedback for ${feedbackData.teacher.name}`}
           </p>
         </div>
-        <Link href="/school-leader/feedback">
+        <Link href="/administrator/feedback">
           <Button variant="outline" className="rounded-full shadow-sm">
             ← Back to Feedback
           </Button>

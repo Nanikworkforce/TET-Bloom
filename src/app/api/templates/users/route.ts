@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const data = [
       ["email", "name", "role", "subject", "grade", "notes"],
       ["john.doe@example.com", "John Doe", "Teacher", "Mathematics", "5th Grade", "Example entry"],
-      ["jane.smith@example.com", "Jane Smith", "School Leader", "", "", "Admin for Elementary School"],
+      ["jane.smith@example.com", "Jane Smith", "Administrator", "", "", "Admin for Elementary School"],
       ["mark.wilson@example.com", "Mark Wilson", "Teacher", "Science", "7th Grade", ""]
     ];
     

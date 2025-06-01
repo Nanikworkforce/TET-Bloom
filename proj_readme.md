@@ -2,7 +2,7 @@
 
 ## 1. Project Goal
 
-The primary goal of the Teacher Evaluation Tool is to provide a centralized, efficient, and user-friendly platform for school leaders and teachers to manage the entire teacher observation, feedback, and evaluation process. This tool aims to digitize and streamline workflows, facilitate timely and constructive feedback, maintain a clear record of professional development, and ultimately support instructional improvement.
+The primary goal of the Teacher Evaluation Tool is to provide a centralized, efficient, and user-friendly platform for Administrators and teachers to manage the entire teacher observation, feedback, and evaluation process. This tool aims to digitize and streamline workflows, facilitate timely and constructive feedback, maintain a clear record of professional development, and ultimately support instructional improvement.
 
 This project is being developed with the assistance of AI development tools like Cursor AI, leveraging the detailed Product Requirements Document (PRD) for feature implementation.
 
@@ -10,7 +10,7 @@ This project is being developed with the assistance of AI development tools like
 
 This application will support educational institutions by:
 * Allowing **Super Users** to manage accounts and system settings.
-* Enabling **School Leaders** to create observation groups, conduct classroom observations using a structured digital form, provide targeted feedback ("Glows" and "Grows"), and suggest actionable steps.
+* Enabling **Administrators** to create observation groups, conduct classroom observations using a structured digital form, provide targeted feedback ("Glows" and "Grows"), and suggest actionable steps.
 * Empowering **Teachers** to submit lesson plans, view their observation schedules and feedback, and participate actively in the review and approval process.
 
 The initial development will focus on delivering a **Minimum Viable Product (MVP)** that covers the core end-to-end observation workflow.
@@ -20,17 +20,17 @@ The initial development will focus on delivering a **Minimum Viable Product (MVP
 The MVP will include the following key functionalities:
 
 * **User Account Management:**
-    * Super User: Create individual and bulk import teacher/school leader accounts.
+    * Super User: Create individual and bulk import teacher/Administrator accounts.
     * Teacher: Update personal profile information.
 * **Observation Group Management:**
-    * School Leader: Create observation groups, assign teachers, and designate observers.
+    * Administrator: Create observation groups, assign teachers, and designate observers.
     * System: Auto-create initial observation records for assigned teachers.
 * **End-to-End Observation Workflow:**
     * **Lesson Plan Submission:** Teachers can upload lesson plans and supporting artifacts for upcoming observations.
-    * **Observation & Feedback:** School Leaders can complete detailed digital observation forms (based on ELAR/Math criteria), record notes, identify "Glows" (strengths) and "Grows" (areas for improvement), and select predefined action steps.
+    * **Observation & Feedback:** Administrators can complete detailed digital observation forms (based on ELAR/Math criteria), record notes, identify "Glows" (strengths) and "Grows" (areas for improvement), and select predefined action steps.
     * **Feedback Review & Response:** Teachers can view their observation feedback (narrative sections) and either approve it or request a review with comments.
     * **Notifications:** Basic in-app notifications for key events (e.g., observation completion, review requests).
-* **Dashboard Access:** Role-specific dashboards for Super Users, School Leaders, and Teachers to access relevant functionalities.
+* **Dashboard Access:** Role-specific dashboards for Super Users, Administrators, and Teachers to access relevant functionalities.
 * **Basic Reporting Data:**
     * Tracking of lesson plan submission status.
     * Tracking of feedback provision status.
@@ -43,7 +43,7 @@ For a complete list of all features, user stories, and MVP scope, please refer t
 ## 4. User Roles
 
 * **Super User:** System administrators with full access, primarily for setup and user management.
-* **School Leader (Observer):** Instructional leaders responsible for conducting observations and providing coaching.
+* **Administrator (Observer):** Instructional leaders responsible for conducting observations and providing coaching.
 * **Teacher:** Educators who are being observed and receiving feedback for professional growth.
 
 ## 5. Tech Stack (Proposed / To Be Determined)

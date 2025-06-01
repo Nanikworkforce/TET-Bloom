@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 const feedbackData = {
   id: "1",
   observationDate: "Feb 24, 2023",
-  observer: "School Leader Johnson",
+  observer: "Administrator Johnson",
   subject: "Mathematics",
   grade: "7th Grade",
   status: "Feedback Provided",

@@ -27,7 +27,7 @@ const mockNotifications = [
   {
     id: 2,
     title: "Feedback Available",
-    message: "School Leader Johnson has provided feedback for your recent observation.",
+    message: "Administrator Johnson has provided feedback for your recent observation.",
     timestamp: "1 day ago",
     read: false,
     type: "feedback"

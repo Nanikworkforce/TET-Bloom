@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 const upcomingObservations = [
   {
     id: "1",
-    observer: "School Leader Johnson",
+    observer: "Administrator Johnson",
     date: "Mar 15, 2023",
     time: "10:30 AM",
     class: "Mathematics 101",
@@ -16,7 +16,7 @@ const upcomingObservations = [
   },
   {
     id: "2",
-    observer: "Vice School Leader Smith",
+    observer: "Vice Administrator Smith",
     date: "Mar 22, 2023",
     time: "1:15 PM",
     class: "Mathematics 102",
@@ -30,7 +30,7 @@ const recentFeedback = [
   {
     id: "1",
     date: "Feb 20, 2023",
-    observer: "School Leader Johnson",
+    observer: "Administrator Johnson",
     class: "Mathematics 101",
     summary: "Strong presentation of complex concepts. Students were engaged throughout.",
     rating: "Excellent",
@@ -39,7 +39,7 @@ const recentFeedback = [
   {
     id: "2",
     date: "Jan 30, 2023",
-    observer: "Vice School Leader Smith",
+    observer: "Vice Administrator Smith",
     class: "Mathematics 103",
     summary: "Good classroom management. Consider incorporating more group activities.",
     rating: "Good",
@@ -207,9 +207,9 @@ export default function TeacherDashboard() {
                       View Details
                     </Button>
                   </Link>
-                  <Link href={`/teacher/lesson-plans/create?observation=${observation.id}`}>
+                  <Link href="/teacher/lesson-plans">
                     <Button size="sm" className="rounded-full text-xs">
-                      Submit Lesson Plan
+                      Weekly Lesson Plans
                     </Button>
                   </Link>
                 </div>

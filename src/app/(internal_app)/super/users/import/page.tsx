@@ -737,7 +737,7 @@ export default function ImportUsersPage() {
           </li>
           <li className="flex gap-2">
             <span className="text-primary">✓</span>
-            <span>Required fields: Email, Name, Role (Teacher, School Leader, or Super)</span>
+            <span>Required fields: Email, Name, Role (Teacher, Administrator, or Super)</span>
           </li>
           <li className="flex gap-2">
             <span className="text-primary">✓</span>

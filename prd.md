@@ -2,7 +2,7 @@ Product Requirements Document: Teacher Evaluation Tool
 1. Introduction
 Purpose: This document outlines the product requirements for the Teacher Evaluation Tool, a software application designed to streamline and manage the teacher observation, feedback, and evaluation process within an educational institution.
 
-Product Goal: To provide a centralized platform for school leaders and teachers to manage observation schedules, conduct observations, provide and receive feedback, track progress, and facilitate professional growth.
+Product Goal: To provide a centralized platform for Administrators and teachers to manage observation schedules, conduct observations, provide and receive feedback, track progress, and facilitate professional growth.
 
 2. User Roles
 The system will support the following user roles:
@@ -11,11 +11,11 @@ Super User (e.g., Brittany & Brandon):
 
 Manages system-level configurations.
 
-Creates and manages all user accounts (School Leaders, Teachers), including bulk import capabilities.
+Creates and manages all user accounts (Administrators, Teachers), including bulk import capabilities.
 
-Can perform all actions of a School Leader.
+Can perform all actions of a Administrator.
 
-School Leader (Observer):
+Administrator (Observer):
 
 Creates and manages observation groups.
 
@@ -37,7 +37,7 @@ Submits lesson plans and supporting artifacts for observations.
 
 Views their upcoming and past observation records (narrative section only).
 
-Reviews feedback from School Leaders.
+Reviews feedback from Administrators.
 
 Approves observation feedback or requests a review.
 
@@ -48,7 +48,7 @@ To facilitate timely and constructive feedback for teachers.
 
 To provide a clear record of observations, feedback, and teacher development.
 
-To support school leaders in managing and coaching their teaching staff effectively.
+To support Administrators in managing and coaching their teaching staff effectively.
 
 To enable teachers to actively participate in their evaluation process.
 
@@ -56,7 +56,7 @@ To enable teachers to actively participate in their evaluation process.
 4.1. User Account Management
 Epic: Manage user accounts and profiles.
 
-User Story 1 (Super User): As a Super User, I want to create individual teacher and school leader accounts by entering their email address, full name, and employment start date, so that they can access the system. [MVP]
+User Story 1 (Super User): As a Super User, I want to create individual teacher and Administrator accounts by entering their email address, full name, and employment start date, so that they can access the system. [MVP]
 
 User Story 2 (Super User): As a Super User, I want to import a spreadsheet of teacher accounts, so that I can efficiently create multiple accounts at once. [MVP - High Priority for setup]
 
@@ -69,17 +69,17 @@ User Story 5 (System): When a teacher saves their profile, the system should upd
 4.2. Observation Group Management
 Epic: Organize teachers into groups for focused observation and coaching.
 
-User Story 1 (School Leader): As a School Leader, I want to select "Observation Groups" from the dashboard, so that I can manage my observation groups. [MVP]
+User Story 1 (Administrator): As a Administrator, I want to select "Observation Groups" from the dashboard, so that I can manage my observation groups. [MVP]
 
-User Story 2 (School Leader): As a School Leader, I want to create a new observation group by entering a name for the group, so that I can organize teachers for observation. [MVP]
+User Story 2 (Administrator): As a Administrator, I want to create a new observation group by entering a name for the group, so that I can organize teachers for observation. [MVP]
 
-User Story 3 (School Leader): As a School Leader, I want to select an observer (myself) for the group, so that responsibilities are clear. [MVP]
+User Story 3 (Administrator): As a Administrator, I want to select an observer (myself) for the group, so that responsibilities are clear. [MVP]
 
-User Story 4 (School Leader): As a School Leader, I want to select teachers to assign to a new observation group, viewing their subject, grade level, and teaching experience during selection, so that I can form relevant groups. [MVP]
+User Story 4 (Administrator): As a Administrator, I want to select teachers to assign to a new observation group, viewing their subject, grade level, and teaching experience during selection, so that I can form relevant groups. [MVP]
 
-User Story 5 (School Leader): As a School Leader, I want to save the new observation group, so that it is created and stored in the system. [MVP]
+User Story 5 (Administrator): As a Administrator, I want to save the new observation group, so that it is created and stored in the system. [MVP]
 
-User Story 6 (System): When an observation group is saved, the system should add the new group to the list of observation groups for the School Leader. [MVP - System Requirement]
+User Story 6 (System): When an observation group is saved, the system should add the new group to the list of observation groups for the Administrator. [MVP - System Requirement]
 
 User Story 7 (System): When teachers are added to an observation group, the system should create an initial "observation record" for each teacher, auto-populated with their subject, grade, years of teaching experience, etc. [MVP - System Requirement, core to workflow]
 
@@ -104,25 +104,25 @@ User Story 5 (Teacher): As a Teacher, I want to save the observation record afte
 
 Sub-Epic 4.3.2: Conducting Observations & Providing Feedback
 
-User Story 1 (School Leader): As a School Leader, I want to select a teacher from an observation group (via the dashboard), so that I can access their observation records and provide feedback. [MVP]
+User Story 1 (Administrator): As a Administrator, I want to select a teacher from an observation group (via the dashboard), so that I can access their observation records and provide feedback. [MVP]
 
-User Story 2 (School Leader): As a School Leader, I want to complete an observation form (referencing details in Section 8) for a selected teacher, so that I can document my observations. [MVP - Core Functionality]
+User Story 2 (Administrator): As a Administrator, I want to complete an observation form (referencing details in Section 8) for a selected teacher, so that I can document my observations. [MVP - Core Functionality]
 
-User Story 3 (School Leader): As a School Leader, I want to save the completed observation record, so that the feedback is stored. [MVP]
+User Story 3 (Administrator): As a Administrator, I want to save the completed observation record, so that the feedback is stored. [MVP]
 
-User Story 4 (System): When an observation record is saved by a School Leader, the system should update performance statistics for the teacher and the observation group. [MVP - for basic reporting, can be simplified for initial MVP]
+User Story 4 (System): When an observation record is saved by a Administrator, the system should update performance statistics for the teacher and the observation group. [MVP - for basic reporting, can be simplified for initial MVP]
 
-User Story 5 (System): When an observation record is saved by a School Leader, the system should notify the teacher that their observation is complete. [MVP - Basic Notification]
+User Story 5 (System): When an observation record is saved by a Administrator, the system should notify the teacher that their observation is complete. [MVP - Basic Notification]
 
 Acceptance Criterion: Teachers should only see the narrative section of the observation record, including "glows" (strengths) and "grows" (areas for improvement), and potentially selected parts of the observation form as defined by system configuration. [MVP - Security/Access Rule]
 
 Sub-Epic 4.3.3: Viewing Observation Records
 
-User Story 1 (School Leader): As a School Leader, starting from the dashboard, I want to select "Observations" and then filter by a specific teacher, so that I can view all observations for that individual teacher. [MVP]
+User Story 1 (Administrator): As a Administrator, starting from the dashboard, I want to select "Observations" and then filter by a specific teacher, so that I can view all observations for that individual teacher. [MVP]
 
-User Story 2 (School Leader): As a School Leader, after filtering/selecting a teacher's observations, I want to select a specific observation record, so that the system displays the full observation record to me. [MVP]
+User Story 2 (Administrator): As a Administrator, after filtering/selecting a teacher's observations, I want to select a specific observation record, so that the system displays the full observation record to me. [MVP]
 
-User Story 3 (School Leader): As a School Leader, starting from the dashboard, I want to select "Observation Groups," then select a specific group, then select a teacher from that group, and finally select an observation record for that teacher, so that the system displays the full observation record to me. [MVP - Alternative Flow]
+User Story 3 (Administrator): As a Administrator, starting from the dashboard, I want to select "Observation Groups," then select a specific group, then select a teacher from that group, and finally select an observation record for that teacher, so that the system displays the full observation record to me. [MVP - Alternative Flow]
 
 Sub-Epic 4.3.4: Teacher Response to Observation Feedback
 
@@ -138,21 +138,21 @@ User Story 5 (Teacher): If I choose to request a review, I want to enter comment
 
 User Story 6 (System): If a teacher requests a review, the system should send an email notification to the observer, indicating that the teacher has requested a review of their observation feedback. [MVP - Basic Notification]
 
-User Story 7 (School Leader/Observer): As an Observer, I want to be able to review the teacher's comments/questions (following a review request), so that I can connect with the teacher offline to discuss. [MVP - Supports workflow]
+User Story 7 (Administrator/Observer): As an Observer, I want to be able to review the teacher's comments/questions (following a review request), so that I can connect with the teacher offline to discuss. [MVP - Supports workflow]
 
 4.4. Dashboard
 Epic: Provide a central starting point for users to access key functionalities.
 
 User Story 1 (All Users): As a user, I want to see a dashboard upon logging in, so that I can quickly access relevant features and information. [MVP]
 
-User Story 2 (School Leader): As a School Leader, the dashboard should provide access to "Observation Groups" and "Observations". [MVP]
+User Story 2 (Administrator): As a Administrator, the dashboard should provide access to "Observation Groups" and "Observations". [MVP]
 
 User Story 3 (Teacher): As a Teacher, the dashboard should provide access to "Observations" and my "Account Page". [MVP]
 
 4.5. Notifications
 Epic: Keep users informed about important events and actions.
 
-User Story 1 (System): The system should notify a teacher when an observation record is completed by a School Leader. [MVP - can be simple in-app notification initially]
+User Story 1 (System): The system should notify a teacher when an observation record is completed by a Administrator. [MVP - can be simple in-app notification initially]
 
 User Story 2 (System): The system should send an email notification to an observer when a teacher requests a review of their observation feedback. [MVP - can be simple in-app notification initially, email is enhancement]
 
@@ -163,7 +163,7 @@ User Story 1 (System): The system should update and maintain performance statist
 
 User Story 2 (System): The system should update and maintain performance statistics for observation groups. [MVP - Basic data collection for future reporting]
 
-User Story 3 (School Leader): As a School Leader, I want to view performance stats for teachers and observation groups, so that I can track progress and identify trends. Specific stats should include: [Consider for MVP - at least some basic stats. More advanced stats can be Future Release]
+User Story 3 (Administrator): As a Administrator, I want to view performance stats for teachers and observation groups, so that I can track progress and identify trends. Specific stats should include: [Consider for MVP - at least some basic stats. More advanced stats can be Future Release]
 
 Percentage of all teachers that were observed last week. [Future Release - requires date logic for "last week"]
 
@@ -173,7 +173,7 @@ Percentage of lesson plans submitted (overall and per group/teacher). [MVP - if 
 
 List of teachers that did not submit a lesson plan for an upcoming observation. [MVP - if submission status is tracked]
 
-Percentage of submitted lesson plans/observation records that received feedback from a school leader in their observation group. [MVP - if feedback status is tracked]
+Percentage of submitted lesson plans/observation records that received feedback from a Administrator in their observation group. [MVP - if feedback status is tracked]
 
 List of teachers that have completed observations but have not yet received feedback. [MVP - if feedback status is tracked]
 
@@ -236,7 +236,7 @@ Mobile application (flows imply a web-based dashboard).
 This section outlines the specific questions and data points that will constitute the observation form, based on the provided "Observation Tool" (Google Form printout). [MVP - The entire form structure is core to the observation process]
 
 8.1. Pre-Observation Information
-(Captured during observation setup or form initiation by the School Leader/Observer)
+(Captured during observation setup or form initiation by the Administrator/Observer)
 
 Content Area of Observation: (Selection: ELAR, Math)
 
@@ -354,7 +354,7 @@ Grows: (Open Text Area - specific areas for improvement identified during the le
 
 Action Step Category: (Selection: Internalization, Year-Long Pacing, Lesson Pacing)
 
-This selection will dynamically determine which set of action steps below is most relevant or presented to the School Leader.
+This selection will dynamically determine which set of action steps below is most relevant or presented to the Administrator.
 
 Internalization Action Step: (Dropdown Selection from a predefined list of actions)
 
@@ -367,17 +367,17 @@ This section provides a summary of what is considered in scope for the Minimum V
 
 Key MVP Components:
 
-Core User Management: Ability for Super Users to create and manage School Leader and Teacher accounts (including bulk import). Teachers can update basic profiles.
+Core User Management: Ability for Super Users to create and manage Administrator and Teacher accounts (including bulk import). Teachers can update basic profiles.
 
-Observation Group Management: School Leaders can create groups, assign teachers, and define observers.
+Observation Group Management: Administrators can create groups, assign teachers, and define observers.
 
 End-to-End Observation Workflow:
 
 Teachers can submit lesson plans/artifacts.
 
-School Leaders can complete detailed observation forms (as defined in Section 8).
+Administrators can complete detailed observation forms (as defined in Section 8).
 
-School Leaders can provide "Glows" and "Grows" and select predefined action steps.
+Administrators can provide "Glows" and "Grows" and select predefined action steps.
 
 Teachers can view their feedback (narrative sections).
 
@@ -389,7 +389,7 @@ Basic Dashboard Access: All users have a dashboard to access their relevant sect
 
 Essential Data Management: All data related to users, groups, observation records (including form content), and statuses will be stored.
 
-Fundamental Reporting Data: Collection of data to support basic MVP reports (e.g., submission status, feedback status, completion rates). Some simple list-based reports for School Leaders.
+Fundamental Reporting Data: Collection of data to support basic MVP reports (e.g., submission status, feedback status, completion rates). Some simple list-based reports for Administrators.
 
 Core Non-Functional Requirements: Usability, Data Integrity, Security (role-based access), Reliability, and Auditability are paramount for the MVP.
 

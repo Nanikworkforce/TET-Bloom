@@ -41,8 +41,8 @@ export const ProtectedRoute = ({
       
       if (user.role === 'super_user') {
         router.push('/super');
-      } else if (user.role === 'principal') {
-        router.push('/principal');
+      } else if (user.role === 'administrator') {
+        router.push('/administrator');
       } else if (user.role === 'teacher') {
         router.push('/teacher');
       } else {

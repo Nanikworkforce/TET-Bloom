@@ -12,7 +12,7 @@ const mockGroups = [
     id: "1",
     name: "Math Department",
     observer: "David Wilson",
-    observerRole: "School Leader",
+    observerRole: "Administrator",
     teacherCount: 8,
     lastObservation: "Feb 24, 2023",
     status: "Active"
@@ -21,7 +21,7 @@ const mockGroups = [
     id: "2",
     name: "Science Department",
     observer: "Jessica Martinez",
-    observerRole: "Vice School Leader",
+    observerRole: "Vice Administrator",
     teacherCount: 6,
     lastObservation: "Feb 22, 2023",
     status: "Active"
@@ -30,7 +30,7 @@ const mockGroups = [
     id: "3",
     name: "English Department",
     observer: "David Wilson",
-    observerRole: "School Leader",
+    observerRole: "Administrator",
     teacherCount: 7,
     lastObservation: "Feb 18, 2023",
     status: "Active"
@@ -39,7 +39,7 @@ const mockGroups = [
     id: "4",
     name: "New Teachers",
     observer: "Jessica Martinez",
-    observerRole: "Vice School Leader",
+    observerRole: "Vice Administrator",
     teacherCount: 5,
     lastObservation: "Feb 15, 2023",
     status: "Active"
@@ -48,7 +48,7 @@ const mockGroups = [
     id: "5",
     name: "Special Education",
     observer: "David Wilson",
-    observerRole: "School Leader",
+    observerRole: "Administrator",
     teacherCount: 4,
     lastObservation: "Feb 10, 2023",
     status: "Inactive"

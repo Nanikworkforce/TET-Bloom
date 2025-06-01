@@ -59,7 +59,7 @@ This will create the following test accounts:
    - Password: SuperPass123!
    - Role: super_user
 
-2. **School Leader**
+2. **Administrator**
    - Email: leader@example.com
    - Password: LeaderPass123!
    - Role: school_leader
@@ -74,7 +74,7 @@ This will create the following test accounts:
 After running the seed script, you can log in with any of these accounts at `/login` in your application. You'll be automatically redirected to the appropriate dashboard based on your role:
 
 - Super User → `/super`
-- School Leader → `/leader`
+- Administrator → `/leader`
 - Teacher → `/teacher`
 
 ## Customizing Test Users

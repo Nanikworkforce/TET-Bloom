@@ -21,12 +21,12 @@ const stats = [
     link: "/super/users?role=teacher"
   },
   { 
-    label: "School Leaders", 
+    label: "Administrators", 
     value: 12, 
     change: "+1", 
     changeType: "positive",
     icon: "👨‍💼",
-    link: "/super/users?role=school-leader"
+    link: "/super/users?role=administrator"
   },
   { 
     label: "Observation Groups", 

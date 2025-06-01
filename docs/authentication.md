@@ -7,7 +7,7 @@ This document explains how the TET Bloom authentication and authorization system
 The TET Bloom platform uses Supabase for authentication and implements a role-based access control system with three user roles:
 
 1. **Super User** - Manages system-level configurations, creates and manages all user accounts, and can perform all actions
-2. **School Leader (Observer)** - Creates and manages observation groups, conducts observations, provides feedback
+2. **Administrator (Observer)** - Creates and manages observation groups, conducts observations, provides feedback
 3. **Teacher** - Submits lesson plans, views their observations, and responds to feedback
 
 ## Environment Setup

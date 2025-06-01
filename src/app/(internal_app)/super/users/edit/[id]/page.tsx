@@ -46,7 +46,7 @@ const mockUsers = [
     id: "4",
     name: "David Wilson",
     email: "david.wilson@school.edu",
-    role: "Principal",
+    role: "Administrator",
     subject: "",
     grade: "",
     startDate: "2015-08-15",
@@ -273,7 +273,7 @@ export default function EditUserPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Teacher">Teacher</SelectItem>
-                      <SelectItem value="Principal">Principal</SelectItem>
+                      <SelectItem value="Administrator">Administrator</SelectItem>
                       <SelectItem value="Super">Super User</SelectItem>
                     </SelectContent>
                   </Select>

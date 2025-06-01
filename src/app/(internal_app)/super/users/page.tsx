@@ -49,7 +49,7 @@ const initialUsers = [
     id: "4",
     name: "David Wilson",
     email: "david.wilson@school.edu",
-    role: "Principal",
+    role: "Administrator",
     subject: "",
     startDate: "2015-08-15",
     status: "Active"
@@ -150,7 +150,7 @@ export default function UserManagementPage() {
               >
                 <option value="All">All Roles</option>
                 <option value="Teacher">Teachers</option>
-                <option value="Principal">Principals</option>
+                <option value="Administrator">Administrators</option>
               </select>
             </div>
             <div>

@@ -42,7 +42,7 @@ const TemplateGuide = () => {
                   <td className="px-4 py-3 font-medium text-primary">role</td>
                   <td className="px-4 py-3">User role</td>
                   <td className="px-4 py-3">Yes</td>
-                  <td className="px-4 py-3 text-gray-500">Teacher, School Leader, or Super</td>
+                  <td className="px-4 py-3 text-gray-500">Teacher, Administrator, or Super</td>
                 </tr>
                 <tr className="bg-white">
                   <td className="px-4 py-3 font-medium text-primary">subject</td>
@@ -74,7 +74,7 @@ const TemplateGuide = () => {
               <pre>
 {`email,name,role,subject,grade,notes
 john.doe@example.com,John Doe,Teacher,Mathematics,5th Grade,Example entry
-jane.smith@example.com,Jane Smith,School Leader,,,Admin for Elementary School
+jane.smith@example.com,Jane Smith,Administrator,,,Admin for Elementary School
 mark.wilson@example.com,Mark Wilson,Teacher,Science,7th Grade,`}
               </pre>
             </div>

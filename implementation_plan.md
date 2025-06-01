@@ -54,7 +54,7 @@ Each task will be tracked with the following details:
 
 ---
 
-### Phase 4: School Leader Features
+### Phase 4: Administrator Features
 
 | Task ID | Task Description                                     | Assigned To | Priority | Status | Est. Effort | Dependencies | Notes                                                          |
 |---------|------------------------------------------------------|-------------|----------|--------|-------------|--------------|----------------------------------------------------------------|
@@ -62,7 +62,7 @@ Each task will be tracked with the following details:
 | P4.2    | Auto-create Initial Observation Records              | TBD         | High     | To Do  |             | P4.1, P1.5   | System/Function triggered by group/teacher assignment        |
 | P4.3    | Structured Observation Forms (Design & UI)           | TBD         | High     | To Do  |             | P1.3, P1.5   | ELAR/Math forms, sections per PRD (lesson review, HQIM etc.) |
 | P4.4    | Conduct Observation & Record Feedback                | TBD         | High     | To Do  |             | P4.3, P1.5   | Fill forms, notes, Glows/Grows, action steps; save to Supabase |
-| P4.5    | School Leader Dashboard                              | TBD         | High     | To Do  |             | P2.2         | Manage groups, view schedules, access forms                    |
+| P4.5    | Administrator Dashboard                              | TBD         | High     | To Do  |             | P2.2         | Manage groups, view schedules, access forms                    |
 
 ---
 

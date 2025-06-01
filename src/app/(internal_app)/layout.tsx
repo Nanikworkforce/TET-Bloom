@@ -47,42 +47,42 @@ function NavItem({ href, icon, label, active, onClick, disabled }: NavItemProps)
 const adminNav = [
   {
     label: "Dashboard",
-    href: "/principal",
+    href: "/administrator",
     icon: "📊",
   },
   {
     label: "Teachers",
-    href: "/principal/teachers",
+    href: "/administrator/teachers",
     icon: "👩‍🏫",
   },
   {
     label: "Observation Groups",
-    href: "/principal/groups",
+    href: "/administrator/groups",
     icon: "👪",
   },
   {
     label: "Observations",
-    href: "/principal/observations",
+    href: "/administrator/observations",
     icon: "👁️",
   },
   {
     label: "Feedback",
-    href: "/principal/feedback",
+    href: "/administrator/feedback",
     icon: "💬",
   },
   {
     label: "Reports",
-    href: "/principal/reports",
+    href: "/administrator/reports",
     icon: "📝",
   },
   {
     label: "Settings",
-    href: "/principal/settings",
+    href: "/administrator/settings",
     icon: "⚙️",
   },
   {
     label: "Help & Docs",
-    href: "/principal/help",
+    href: "/administrator/help",
     icon: "❓",
   },
 ];
@@ -129,45 +129,52 @@ export default function DashboardLayout({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isSuperUser = user?.role === "SUPER_USER" as any;
 
-  // Determine if current path is for school-leader or teacher
-  const isSchoolLeader = pathname.includes('/school-leader');
-  const isPrincipal = pathname.includes('/principal');
+  // Determine if current path is for administrator or teacher
+  const isAdministrator = pathname.includes('/administrator');
   const isTeacher = pathname.includes('/teacher');
   
   // Determine the role based on the path
   const userRole = isTeacher 
     ? "teacher" 
-    : isSchoolLeader 
-      ? "school-leader" 
-      : isPrincipal 
-        ? "principal" 
-        : "super";
+    : isAdministrator 
+      ? "administrator" 
+      : "super";
 
   // Navigation items based on role
-  const principalNavItems = [
+  const administratorNavItems = [
     {
-      href: "/principal",
+      href: "/administrator",
       icon: "📊",
       label: "Overview",
     },
     {
-      href: "/principal/groups",
+      href: "/administrator/groups",
       icon: "👪",
       label: "Observation Groups",
     },
     {
-      href: "/principal/observations",
+      href: "/administrator/observations",
       icon: "👁️",
       label: "Observations",
     },
     {
-      href: "/principal/reports",
+      href: "/administrator/lesson-plans",
       icon: "📝",
+      label: "Lesson Plans",
+    },
+    {
+      href: "/administrator/feedback",
+      icon: "💬",
+      label: "Feedback",
+    },
+    {
+      href: "/administrator/reports",
+      icon: "📈",
       label: "Reports",
       disabled: true,
     },
     {
-      href: "/principal/settings",
+      href: "/administrator/settings",
       icon: "⚙️",
       label: "Settings",
     },
@@ -199,7 +206,6 @@ export default function DashboardLayout({
       href: "/teacher/lesson-plans",
       icon: "📝",
       label: "Lesson Plans",
-      disabled: true,
     },
     {
       href: "/teacher/settings",
@@ -216,11 +222,9 @@ export default function DashboardLayout({
   
   const navItems = userRole === "teacher" 
     ? teacherNavItems 
-    : userRole === "school-leader" 
-      ? adminNav 
-      : userRole === "principal"
-        ? principalNavItems
-        : superUserNav;
+    : userRole === "administrator" 
+      ? administratorNavItems
+      : superUserNav;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -254,7 +258,7 @@ export default function DashboardLayout({
                   window.location.href = `/${newRole}`;
                 }}
               >
-                <option value="principal">Principal</option>
+                <option value="administrator">Administrator</option>
                 <option value="teacher">Teacher</option>
                 <option value="super">Super User</option>
               </select>
@@ -262,16 +266,14 @@ export default function DashboardLayout({
             
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : userRole === "principal" ? "P" : "S"}
+                {userRole === "administrator" ? "A" : userRole === "teacher" ? "T" : "S"}
               </div>
               <span className="font-medium">
-                {userRole === "school-leader" 
-                  ? "School Leader" 
+                {userRole === "administrator" 
+                  ? "Administrator" 
                   : userRole === "teacher" 
                     ? "Ms. Chen" 
-                    : userRole === "principal"
-                      ? "Principal"
-                      : "Super User"}
+                    : "Super User"}
               </span>
             </div>
           </div>
@@ -324,26 +326,22 @@ export default function DashboardLayout({
               {/* User info in mobile menu */}
               <div className="flex items-center gap-2 mb-6 p-2 bg-gray-50 rounded-lg">
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                  {userRole === "school-leader" ? "SL" : userRole === "teacher" ? "T" : userRole === "principal" ? "P" : "S"}
+                  {userRole === "administrator" ? "A" : userRole === "teacher" ? "T" : "S"}
                 </div>
                 <div>
                   <div className="font-medium">
-                    {userRole === "school-leader" 
-                      ? "School Leader" 
-                      : userRole === "teacher" 
-                        ? "Ms. Chen" 
-                        : userRole === "principal"
-                          ? "Principal"
-                          : "Super User"}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {userRole === "school-leader" 
+                    {userRole === "administrator" 
                       ? "Administrator" 
                       : userRole === "teacher" 
-                        ? "Mathematics Teacher" 
-                        : userRole === "principal"
-                          ? "Administrator"
-                          : "Super User"}
+                        ? "Ms. Chen" 
+                        : "Super User"}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {userRole === "administrator" 
+                      ? "Administrator" 
+                      : userRole === "teacher" 
+                        ? "Teacher" 
+                        : "Super User"}
                   </div>
                 </div>
               </div>
@@ -358,8 +356,7 @@ export default function DashboardLayout({
                     window.location.href = `/${newRole}`;
                   }}
                 >
-                  <option value="school-leader">School Leader View</option>
-                  <option value="principal">Principal View</option>
+                  <option value="administrator">Administrator View</option>
                   <option value="teacher">Teacher View</option>
                   <option value="super">Super User View</option>
                 </select>

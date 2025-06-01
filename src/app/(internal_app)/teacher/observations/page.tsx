@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 const mockObservations = [
   {
     id: "1",
-    observer: "School Leader Johnson",
+    observer: "Administrator Johnson",
     date: "Mar 15, 2023",
     time: "10:30 AM",
     class: "Mathematics 101",
@@ -24,7 +24,7 @@ const mockObservations = [
   },
   {
     id: "2",
-    observer: "Vice School Leader Smith",
+    observer: "Vice Administrator Smith",
     date: "Mar 22, 2023",
     time: "1:15 PM",
     class: "Mathematics 102",
@@ -36,7 +36,7 @@ const mockObservations = [
   },
   {
     id: "3",
-    observer: "School Leader Johnson",
+    observer: "Administrator Johnson",
     date: "Feb 15, 2023",
     time: "9:30 AM",
     class: "Mathematics 101",
@@ -53,7 +53,7 @@ const mockObservations = [
   },
   {
     id: "4",
-    observer: "Vice School Leader Smith",
+    observer: "Vice Administrator Smith",
     date: "Jan 20, 2023",
     time: "11:00 AM",
     class: "Mathematics 103",
@@ -88,7 +88,7 @@ export default function TeacherObservationsPage() {
   const upcomingObservations = mockObservations.filter(observation => observation.status === "scheduled");
   const pastObservations = mockObservations.filter(observation => observation.status === "completed");
   
-  const handleLessonPlanSubmit = (observationId: string) => {
+  const handleSupportingMaterialsSubmit = (observationId: string) => {
     // In a real app, this would handle the file upload to the server
     setIsUploading(true);
     
@@ -97,7 +97,7 @@ export default function TeacherObservationsPage() {
       setIsUploading(false);
       setUploadingFor(null);
       // Would update the observation status in a real app
-      alert("Lesson plan submitted successfully!");
+      alert("Supporting materials submitted successfully!");
     }, 1500);
   };
   
@@ -180,22 +180,12 @@ export default function TeacherObservationsPage() {
                       <span>{observation.observer}</span>
                     </div>
                     <div className="flex items-start gap-2">
+                      <span className="text-gray-500 min-w-[90px]">Class:</span>
+                      <span>{observation.class} • {observation.grade}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
                       <span className="text-gray-500 min-w-[90px]">Date & Time:</span>
                       <span>{observation.date}, {observation.time}</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[90px]">Grade:</span>
-                      <span>{observation.grade}</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[90px]">Lesson Plan:</span>
-                      <span>
-                        {observation.lessonPlanSubmitted ? (
-                          <span className="text-green-600">Submitted</span>
-                        ) : (
-                          <span className="text-red-500">Due {observation.dueDate}</span>
-                        )}
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -213,7 +203,7 @@ export default function TeacherObservationsPage() {
                           setSelectedObservation(null);
                         }}
                       >
-                        {observation.lessonPlanSubmitted ? "Update Lesson Plan" : "Submit Lesson Plan"}
+                        {observation.lessonPlanSubmitted ? "Update Supporting Materials" : "Submit Supporting Materials"}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -261,23 +251,13 @@ export default function TeacherObservationsPage() {
                 </div>
               </div>
               
-              {/* Lesson Plan Upload Section */}
+              {/* Supporting Materials Upload Section */}
               {uploadingFor === observation.id && (
                 <div className="mt-4 pt-4 border-t">
-                  <h4 className="font-medium mb-3">Submit Lesson Plan</h4>
+                  <h4 className="font-medium mb-3">Submit Supporting Materials</h4>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="lesson-plan">Lesson Plan (PDF, DOCX)</Label>
-                      <Input
-                        id="lesson-plan"
-                        type="file"
-                        accept=".pdf,.docx"
-                        className="mt-1 rounded-lg"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="supporting-materials">Supporting Materials (Optional)</Label>
+                      <Label htmlFor="supporting-materials">Supporting Materials</Label>
                       <Input
                         id="supporting-materials"
                         type="file"
@@ -286,7 +266,7 @@ export default function TeacherObservationsPage() {
                         className="mt-1 rounded-lg"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        You can select multiple files (up to 5)
+                        You can select multiple files (up to 5) - presentations, worksheets, handouts, etc.
                       </p>
                     </div>
                     
@@ -302,7 +282,7 @@ export default function TeacherObservationsPage() {
                       <Button
                         size="sm"
                         disabled={isUploading}
-                        onClick={() => handleLessonPlanSubmit(observation.id)}
+                        onClick={() => handleSupportingMaterialsSubmit(observation.id)}
                         className="rounded-lg"
                       >
                         {isUploading ? "Uploading..." : "Submit"}
@@ -402,11 +382,11 @@ export default function TeacherObservationsPage() {
                           <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs ${observation.lessonPlanSubmitted ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
                             {observation.lessonPlanSubmitted ? '✓' : '!'}
                           </span>
-                          <span>Submit lesson plan by {observation.dueDate}</span>
+                          <span>Submit supporting materials</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs bg-gray-100 text-gray-400">!</span>
-                          <span>Prepare supporting materials</span>
+                          <span>Prepare classroom materials</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs bg-gray-100 text-gray-400">!</span>

@@ -41,7 +41,7 @@ export default function SuperUserHelpPage() {
                   <li>Configuring system-wide settings and preferences</li>
                   <li>Managing evaluation frameworks and rubrics</li>
                   <li>Monitoring system usage and generating reports</li>
-                  <li>Providing technical support to school-leaders and teachers</li>
+                  <li>Providing technical support to administrators and teachers</li>
                 </ul>
 
                 <h3 className="text-lg font-medium mt-6 mb-3">Super User Dashboard Overview</h3>
@@ -57,7 +57,7 @@ export default function SuperUserHelpPage() {
                   <div className="border p-4 rounded-lg">
                     <h4 className="font-medium text-purple-700">Observation Groups</h4>
                     <p className="text-sm mt-2">
-                      Create and organize teacher groups that can be assigned to specific school-leaders
+                      Create and organize teacher groups that can be assigned to specific administrators
                       or administrators for observations.
                     </p>
                   </div>
@@ -99,7 +99,7 @@ export default function SuperUserHelpPage() {
                   <li>Navigate to User Management</li>
                   <li>Click "Add New User"</li>
                   <li>Enter the user's information (name, email, etc.)</li>
-                  <li>Select the appropriate role (Teacher, School Leader, Super User)</li>
+                  <li>Select the appropriate role (Teacher, Administrator, Super User)</li>
                   <li>Assign to appropriate school or department</li>
                   <li>Set initial password or enable email invitation</li>
                   <li>Save the new user record</li>
@@ -158,7 +158,7 @@ export default function SuperUserHelpPage() {
                     </ul>
                   </div>
                   <div className="border p-4 rounded-lg">
-                    <h4 className="font-medium text-gray-700">School Leader</h4>
+                    <h4 className="font-medium text-gray-700">Administrator</h4>
                     <ul className="text-sm mt-2 space-y-1 list-disc pl-4">
                       <li>Schedule and conduct observations</li>
                       <li>Provide feedback to teachers</li>
@@ -200,7 +200,7 @@ export default function SuperUserHelpPage() {
                   <li>Enter a descriptive name for the group</li>
                   <li>Select the group type (Department, Grade Level, Custom)</li>
                   <li>Add teachers to the group from the user directory</li>
-                  <li>Assign school-leaders or administrators as group observers</li>
+                  <li>Assign administrators or administrators as group observers</li>
                   <li>Save the group configuration</li>
                 </ol>
 
@@ -356,7 +356,7 @@ export default function SuperUserHelpPage() {
                       To transfer a teacher to a different school, go to User Management, search for the teacher,
                       and edit their profile. Update their school assignment in the Organization section. Then, remove
                       them from their current observation groups and add them to appropriate groups at the new school.
-                      Notify the school-leaders at both schools about the transfer to ensure proper handoff of any ongoing
+                      Notify the administrators at both schools about the transfer to ensure proper handoff of any ongoing
                       evaluation processes.
                     </p>
                   </AccordionContent>
@@ -453,7 +453,7 @@ export default function SuperUserHelpPage() {
                 
                 <AccordionItem value="item-8">
                   <AccordionTrigger>
-                    What should I do if a school-leader accidentally deletes feedback?
+                    What should I do if an administrator accidentally deletes feedback?
                   </AccordionTrigger>
                   <AccordionContent>
                     <p className="text-gray-600">

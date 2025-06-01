@@ -27,7 +27,7 @@ const testUsers = [
     email: 'leader@example.com',
     password: 'LeaderPass123!',
     profile: {
-      fullName: 'School Leader',
+      fullName: 'Administrator',
       role: 'school_leader'
     }
   },

@@ -8,7 +8,7 @@ REQUIRED FIELDS:
 ---------------
 1. email - User's email address (must be unique)
 2. name - User's full name
-3. role - Must be one of: "Teacher", "School Leader", or "Super"
+3. role - Must be one of: "Teacher", "Administrator", or "Super"
 
 OPTIONAL FIELDS (Required for Teachers):
 --------------------------------------
@@ -19,7 +19,7 @@ OPTIONAL FIELDS (Required for Teachers):
 IMPORTANT GUIDELINES:
 -------------------
 - The email must be properly formatted and unique in the system
-- The role field must contain exactly "Teacher", "School Leader", or "Super" (case-sensitive)
+- The role field must contain exactly "Teacher", "Administrator", or "Super" (case-sensitive)
 - For teachers, subject and grade fields should be completed
 - Maximum 500 records per import
 - The first row of the CSV file must contain the column headers

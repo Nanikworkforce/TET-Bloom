@@ -29,8 +29,8 @@ const MOCK_USERS: Record<string, UserProfile> = {
   'leader@example.com': {
     id: 'mock-leader',
     email: 'leader@example.com',
-    role: 'principal',
-    fullName: 'Mock Principal',
+    role: 'administrator',
+    fullName: 'Mock Administrator',
   },
   'teacher@example.com': {
     id: 'mock-teacher',
@@ -222,8 +222,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Basic role-based redirect (same paths as real auth)
       if (mockUser.role === 'super_user') {
         router.push('/super');
-      } else if (mockUser.role === 'principal') {
-        router.push('/principal');
+      } else if (mockUser.role === 'administrator') {
+        router.push('/administrator');
       } else {
         router.push('/teacher');
       }
@@ -256,8 +256,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Redirect based on user role
           if (profile.role === 'super_user') {
             router.push('/super');
-          } else if (profile.role === 'principal') {
-            router.push('/principal');
+          } else if (profile.role === 'administrator') {
+            router.push('/administrator');
           } else if (profile.role === 'teacher') {
             router.push('/teacher');
           } else {

@@ -51,9 +51,9 @@ export const Sidebar = () => {
             <p className="text-xs text-gray-500">
               {user?.role === 'super_user' 
                 ? 'Super Admin' 
-                : user?.role === 'principal' 
-                  ? 'Principal' 
-                  : 'Teacher'}
+                : user?.role === 'administrator'
+                ? 'Administrator'
+                : 'Teacher'}
             </p>
           </div>
         </div>

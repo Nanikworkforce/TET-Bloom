@@ -152,7 +152,7 @@ export default function ScheduleObservationForm() { // Renamed component
     
     // Redirect after 2 seconds
     setTimeout(() => {
-      router.push('/school-leader/observations'); // This path might need to be updated if your routes are different
+      router.push('/administrator/observations'); // This path might need to be updated if your routes are different
     }, 2000);
   };
   
@@ -231,7 +231,7 @@ export default function ScheduleObservationForm() { // Renamed component
           <p className="text-gray-600">{editId ? 'Update an existing observation' : 'Plan a new teacher observation session'}</p>
         </div>
         <div>
-          <Link href="/school-leader/observations">
+          <Link href="/administrator/observations">
             <Button variant="outline" className="rounded-full">
               Cancel
             </Button>

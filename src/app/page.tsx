@@ -31,7 +31,7 @@ export default function Home() {
                   Teacher Evaluation Made Simple
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
-                  Streamline the observation, feedback, and evaluation process for teachers and school leaders.
+                  Streamline the observation, feedback, and evaluation process for teachers and Administrators.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link href="/signup">

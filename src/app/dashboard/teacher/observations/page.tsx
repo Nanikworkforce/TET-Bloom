@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 const mockObservations = [
   {
     id: "1",
-    observer: "School Leader Johnson",
+    observer: "Administrator Johnson",
     date: "Mar 15, 2023",
     time: "10:30 AM",
     class: "Mathematics 101",
@@ -24,7 +24,7 @@ const mockObservations = [
   },
   {
     id: "2",
-    observer: "Vice School Leader Smith",
+    observer: "Vice Administrator Smith",
     date: "Mar 22, 2023",
     time: "1:15 PM",
     class: "Mathematics 102",
@@ -36,7 +36,7 @@ const mockObservations = [
   },
   {
     id: "3",
-    observer: "School Leader Johnson",
+    observer: "Administrator Johnson",
     date: "Feb 15, 2023",
     time: "9:30 AM",
     class: "Mathematics 101",
@@ -53,7 +53,7 @@ const mockObservations = [
   },
   {
     id: "4",
-    observer: "Vice School Leader Smith",
+    observer: "Vice Administrator Smith",
     date: "Jan 20, 2023",
     time: "11:00 AM",
     class: "Mathematics 103",

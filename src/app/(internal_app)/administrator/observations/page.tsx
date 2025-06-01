@@ -4,81 +4,111 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ObservationType, ObservationRecord } from "@/lib/types";
 
 // Mock data
-const observations = [
+const observations: ObservationRecord[] = [
   {
     id: "1",
     teacher: "Sarah Johnson",
+    teacherId: "1",
     subject: "Mathematics",
     grade: "5th Grade",
     date: "Feb 28, 2023",
     time: "10:30 AM",
+    type: "formal",
     status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800"
+    statusColor: "bg-blue-100 text-blue-800",
+    observerId: "admin1",
+    observerName: "Administrator Johnson"
   },
   {
     id: "2",
     teacher: "Michael Chen",
+    teacherId: "2",
     subject: "Science",
     grade: "7th Grade",
     date: "Mar 1, 2023",
     time: "9:15 AM",
+    type: "walk-through",
     status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800"
+    statusColor: "bg-blue-100 text-blue-800",
+    observerId: "admin1",
+    observerName: "Administrator Johnson"
   },
   {
     id: "3",
     teacher: "Emily Rodriguez",
+    teacherId: "3",
     subject: "English Literature",
     grade: "10th Grade",
     date: "Mar 3, 2023",
     time: "1:00 PM",
+    type: "formal",
     status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800"
+    statusColor: "bg-blue-100 text-blue-800",
+    observerId: "admin1",
+    observerName: "Administrator Johnson"
   },
   {
     id: "4",
     teacher: "David Wilson",
+    teacherId: "4",
     subject: "History",
     grade: "9th Grade",
     date: "Feb 24, 2023",
     time: "11:00 AM",
+    type: "formal",
     status: "completed",
     statusColor: "bg-green-100 text-green-800",
-    feedback: true
+    feedback: true,
+    observerId: "admin1",
+    observerName: "Administrator Johnson"
   },
   {
     id: "5",
     teacher: "Jessica Martinez",
+    teacherId: "5",
     subject: "Art",
     grade: "Multiple",
     date: "Feb 22, 2023",
     time: "2:30 PM",
+    type: "walk-through",
     status: "completed",
     statusColor: "bg-green-100 text-green-800",
-    feedback: true
+    feedback: true,
+    observerId: "admin1",
+    observerName: "Administrator Johnson"
   },
   {
     id: "6",
     teacher: "Robert Thompson",
+    teacherId: "6",
     subject: "Physical Education",
     grade: "Multiple",
     date: "Feb 15, 2023",
     time: "9:45 AM",
+    type: "walk-through",
     status: "completed",
     statusColor: "bg-green-100 text-green-800",
-    feedback: false
+    feedback: false,
+    observerId: "admin1",
+    observerName: "Administrator Johnson"
   },
   {
     id: "7",
     teacher: "Lisa Brown",
+    teacherId: "7",
     subject: "Mathematics",
     grade: "8th Grade",
     date: "Feb 10, 2023",
     time: "1:15 PM",
+    type: "formal",
     status: "canceled",
-    statusColor: "bg-red-100 text-red-800"
+    statusColor: "bg-red-100 text-red-800",
+    observerId: "admin1",
+    observerName: "Administrator Johnson"
   }
 ];
 
@@ -86,6 +116,22 @@ const observations = [
 const subjects = ["All Subjects", "Mathematics", "Science", "English Literature", "History", "Art", "Physical Education"];
 const grades = ["All Grades", "Elementary (K-5)", "Middle School (6-8)", "High School (9-12)"];
 const statuses = ["All Status", "Scheduled", "Completed", "Canceled"];
+const types = ["All Types", "Formal", "Walk-through"];
+
+// Helper functions for observation type display
+const getTypeColor = (type: ObservationType) => {
+  return type === 'formal' 
+    ? 'bg-blue-100 text-blue-800 border-blue-200' 
+    : 'bg-green-100 text-green-800 border-green-200';
+};
+
+const getTypeIcon = (type: ObservationType) => {
+  return type === 'formal' ? '📋' : '👁️';
+};
+
+const getTypeLabel = (type: ObservationType) => {
+  return type === 'formal' ? 'Formal' : 'Walk-through';
+};
 
 export default function ObservationsPage() {
   return (
@@ -97,7 +143,7 @@ export default function ObservationsPage() {
           <p className="text-gray-600">Schedule, manage, and review observation sessions</p>
         </div>
         <div className="flex gap-3">
-          <Link href="/school-leader/observations/schedule">
+          <Link href="/administrator/observations/schedule">
             <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
               <span className="mr-2">➕</span> Schedule New Observation
             </Button>
@@ -130,6 +176,12 @@ export default function ObservationsPage() {
               <option>All Grades</option>
               {grades.slice(1).map((grade) => (
                 <option key={grade}>{grade}</option>
+              ))}
+            </select>
+            <select className="px-4 py-2 border rounded-full text-sm bg-white">
+              <option>All Types</option>
+              {types.slice(1).map((type) => (
+                <option key={type}>{type}</option>
               ))}
             </select>
             <select className="px-4 py-2 border rounded-full text-sm bg-white">
@@ -176,17 +228,20 @@ export default function ObservationsPage() {
               {/* Left section: Teacher info and status */}
               <div className="flex-1">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="font-semibold text-lg">{observation.teacher}</h3>
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${observation.statusColor}`}>
                       {observation.status}
                     </span>
+                    <Badge className={getTypeColor(observation.type)}>
+                      {getTypeIcon(observation.type)} {getTypeLabel(observation.type)}
+                    </Badge>
                   </div>
                   <p className="text-gray-600">{observation.subject} • {observation.grade}</p>
                 </div>
                 
                 {/* Date and time info */}
-                <div className="mt-2 flex items-center gap-6">
+                <div className="mt-2 flex items-center gap-6 flex-wrap">
                   <div className="flex items-center gap-1">
                     <span className="text-primary">📅</span>
                     <span className="text-sm">{observation.date}</span>
@@ -206,14 +261,14 @@ export default function ObservationsPage() {
 
               {/* Right section: Action buttons - vertically centered */}
               <div className="flex items-center justify-end md:min-w-48 gap-2">
-                <Link href={`/school-leader/observations/${observation.id}`}>
+                <Link href={`/administrator/observations/${observation.id}`}>
                   <Button size="sm" variant="outline" className="rounded-full whitespace-nowrap">
                     View Details
                   </Button>
                 </Link>
                 {observation.status === 'scheduled' && (
                   <>
-                    <Link href={`/school-leader/observations/schedule?edit=${observation.id}`}>
+                    <Link href={`/administrator/observations/schedule?edit=${observation.id}`}>
                       <Button size="sm" variant="outline" className="rounded-full border-yellow-400 text-yellow-600 hover:bg-yellow-50 whitespace-nowrap">
                         <span className="mr-1">✏️</span> Reschedule
                       </Button>

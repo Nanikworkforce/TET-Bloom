@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 // Mock observation data
 const observationData = {
   id: "1",
-  observer: "School Leader Johnson",
+  observer: "Administrator Johnson",
   subject: "Mathematics",
   grade: "7th Grade",
   scheduledDate: "Mar 15, 2023",

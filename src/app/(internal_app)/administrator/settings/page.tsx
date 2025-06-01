@@ -11,10 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function SchoolLeaderSettingsPage() {
   // Profile settings
   const [profile, setProfile] = useState({
-    name: "School Leader Johnson",
+    name: "Administrator Johnson",
     email: "johnson@schooldistrict.edu",
     phone: "(555) 123-4567",
-    title: "School Leader",
+    title: "Administrator",
     avatar: "",
   });
 
@@ -38,7 +38,7 @@ export default function SchoolLeaderSettingsPage() {
 
   // Email settings
   const [emailSettings, setEmailSettings] = useState({
-    emailSignature: "Best regards,\nSchool Leader Johnson\nMiddle School",
+    emailSignature: "Best regards,\nAdministrator Johnson\nMiddle School",
     ccAdmin: false,
     bccSelf: true,
   });

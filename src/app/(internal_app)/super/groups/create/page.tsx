@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 // Mock data
-const mockSchoolLeaders = [
-  { id: "1", name: "David Wilson", role: "School Leader" },
-  { id: "2", name: "Jessica Martinez", role: "Vice School Leader" },
-  { id: "3", name: "Robert Johnson", role: "Assistant School Leader" },
+const mockObservers = [
+  { id: "1", name: "David Wilson", role: "Administrator" },
+  { id: "2", name: "Jessica Martinez", role: "Vice Administrator" },
+  { id: "3", name: "Robert Johnson", role: "Assistant Administrator" },
 ];
 
 const mockTeachers = [
@@ -159,7 +159,7 @@ export default function CreateObservationGroupPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="observer">Observer (School Leader) *</Label>
+                <Label htmlFor="observer">Observer (Administrator) *</Label>
                 <select
                   id="observer"
                   className="w-full p-2 border rounded-lg"
@@ -168,9 +168,9 @@ export default function CreateObservationGroupPage() {
                   required
                 >
                   <option value="" disabled>Select an observer</option>
-                  {mockSchoolLeaders.map((schoolLeader) => (
-                    <option key={schoolLeader.id} value={schoolLeader.id}>
-                      {schoolLeader.name} ({schoolLeader.role})
+                  {mockObservers.map((observer) => (
+                    <option key={observer.id} value={observer.id}>
+                      {observer.name} ({observer.role})
                     </option>
                   ))}
                 </select>

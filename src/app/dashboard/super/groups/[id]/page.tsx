@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 const groupData = {
   id: "1",
   name: "Math Department - Elementary",
-  observer: "School Leader Johnson",
+  observer: "Administrator Johnson",
   created: "Feb 15, 2023",
   lastActivity: "Mar 2, 2023",
   status: "active"
@@ -188,16 +188,16 @@ export default function ObservationGroupDetailsPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="observer">Observer (School Leader)</Label>
+              <Label htmlFor="observer">Observer (Administrator)</Label>
               <select
                 id="observer"
                 value={selectedObserver}
                 onChange={(e) => setSelectedObserver(e.target.value)}
                 className="w-full p-2 border rounded-lg"
               >
-                <option value="School Leader Johnson">School Leader Johnson</option>
-                <option value="Vice School Leader Smith">Vice School Leader Smith</option>
-                <option value="School Leader Williams">School Leader Williams</option>
+                <option value="Administrator Johnson">Administrator Johnson</option>
+                <option value="Vice Administrator Smith">Vice Administrator Smith</option>
+                <option value="Administrator Williams">Administrator Williams</option>
                 <option value="Coordinator Davis">Coordinator Davis</option>
               </select>
             </div>
