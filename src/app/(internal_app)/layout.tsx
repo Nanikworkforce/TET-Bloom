@@ -66,16 +66,6 @@ const adminNav = [
     icon: "👁️",
   },
   {
-    label: "Feedback",
-    href: "/administrator/feedback",
-    icon: "💬",
-  },
-  {
-    label: "Reports",
-    href: "/administrator/reports",
-    icon: "📝",
-  },
-  {
     label: "Settings",
     href: "/administrator/settings",
     icon: "⚙️",
@@ -163,17 +153,6 @@ export default function DashboardLayout({
       label: "Lesson Plans",
     },
     {
-      href: "/administrator/feedback",
-      icon: "💬",
-      label: "Feedback",
-    },
-    {
-      href: "/administrator/reports",
-      icon: "📈",
-      label: "Reports",
-      disabled: true,
-    },
-    {
       href: "/administrator/settings",
       icon: "⚙️",
       label: "Settings",
@@ -196,11 +175,6 @@ export default function DashboardLayout({
       href: "/teacher/feedback",
       icon: "💬",
       label: "Feedback",
-    },
-    {
-      href: "/teacher/development",
-      icon: "🎓",
-      label: "Development",
     },
     {
       href: "/teacher/lesson-plans",

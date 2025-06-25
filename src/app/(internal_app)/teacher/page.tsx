@@ -100,18 +100,10 @@ export default function TeacherDashboard() {
           <h1 className="text-2xl font-bold text-gray-800">Welcome, Ms. Chen</h1>
           <p className="text-gray-600">Your teaching journey at a glance</p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
-            <span className="mr-2">📝</span> Log Teaching Activity
-          </Button>
-          <Button variant="outline" className="rounded-full shadow-sm">
-            <span className="mr-2">🎯</span> Set New Goal
-          </Button>
-        </div>
       </div>
 
       {/* Status overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="p-5 border bg-white">
           <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 mb-2">
@@ -146,26 +138,6 @@ export default function TeacherDashboard() {
               <Link href="/teacher/feedback">
                 <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
                   View Feedback <span className="ml-1">→</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-5 border bg-white">
-          <div className="flex flex-col h-full">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="text-2xl bg-purple-100 text-purple-600 w-10 h-10 rounded-full flex items-center justify-center">
-                🎓
-              </div>
-              <h2 className="font-semibold">Professional Growth</h2>
-            </div>
-            <p className="text-4xl font-bold">{professionalDevelopment.length}</p>
-            <p className="text-gray-600 mt-1">Learning opportunities available</p>
-            <div className="mt-auto pt-4">
-              <Link href="/teacher/development">
-                <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
-                  Explore Opportunities <span className="ml-1">→</span>
                 </Button>
               </Link>
             </div>
@@ -226,7 +198,7 @@ export default function TeacherDashboard() {
       </Card>
 
       {/* Two column layout for recent feedback and professional development */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Recent Feedback */}
         <Card className="border p-0 overflow-hidden bg-white">
           <div className="border-b px-4 py-3 bg-gradient-to-r from-secondary/5 to-primary/5">
@@ -263,92 +235,7 @@ export default function TeacherDashboard() {
             ))}
           </div>
         </Card>
-
-        {/* Professional Development */}
-        <Card className="border p-0 overflow-hidden bg-white">
-          <div className="border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-secondary/5">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-lg">Professional Development</h2>
-              <Link href="/teacher/development" className="text-primary text-sm font-medium hover:underline">
-                View All
-              </Link>
-            </div>
-          </div>
-          <div className="divide-y">
-            {professionalDevelopment.map((opportunity) => (
-              <div key={opportunity.id} className="p-4 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-medium">{opportunity.title}</div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 mr-2">
-                        {opportunity.type}
-                      </span>
-                      <span>{opportunity.date}</span>
-                    </div>
-                  </div>
-                  {opportunity.recommended && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Recommended
-                    </span>
-                  )}
-                </div>
-                <div className="mt-3">
-                  <Button size="sm" className="rounded-full text-xs w-full">
-                    {opportunity.status === "Available" ? "Enroll Now" : "Registration Info"}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
-
-      {/* Development Goals */}
-      <Card className="border p-0 overflow-hidden bg-white">
-        <div className="px-4 py-3 border-b bg-gradient-to-r from-primary/5 to-secondary/5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">Your Development Goals</h2>
-            <Button size="sm" className="rounded-full">
-              <span className="mr-1">➕</span> Add Goal
-            </Button>
-          </div>
-        </div>
-        
-        <div className="p-4 grid gap-4">
-          {develGoals.map((goal) => (
-            <div key={goal.id} className="border rounded-lg p-4 bg-white">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                  <h3 className="font-medium text-base">{goal.title}</h3>
-                  <div className="flex items-center mt-1 text-sm text-gray-600">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mr-2">
-                      {goal.status}
-                    </span>
-                    <span>Due: {goal.dueDate}</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 flex items-center w-32">
-                    <div className="bg-gray-200 h-2 flex-1 rounded-full overflow-hidden">
-                      <div 
-                        className="bg-primary h-2 rounded-full"
-                        style={{ width: `${goal.progress}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-medium ml-2">{goal.progress}%</span>
-                  </div>
-                  
-                  <Button size="sm" variant="outline" className="rounded-full">
-                    Update
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
     </div>
   );
 } 

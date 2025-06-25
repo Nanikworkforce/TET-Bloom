@@ -49,7 +49,7 @@ export default function AdministratorDashboard() {
       </div>
 
       {/* Informative Dashboard Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {/* Teacher Observations Card */}
         <Card className="p-5 border shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center gap-3 mb-3">
@@ -119,42 +119,6 @@ export default function AdministratorDashboard() {
           
           <Link href="/administrator/lesson-plans">
             <Button className="w-full rounded-full">Manage Lesson Plans</Button>
-          </Link>
-        </Card>
-        
-        {/* Feedback Management Card */}
-        <Card className="p-5 border shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="text-2xl bg-purple-100 text-purple-600 w-10 h-10 rounded-full flex items-center justify-center">
-              💬
-            </div>
-            <h3 className="text-lg font-semibold">Feedback Management</h3>
-          </div>
-          
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between items-center">
-              <span className="text-2xl font-bold text-gray-800">{dashboardStats.feedback.pending}</span>
-              <span className="text-sm text-gray-500">Pending</span>
-            </div>
-            
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Completed:</span>
-                <span className="font-medium text-green-600">{dashboardStats.feedback.completed}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Overdue:</span>
-                <span className="font-medium text-red-600">{dashboardStats.feedback.overdueCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Avg Response:</span>
-                <span className="font-medium text-blue-600">{dashboardStats.feedback.averageResponseTime}</span>
-              </div>
-            </div>
-          </div>
-          
-          <Link href="/administrator/feedback">
-            <Button className="w-full rounded-full">Manage Feedback</Button>
           </Link>
         </Card>
       </div>
