@@ -8,7 +8,7 @@ from .models.user import Users
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ('name', 'subject', 'grade', 'user', 'years_of_experience')
+    list_display = ('subject', 'grade', 'user', 'years_of_experience')
 
 @admin.register(ObservationGroup)
 class ObservationGroupAdmin(admin.ModelAdmin):

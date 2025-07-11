@@ -1,6 +1,7 @@
 from backend.basemodel import TimeBaseModel
 from django.db import models
 from .teachers import Teacher
+from .user import Users
 import uuid
 
 
@@ -14,7 +15,7 @@ class ObservationGroup(TimeBaseModel):
     id= models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name=models.CharField(max_length=255)
     note=models.TextField()
-    created_by=models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='created_groups')
+    created_by=models.ForeignKey(Users, on_delete=models.CASCADE, related_name='created_groups')
     teachers=models.OneToOneField(Teacher, on_delete=models.CASCADE, related_name='observation_group')
     status=models.CharField(max_length=255, choices=STATUS_CHOICES, default='Scheduled')
 

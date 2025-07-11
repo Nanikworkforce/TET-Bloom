@@ -20,7 +20,7 @@ class Teacher(TimeBaseModel):
         ('Specialist/Other', 'Specialist/Other'),
     ]
     user=models.OneToOneField(Users,on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    # name = models.CharField(max_length=255)
     subject=models.CharField(max_length=255)
     grade=models.CharField(max_length=255,choices=grade_level_choices,default='--Select Grade Level--')
     years_of_experience=models.IntegerField()
