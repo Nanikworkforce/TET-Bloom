@@ -11,5 +11,6 @@ router.register(r'administrators', AdministratorViewSet)
 
 urlpatterns = [
     # path('', index, name='index'),
+    path('total-stats/', TotalStats, name='total-stats'),
     path('', include(router.urls)),
 ]

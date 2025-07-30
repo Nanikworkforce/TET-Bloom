@@ -22,12 +22,12 @@ class Teacher(TimeBaseModel):
     user=models.OneToOneField(Users,on_delete=models.CASCADE)
     # name = models.CharField(max_length=255)
     subject=models.CharField(max_length=255)
-    grade=models.CharField(max_length=255,choices=grade_level_choices,default='--Select Grade Level--')
-    years_of_experience=models.IntegerField()
+    grade=models.CharField(max_length=255,choices=grade_level_choices)
+    years_of_experience=models.IntegerField(default=0)
 
 
     def __str__(self):
-        return self.name
+        return f"{self.user.name} - {self.subject}"
 
     class Meta:
         verbose_name = 'Teacher'

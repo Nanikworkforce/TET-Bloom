@@ -12,7 +12,11 @@ class TeacherAdmin(admin.ModelAdmin):
 
 @admin.register(ObservationGroup)
 class ObservationGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'note', 'teachers', 'status')
+    list_display = ('name', 'note', 'get_teacher_count', 'status')
+    
+    def get_teacher_count(self, obj):
+        return obj.teachers.count()
+    get_teacher_count.short_description = 'Teachers'
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
@@ -20,7 +24,7 @@ class ScheduleAdmin(admin.ModelAdmin):
 
 @admin.register(Administrator)
 class AdministratorAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email')
+    list_display = ('user',)
 
 @admin.register(Users)
 class UsersAdmin(admin.ModelAdmin):

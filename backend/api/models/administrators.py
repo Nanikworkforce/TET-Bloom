@@ -1,12 +1,12 @@
 from backend.basemodel import TimeBaseModel
 from django.db import models
+from .user import Users
 
 class Administrator(TimeBaseModel):
-    name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
+    user = models.OneToOneField(Users, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return f"{self.user.name} - Administrator"
 
     class Meta:
         verbose_name = 'Administrator'

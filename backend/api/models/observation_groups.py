@@ -12,12 +12,12 @@ class ObservationGroup(TimeBaseModel):
         ('Cancelled', 'Cancelled'),
     ]
 
-    id= models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name=models.CharField(max_length=255)
-    note=models.TextField()
-    created_by=models.ForeignKey(Users, on_delete=models.CASCADE, related_name='created_groups')
-    teachers=models.OneToOneField(Teacher, on_delete=models.CASCADE, related_name='observation_group')
-    status=models.CharField(max_length=255, choices=STATUS_CHOICES, default='Scheduled')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    note = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='created_groups')
+    teachers = models.ManyToManyField(Teacher, related_name='observation_groups')
+    status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Scheduled')
 
     def __str__(self):
         return self.name
