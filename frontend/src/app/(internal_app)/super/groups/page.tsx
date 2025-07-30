@@ -1,79 +1,105 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { observationGroupApi, ApiError } from "@/lib/api";
 
-// Mock data for observation groups
-const mockGroups = [
-  {
-    id: "1",
-    name: "Math Department",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 8,
-    lastObservation: "Feb 24, 2023",
-    status: "Active"
-  },
-  {
-    id: "2",
-    name: "Science Department",
-    observer: "Jessica Martinez",
-    observerRole: "Vice Administrator",
-    teacherCount: 6,
-    lastObservation: "Feb 22, 2023",
-    status: "Active"
-  },
-  {
-    id: "3",
-    name: "English Department",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 7,
-    lastObservation: "Feb 18, 2023",
-    status: "Active"
-  },
-  {
-    id: "4",
-    name: "New Teachers",
-    observer: "Jessica Martinez",
-    observerRole: "Vice Administrator",
-    teacherCount: 5,
-    lastObservation: "Feb 15, 2023",
-    status: "Active"
-  },
-  {
-    id: "5",
-    name: "Special Education",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 4,
-    lastObservation: "Feb 10, 2023",
-    status: "Inactive"
-  },
-];
+interface Teacher {
+  id: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
+
+interface ObservationGroup {
+  id: string;
+  name: string;
+  note: string;
+  created_by: {
+    name: string;
+    email: string;
+    role: string;
+  };
+  teachers: Teacher[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function ObservationGroupsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [observerFilter, setObserverFilter] = useState("All");
+  const [groups, setGroups] = useState<ObservationGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch real data from backend
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        setLoading(true);
+        const response = await observationGroupApi.getAll();
+        setGroups((response.data as ObservationGroup[]) || []);
+      } catch (err) {
+        console.error("Error fetching observation groups:", err);
+        setError("Failed to load observation groups");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
   
   // Get unique observers for filter
-  const observers = Array.from(new Set(mockGroups.map(group => group.observer)));
+  const observers = Array.from(new Set(groups.map(group => group.created_by.name)));
   
   // Filter groups based on search term and filters
-  const filteredGroups = mockGroups.filter(group => {
+  const filteredGroups = groups.filter(group => {
     const matchesSearch = 
       group.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      group.observer.toLowerCase().includes(searchTerm.toLowerCase());
+      group.created_by.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "All" || group.status === statusFilter;
-    const matchesObserver = observerFilter === "All" || group.observer === observerFilter;
+    const matchesObserver = observerFilter === "All" || group.created_by.name === observerFilter;
     
     return matchesSearch && matchesStatus && matchesObserver;
   });
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Observation Groups</h1>
+            <p className="text-gray-600">Manage teacher observation groups</p>
+          </div>
+        </div>
+        <Card className="border bg-white">
+          <CardContent className="pt-6 flex items-center justify-center py-12">
+            <div className="text-gray-600">Loading observation groups...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -91,6 +117,12 @@ export default function ObservationGroupsPage() {
           </Link>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
 
       {/* Filters and Search */}
       <Card className="border bg-white">
@@ -126,8 +158,9 @@ export default function ObservationGroupsPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option value="All">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
               </select>
             </div>
             <div>
@@ -156,7 +189,7 @@ export default function ObservationGroupsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observer</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teachers</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Observation</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -164,16 +197,27 @@ export default function ObservationGroupsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredGroups.map((group) => (
                 <tr key={group.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{group.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {group.observer}
-                    <div className="text-xs text-gray-400">{group.observerRole}</div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {group.name}
+                    {group.note && (
+                      <div className="text-xs text-gray-400 mt-1">{group.note}</div>
+                    )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{group.teacherCount}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{group.lastObservation}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {group.created_by.name}
+                    <div className="text-xs text-gray-400">{group.created_by.role}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {group.teachers.length} teacher{group.teachers.length !== 1 ? 's' : ''}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(group.created_at)}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      group.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      group.status === "Scheduled" ? "bg-blue-100 text-blue-800" :
+                      group.status === "Completed" ? "bg-green-100 text-green-800" :
+                      "bg-red-100 text-red-800"
                     }`}>
                       {group.status}
                     </span>
@@ -199,7 +243,9 @@ export default function ObservationGroupsPage() {
         </div>
         {filteredGroups.length === 0 && (
           <div className="text-center py-10">
-            <p className="text-gray-500">No observation groups found matching your filters.</p>
+            <p className="text-gray-500">
+              {groups.length === 0 ? "No observation groups found." : "No observation groups found matching your filters."}
+            </p>
           </div>
         )}
       </Card>

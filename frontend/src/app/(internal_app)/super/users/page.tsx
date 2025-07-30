@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,65 +15,74 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { userApi, teacherApi, ApiError } from "@/lib/api";
 
-// Mock data for users
-const initialUsers = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@school.edu",
-    role: "Teacher",
-    subject: "Mathematics",
-    startDate: "2020-08-15",
-    status: "Active"
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    email: "michael.chen@school.edu",
-    role: "Teacher",
-    subject: "Science",
-    startDate: "2018-08-15",
-    status: "Active"
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    email: "emily.rodriguez@school.edu",
-    role: "Teacher",
-    subject: "English",
-    startDate: "2021-08-15",
-    status: "Active"
-  },
-  {
-    id: "4",
-    name: "David Wilson",
-    email: "david.wilson@school.edu",
-    role: "Administrator",
-    subject: "",
-    startDate: "2015-08-15",
-    status: "Active"
-  },
-  {
-    id: "5",
-    name: "Jessica Martinez",
-    email: "jessica.martinez@school.edu",
-    role: "Teacher",
-    subject: "Art",
-    startDate: "2019-08-15",
-    status: "Inactive"
-  },
-];
+// Interface for user data
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  created_at: string;
+  teacher?: {
+    subject: string;
+    grade: string;
+    years_of_experience: number;
+  };
+}
 
 export default function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Status change dialog state
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  
+  // Fetch users from API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch all users
+        const usersResponse = await userApi.getAll();
+        const usersData = (usersResponse.data as any[]) || [];
+        
+        // Fetch teacher data for teachers
+        const teachersResponse = await teacherApi.getAll();
+        const teachersData = (teachersResponse.data as any[]) || [];
+        
+        // Combine user and teacher data
+        const combinedUsers = usersData.map((user: any) => {
+          const teacher = teachersData.find((t: any) => t.user?.id === user.id);
+          return {
+            ...user,
+            teacher: teacher ? {
+              subject: teacher.subject,
+              grade: teacher.grade,
+              years_of_experience: teacher.years_of_experience
+            } : undefined
+          };
+        });
+        
+        setUsers(combinedUsers);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        setError("Failed to load users. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUsers();
+  }, []);
   
   // Filter users based on search term and filters
   const filteredUsers = users.filter(user => {
@@ -87,22 +96,32 @@ export default function UserManagementPage() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const handleStatusChange = (user: any) => {
+  const handleStatusChange = (user: User) => {
     setSelectedUser(user);
     setStatusDialogOpen(true);
   };
 
-  const confirmStatusChange = () => {
+  const confirmStatusChange = async () => {
     if (!selectedUser) return;
     
-    const newStatus = selectedUser.status === "Active" ? "Inactive" : "Active";
-    const updatedUsers = users.map(user => 
-      user.id === selectedUser.id ? { ...user, status: newStatus } : user
-    );
-    
-    setUsers(updatedUsers);
-    setStatusDialogOpen(false);
-    setSelectedUser(null);
+    try {
+      const newStatus = selectedUser.status === "Active" ? "Inactive" : "Active";
+      
+      // Update user status in backend
+      await userApi.update(selectedUser.id, { ...selectedUser, status: newStatus });
+      
+      // Update local state
+      const updatedUsers = users.map(user => 
+        user.id === selectedUser.id ? { ...user, status: newStatus } : user
+      );
+      
+      setUsers(updatedUsers);
+      setStatusDialogOpen(false);
+      setSelectedUser(null);
+    } catch (err) {
+      console.error("Error updating user status:", err);
+      setError("Failed to update user status. Please try again.");
+    }
   };
 
   return (
@@ -151,6 +170,7 @@ export default function UserManagementPage() {
                 <option value="All">All Roles</option>
                 <option value="Teacher">Teachers</option>
                 <option value="Administrator">Administrators</option>
+                <option value="Super User">Super Users</option>
               </select>
             </div>
             <div>
@@ -183,59 +203,80 @@ export default function UserManagementPage() {
 
       {/* User List */}
       <Card className="border bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.subject || "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.startDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <Link href={`/super/users/edit/${user.id}`}>
-                        <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                          Edit
-                        </Button>
-                      </Link>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className={`${user.status === "Active" ? "text-red-500 hover:text-red-400" : "text-green-500 hover:text-green-400"}`}
-                        onClick={() => handleStatusChange(user)}
-                      >
-                        {user.status === "Active" ? "Deactivate" : "Activate"}
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {filteredUsers.length === 0 && (
+        {loading && (
           <div className="text-center py-10">
-            <p className="text-gray-500">No users found matching your filters.</p>
+            <p className="text-gray-500">Loading users...</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="text-center py-10">
+            <p className="text-red-500">{error}</p>
+            <Button 
+              variant="outline" 
+              className="mt-2"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+        
+        {!loading && !error && (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.teacher?.subject || "-"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      }`}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <Link href={`/super/users/edit/${user.id}`}>
+                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                            Edit
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className={`${user.status === "Active" ? "text-red-500 hover:text-red-400" : "text-green-500 hover:text-green-400"}`}
+                          onClick={() => handleStatusChange(user)}
+                        >
+                          {user.status === "Active" ? "Deactivate" : "Activate"}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredUsers.length === 0 && (
+              <div className="text-center py-10">
+                <p className="text-gray-500">No users found matching your filters.</p>
+              </div>
+            )}
           </div>
         )}
       </Card>

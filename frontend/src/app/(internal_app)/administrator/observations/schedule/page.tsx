@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -11,65 +11,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { ObservationType } from "@/lib/types";
+import { teacherApi, scheduleApi, ApiError } from "@/lib/api";
 
-// Mock teachers data - in a real app, this would come from an API
-const teachers = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    subject: "Mathematics",
-    grade: "5th Grade",
-    email: "sarah.johnson@school.edu",
-    yearsOfExperience: 8
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    subject: "Science",
-    grade: "7th Grade",
-    email: "michael.chen@school.edu",
-    yearsOfExperience: 5
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    subject: "English Literature",
-    grade: "10th Grade",
-    email: "emily.rodriguez@school.edu",
-    yearsOfExperience: 12
-  },
-  {
-    id: "4",
-    name: "David Wilson",
-    subject: "History",
-    grade: "9th Grade",
-    email: "david.wilson@school.edu",
-    yearsOfExperience: 15
-  },
-  {
-    id: "5",
-    name: "Jessica Martinez",
-    subject: "Art",
-    grade: "Multiple",
-    email: "jessica.martinez@school.edu",
-    yearsOfExperience: 7
-  },
-  {
-    id: "6",
-    name: "Robert Thompson",
-    subject: "Physical Education",
-    grade: "Multiple",
-    email: "robert.thompson@school.edu",
-    yearsOfExperience: 10
-  }
-];
+interface Teacher {
+  id: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
 
 interface ScheduleObservationForm {
   teacherId: string;
   date: string;
   time: string;
-  type: ObservationType;
+  observation_type: 'formal' | 'walk-through';
   notes: string;
 }
 
@@ -79,71 +38,110 @@ export default function ScheduleObservationPage() {
     teacherId: "",
     date: "",
     time: "",
-    type: "formal",
+    observation_type: "formal",
     notes: ""
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch real teachers data from backend
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        setLoading(true);
+        const response = await teacherApi.getAll();
+        setTeachers((response.data as Teacher[]) || []);
+      } catch (err) {
+        console.error("Error fetching teachers:", err);
+        setError("Failed to load teachers");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeachers();
+  }, []);
 
   const selectedTeacher = teachers.find(t => t.id === form.teacherId);
 
   const filteredTeachers = teachers.filter(teacher => 
-    teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    teacher.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     teacher.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
     teacher.grade.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
     if (!form.teacherId || !form.date || !form.time) {
-      alert("Please fill in all required fields.");
+      setError("Please fill in all required fields.");
       return;
     }
 
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/api/observations/schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          teacherId: form.teacherId,
-          date: form.date,
-          time: form.time,
-          type: form.type,
-          notes: form.notes,
-          observerId: 'admin1' // In a real app, this would come from the authenticated user
-        }),
-      });
+      const scheduleData = {
+        teacher: form.teacherId,
+        date: form.date,
+        time: form.time,
+        observation_type: form.observation_type,
+        notes: form.notes,
+        status: 'Scheduled'
+      };
 
-      const result = await response.json();
-
-      if (response.ok) {
-        alert(result.message);
-        router.push("/administrator/observations");
+      await scheduleApi.create(scheduleData);
+      
+      // Success - redirect to observations page
+      router.push("/administrator/observations");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(`Failed to schedule observation: ${err.message}`);
       } else {
-        alert(result.error || "Failed to schedule observation. Please try again.");
+        setError("Failed to schedule observation. Please try again.");
       }
-    } catch (error) {
-      console.error('Error scheduling observation:', error);
-      alert("Failed to schedule observation. Please try again.");
+      console.error('Error scheduling observation:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getTypeColor = (type: ObservationType) => {
+  const getTypeColor = (type: 'formal' | 'walk-through') => {
     return type === 'formal' 
       ? 'bg-blue-100 text-blue-800 border-blue-200' 
       : 'bg-green-100 text-green-800 border-green-200';
   };
 
-  const getTypeIcon = (type: ObservationType) => {
+  const getTypeIcon = (type: 'formal' | 'walk-through') => {
     return type === 'formal' ? '📋' : '👁️';
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <div className="flex items-center gap-4">
+          <Link href="/administrator/observations">
+            <Button variant="ghost" size="sm" className="rounded-full">
+              <span className="mr-2">←</span> Back to Observations
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Schedule New Observation</h1>
+          </div>
+        </div>
+        <Card className="p-6 bg-white border shadow-sm">
+          <div className="text-center py-12">
+            <div className="text-gray-600">Loading teachers...</div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -158,6 +156,12 @@ export default function ScheduleObservationPage() {
           <h1 className="text-2xl font-bold text-gray-800">Schedule New Observation</h1>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Teacher Selection */}
@@ -186,9 +190,9 @@ export default function ScheduleObservationPage() {
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-blue-900">{selectedTeacher.name}</h3>
+                    <h3 className="font-semibold text-blue-900">{selectedTeacher.user.name}</h3>
                     <p className="text-blue-700 text-sm">{selectedTeacher.subject} • {selectedTeacher.grade}</p>
-                    <p className="text-blue-600 text-xs mt-1">{selectedTeacher.yearsOfExperience} years experience</p>
+                    <p className="text-blue-600 text-xs mt-1">{selectedTeacher.years_of_experience} years experience</p>
                   </div>
                   <Button 
                     type="button"
@@ -214,9 +218,9 @@ export default function ScheduleObservationPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">{teacher.name}</h4>
+                        <h4 className="font-medium text-gray-900">{teacher.user.name}</h4>
                         <p className="text-sm text-gray-600">{teacher.subject} • {teacher.grade}</p>
-                        <p className="text-xs text-gray-500 mt-1">{teacher.yearsOfExperience} years experience</p>
+                        <p className="text-xs text-gray-500 mt-1">{teacher.years_of_experience} years experience</p>
                       </div>
                       <span className="text-primary">→</span>
                     </div>
@@ -273,8 +277,8 @@ export default function ScheduleObservationPage() {
             <div className="space-y-3">
               <Label className="text-sm font-medium">Observation Type *</Label>
               <RadioGroup
-                value={form.type}
-                onValueChange={(value) => setForm({...form, type: value as ObservationType})}
+                value={form.observation_type}
+                onValueChange={(value) => setForm({...form, observation_type: value as 'formal' | 'walk-through'})}
                 className="space-y-3"
               >
                 <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50">

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
+
 
 // Mock data - in a real app, this would come from your API/database
 const mockUsers = [
@@ -272,9 +272,9 @@ export default function EditUserPage() {
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Teacher">Teacher</SelectItem>
-                      <SelectItem value="Administrator">Administrator</SelectItem>
-                      <SelectItem value="Super">Super User</SelectItem>
+                                          <SelectItem value="Teacher">Teacher</SelectItem>
+                    <SelectItem value="Administrator">Administrator</SelectItem>
+                    <SelectItem value="Super User">Super User</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

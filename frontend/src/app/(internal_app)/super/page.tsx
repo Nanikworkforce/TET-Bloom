@@ -1,43 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
-// Mock data
-const stats = [
-  { 
-    label: "Total Users", 
-    value: 68, 
-    change: "+5", 
-    changeType: "positive",
-    icon: "👥",
-    link: "/super/users"
-  },
-  { 
-    label: "Teachers", 
-    value: 45, 
-    change: "+3", 
-    changeType: "positive",
-    icon: "👩‍🏫",
-    link: "/super/users?role=teacher"
-  },
-  { 
-    label: "Administrators", 
-    value: 12, 
-    change: "+1", 
-    changeType: "positive",
-    icon: "👨‍💼",
-    link: "/super/users?role=administrator"
-  },
-  { 
-    label: "Observation Groups", 
-    value: 8, 
-    change: "+2", 
-    changeType: "positive",
-    icon: "👥",
-    link: "/super/groups"
-  },
-];
+interface StatsData {
+  total_users: number;
+  total_teachers: number;
+  total_administrators: number;
+  total_observation_groups: number;
+}
 
+// Mock data for recent activity (keeping this as is for now)
 const recentActivity = [
   {
     id: "1",
@@ -63,6 +38,56 @@ const recentActivity = [
 ];
 
 export default function SuperUserDashboard() {
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/total-stats/');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
+        const data = await response.json();
+        setStats(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const statsConfig = [
+    { 
+      label: "Total Users", 
+      key: "total_users" as keyof StatsData,
+      icon: "👥",
+      link: "/super/users"
+    },
+    { 
+      label: "Teachers", 
+      key: "total_teachers" as keyof StatsData,
+      icon: "👩‍🏫",
+      link: "/super/users?role=teacher"
+    },
+    { 
+      label: "Administrators", 
+      key: "total_administrators" as keyof StatsData,
+      icon: "👨‍💼",
+      link: "/super/users?role=administrator"
+    },
+    { 
+      label: "Observation Groups", 
+      key: "total_observation_groups" as keyof StatsData,
+      icon: "👥",
+      link: "/super/groups"
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Welcome header */}
@@ -87,24 +112,50 @@ export default function SuperUserDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <Link href={stat.link} key={index} className="block">
-            <Card className="p-4 h-full border hover:border-primary/40 transition-colors hover:shadow-md bg-white">
+        {loading ? (
+          // Loading state
+          Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index} className="p-4 h-full border bg-white">
               <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                  <p className="text-2xl font-bold mt-1 text-gray-800">{stat.value}</p>
-                  <div className={`mt-1 text-xs font-medium ${stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
-                    {stat.change} from last month
-                  </div>
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-12 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-24"></div>
                 </div>
-                <div className="text-3xl bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center text-primary/90">
-                  {stat.icon}
-                </div>
+                <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
               </div>
             </Card>
-          </Link>
-        ))}
+          ))
+        ) : error ? (
+          // Error state
+          <div className="col-span-full">
+            <Card className="p-4 border-red-200 bg-red-50">
+              <p className="text-red-600">Error loading stats: {error}</p>
+            </Card>
+          </div>
+        ) : (
+          // Stats display
+          statsConfig.map((stat, index) => (
+            <Link href={stat.link} key={index} className="block">
+              <Card className="p-4 h-full border hover:border-primary/40 transition-colors hover:shadow-md bg-white">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">{stat.label}</p>
+                    <p className="text-2xl font-bold mt-1 text-gray-800">
+                      {stats?.[stat.key] || 0}
+                    </p>
+                    <div className="mt-1 text-xs font-medium text-gray-500">
+                      Current total
+                    </div>
+                  </div>
+                  <div className="text-3xl bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center text-primary/90">
+                    {stat.icon}
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          ))
+        )}
       </div>
 
       {/* Recent Activity */}

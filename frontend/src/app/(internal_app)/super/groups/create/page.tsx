@@ -1,46 +1,85 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { userApi, teacherApi, observationGroupApi, ApiError } from "@/lib/api";
 
-// Mock data
-const mockObservers = [
-  { id: "1", name: "David Wilson", role: "Administrator" },
-  { id: "2", name: "Jessica Martinez", role: "Vice Administrator" },
-  { id: "3", name: "Robert Johnson", role: "Assistant Administrator" },
-];
+interface Teacher {
+  id: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
 
-const mockTeachers = [
-  { id: "1", name: "Sarah Johnson", subject: "Mathematics", grade: "7th Grade", experience: "3 years" },
-  { id: "2", name: "Michael Chen", subject: "Science", grade: "8th Grade", experience: "5 years" },
-  { id: "3", name: "Emily Rodriguez", subject: "English", grade: "6th Grade", experience: "2 years" },
-  { id: "4", name: "James Williams", subject: "History", grade: "7th Grade", experience: "7 years" },
-  { id: "5", name: "Lisa Brown", subject: "Art", grade: "Multiple", experience: "4 years" },
-  { id: "6", name: "Daniel Lee", subject: "Physical Education", grade: "Multiple", experience: "6 years" },
-  { id: "7", name: "Jennifer Garcia", subject: "Mathematics", grade: "6th Grade", experience: "1 year" },
-  { id: "8", name: "Anthony Taylor", subject: "Science", grade: "7th Grade", experience: "3 years" },
-];
+interface Administrator {
+  id: string;
+  user: {
+    name: string;
+    email: string;
+  };
+}
 
 export default function CreateObservationGroupPage() {
   const [groupName, setGroupName] = useState("");
+  const [note, setNote] = useState("");
   const [selectedObserver, setSelectedObserver] = useState("");
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [searchTeachers, setSearchTeachers] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [creationSuccess, setCreationSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Real data from backend
+  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real data from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [adminResponse, teacherResponse] = await Promise.all([
+          userApi.getAll(), // We'll filter for administrators
+          teacherApi.getAll()
+        ]);
+
+        // Filter users for administrators
+        const adminUsers = (adminResponse.data as any[])?.filter((user: any) => user.role === 'Administrator') || [];
+        setAdministrators(adminUsers.map((user: any) => ({
+          id: user.id,
+          user: { name: user.name, email: user.email }
+        })));
+
+        setTeachers((teacherResponse.data as Teacher[]) || []);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data from server");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   
   // Filter teachers based on search
   const filteredTeachers = searchTeachers
-    ? mockTeachers.filter(teacher => 
-        teacher.name.toLowerCase().includes(searchTeachers.toLowerCase()) ||
+    ? teachers.filter(teacher => 
+        teacher.user.name.toLowerCase().includes(searchTeachers.toLowerCase()) ||
         teacher.subject.toLowerCase().includes(searchTeachers.toLowerCase()) ||
         teacher.grade.toLowerCase().includes(searchTeachers.toLowerCase())
       )
-    : mockTeachers;
+    : teachers;
 
   const handleSelectTeacher = (teacherId: string) => {
     if (selectedTeachers.includes(teacherId)) {
@@ -58,22 +97,57 @@ export default function CreateObservationGroupPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!groupName || !selectedObserver || selectedTeachers.length === 0) {
-      alert("Please fill in all required fields and select at least one teacher");
+      setError("Please fill in all required fields and select at least one teacher");
       return;
     }
     
     setIsCreating(true);
     
-    // Simulate creation delay
-    setTimeout(() => {
-      setIsCreating(false);
+    try {
+      const groupData = {
+        name: groupName,
+        note: note,
+        created_by: selectedObserver,
+        teachers: selectedTeachers,
+        status: 'Scheduled'
+      };
+
+      await observationGroupApi.create(groupData);
       setCreationSuccess(true);
-    }, 1500);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(`Failed to create group: ${err.message}`);
+      } else {
+        setError("Failed to create group. Please try again.");
+      }
+      console.error("Error creating group:", err);
+    } finally {
+      setIsCreating(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Create Observation Group</h1>
+            <p className="text-gray-600">Set up a new group for teacher observations</p>
+          </div>
+        </div>
+        <Card className="border bg-white">
+          <CardContent className="pt-6 flex items-center justify-center py-12">
+            <div className="text-gray-600">Loading data...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (creationSuccess) {
     return (
@@ -135,6 +209,12 @@ export default function CreateObservationGroupPage() {
         </div>
       </div>
       
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Group Details */}
@@ -159,6 +239,18 @@ export default function CreateObservationGroupPage() {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="note">Notes</Label>
+                <Textarea
+                  id="note"
+                  placeholder="Optional notes about this observation group"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="rounded-lg"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="observer">Observer (Administrator) *</Label>
                 <select
                   id="observer"
@@ -168,9 +260,9 @@ export default function CreateObservationGroupPage() {
                   required
                 >
                   <option value="" disabled>Select an observer</option>
-                  {mockObservers.map((observer) => (
-                    <option key={observer.id} value={observer.id}>
-                      {observer.name} ({observer.role})
+                  {administrators.map((admin) => (
+                    <option key={admin.id} value={admin.id}>
+                      {admin.user.name} ({admin.user.email})
                     </option>
                   ))}
                 </select>
@@ -230,10 +322,10 @@ export default function CreateObservationGroupPage() {
                             className="h-4 w-4 text-primary border-gray-300 rounded cursor-pointer"
                           />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{teacher.name}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{teacher.user.name}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{teacher.subject}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{teacher.grade}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{teacher.experience}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{teacher.years_of_experience} years</td>
                       </tr>
                     ))}
                   </tbody>
