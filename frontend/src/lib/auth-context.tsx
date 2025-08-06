@@ -10,7 +10,8 @@ import { AuthState, UserProfile, UserRole } from './types';
 // will be required. For any other value (including when undefined) auth is
 // considered disabled. This makes local development & QA easier while still
 // allowing production to enable it through the env variable.
-const ENFORCE_AUTH = process.env.NEXT_PUBLIC_ENFORCE_AUTH === 'false';
+const ENFORCE_AUTH = process.env.NEXT_PUBLIC_ENFORCE_AUTH === 'true';
+console.log('ENFORCE_AUTH value:', process.env.NEXT_PUBLIC_ENFORCE_AUTH, 'ENFORCE_AUTH:', ENFORCE_AUTH);
 
 // ---------------------------------------------------------------------------
 // Mock-user utilities – these are only used when ENFORCE_AUTH === false
@@ -231,14 +232,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: null };
     }
 
-    // --------------------------------------------------
-    // Normal (Supabase) login path when auth enforced.
-    // --------------------------------------------------
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+         // --------------------------------------------------
+     // Normal (Supabase) login path when auth enforced.
+     // --------------------------------------------------
+     console.log('Starting Supabase authentication...');
+     try {
+       console.log('Calling supabase.auth.signInWithPassword...');
+       
+       // Add timeout to prevent hanging
+       const authPromise = supabase.auth.signInWithPassword({
+         email,
+         password,
+       });
+       
+       const timeoutPromise = new Promise((_, reject) => {
+         setTimeout(() => reject(new Error('Authentication timeout')), 10000);
+       });
+       
+       const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+       console.log('Supabase auth response received:', { data: !!data, error: !!error });
 
       if (error) {
         return { error };
@@ -253,16 +265,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             isLoading: false,
           });
 
-          // Redirect based on user role
-          if (profile.role === 'super_user') {
-            router.push('/super');
-          } else if (profile.role === 'administrator') {
-            router.push('/administrator');
-          } else if (profile.role === 'teacher') {
-            router.push('/teacher');
-          } else {
-            router.push('/');
-          }
+                     // Redirect based on user role
+           console.log('Redirecting user with role:', profile.role);
+           if (profile.role === 'super_user') {
+             console.log('Redirecting to /super');
+             try {
+               router.push('/super');
+               // Fallback to window.location if router doesn't work
+               setTimeout(() => {
+                 if (window.location.pathname !== '/super') {
+                   console.log('Router redirect failed, using window.location');
+                   window.location.href = '/super';
+                 }
+               }, 1000);
+             } catch (error) {
+               console.error('Router redirect error:', error);
+               window.location.href = '/super';
+             }
+           } else if (profile.role === 'administrator') {
+             console.log('Redirecting to /administrator');
+             try {
+               router.push('/administrator');
+               setTimeout(() => {
+                 if (window.location.pathname !== '/administrator') {
+                   window.location.href = '/administrator';
+                 }
+               }, 1000);
+             } catch (error) {
+               console.error('Router redirect error:', error);
+               window.location.href = '/administrator';
+             }
+           } else if (profile.role === 'teacher') {
+             console.log('Redirecting to /teacher');
+             try {
+               router.push('/teacher');
+               setTimeout(() => {
+                 if (window.location.pathname !== '/teacher') {
+                   window.location.href = '/teacher';
+                 }
+               }, 1000);
+             } catch (error) {
+               console.error('Router redirect error:', error);
+               window.location.href = '/teacher';
+             }
+           } else {
+             console.log('Redirecting to / (default)');
+             try {
+               router.push('/');
+               setTimeout(() => {
+                 if (window.location.pathname !== '/') {
+                   window.location.href = '/';
+                 }
+               }, 1000);
+             } catch (error) {
+               console.error('Router redirect error:', error);
+               window.location.href = '/';
+             }
+           }
         }
       }
 

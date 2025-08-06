@@ -28,6 +28,9 @@ export default function LoginPage() {
       if (signInError) {
         setError(signInError.message || "Failed to log in. Please check your credentials.");
         setIsLoading(false);
+      } else {
+        // Clear loading state on successful login
+        setIsLoading(false);
       }
       // No need to redirect here as the auth context handles the role-based redirect
     } catch (err) {

@@ -13,7 +13,7 @@ interface ProtectedRouteProps {
 // Mirror the same auth-toggle we use elsewhere. When authentication is not
 // enforced we simply render the children directly and bypass all of the
 // redirection logic.
-const ENFORCE_AUTH = process.env.NEXT_PUBLIC_ENFORCE_AUTH === 'false';
+const ENFORCE_AUTH = process.env.NEXT_PUBLIC_ENFORCE_AUTH === 'true';
 
 export const ProtectedRoute = ({
   children,

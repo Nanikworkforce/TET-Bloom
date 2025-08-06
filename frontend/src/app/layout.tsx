@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: "TET Bloom",
     statusBarStyle: "default"
   },
-  manifest: '/manifest.json'
+  // manifest: '/manifest.json' // Temporarily disabled due to syntax error
 };
 
 export default function RootLayout({
