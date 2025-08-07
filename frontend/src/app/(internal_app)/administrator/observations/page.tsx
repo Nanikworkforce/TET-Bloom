@@ -248,6 +248,11 @@ export default function ObservationsPage() {
               <span className="mr-2">➕</span> Schedule New Observation
             </Button>
           </Link>
+          <Link href="/administrator/observations/t-tess">
+            <Button className="rounded-full shadow-sm bg-green-600 hover:bg-green-700 text-white">
+              <span className="mr-2">📊</span> T-TESS Evaluation
+            </Button>
+          </Link>
         </div>
       </div>
 

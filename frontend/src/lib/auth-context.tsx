@@ -13,12 +13,6 @@ import { AuthState, UserProfile, UserRole } from './types';
 const ENFORCE_AUTH = process.env.NEXT_PUBLIC_ENFORCE_AUTH === 'true';
 console.log('ENFORCE_AUTH value:', process.env.NEXT_PUBLIC_ENFORCE_AUTH, 'ENFORCE_AUTH:', ENFORCE_AUTH);
 
-// ---------------------------------------------------------------------------
-// Mock-user utilities – these are only used when ENFORCE_AUTH === false
-// ---------------------------------------------------------------------------
-// A very small mock user directory that allows us to "log in" as each role
-// without talking to Supabase. Feel free to extend this list or adjust the
-// details (emails, names, etc.) as required.
 
 const MOCK_USERS: Record<string, UserProfile> = {
   'super@example.com': {
@@ -253,6 +247,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
        console.log('Supabase auth response received:', { data: !!data, error: !!error });
 
       if (error) {
+        // If Supabase auth fails, try Django backend as fallback
+        console.log('Supabase auth failed, trying Django backend fallback...');
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            // Create a mock user profile for Django users
+            const profile = {
+              id: userData.id || `django-${email}`,
+              email: email,
+              fullName: userData.name || 'Django User',
+              role: userData.role?.toLowerCase().replace(' ', '_') || 'teacher',
+            };
+            
+            setState({
+              user: profile,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            
+            // Redirect based on role
+            if (profile.role === 'super_user') {
+              router.push('/super');
+            } else if (profile.role === 'administrator') {
+              router.push('/administrator');
+            } else if (profile.role === 'teacher') {
+              router.push('/teacher');
+            } else {
+              router.push('/');
+            }
+            
+            return { error: null };
+          }
+        } catch (backendError) {
+          console.error('Django backend auth also failed:', backendError);
+        }
+        
         return { error };
       }
 
