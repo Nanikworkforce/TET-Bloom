@@ -7,6 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { 
+  BookOpen, 
+  Plus, 
+  Calendar, 
+  Clock, 
+  CheckCircle, 
+  AlertCircle, 
+  FileText, 
+  Edit, 
+  Eye, 
+  Star,
+  ArrowRight,
+  Sparkles,
+  Target,
+  TrendingUp,
+  RefreshCw
+} from "lucide-react";
 
 // Mock data for lesson plans
 const mockLessonPlans = [
@@ -136,38 +153,80 @@ export default function TeacherLessonPlansPage() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Lesson Plans</h1>
-          <p className="text-gray-600">Submit and manage your weekly lesson plans</p>
+    <div className="space-y-8">
+      {/* Modern Header */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 rounded-3xl shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
+        
+        <div className="relative z-10 p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="text-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                  <BookOpen className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold">Lesson Plans</h1>
+                  <p className="text-green-100 text-lg mt-1">Submit and manage your weekly lesson plans</p>
+                </div>
+              </div>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.status === 'submitted').length}</div>
+                  <div className="text-green-100 text-sm">Submitted</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.status === 'pending').length}</div>
+                  <div className="text-green-100 text-sm">Pending</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.feedback?.status === 'approved').length}</div>
+                  <div className="text-green-100 text-sm">Approved</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.feedback?.status === 'needs_revision').length}</div>
+                  <div className="text-green-100 text-sm">Need Revision</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                onClick={() => setActiveTab("submit")}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Submit New Plan
+              </Button>
+            </div>
+          </div>
         </div>
-        <Button 
-          onClick={() => setActiveTab("submit")}
-          className="rounded-full shadow-sm"
-        >
-          <span className="mr-2">➕</span> Submit New Lesson Plan
-        </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200">
+      {/* Modern Tabs */}
+      <div className="bg-white rounded-2xl shadow-lg p-2 flex gap-2">
         <button
-          className={`px-4 py-2 border-b-2 font-medium text-sm ${
+          className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "overview"
-              ? "border-primary text-primary"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
+              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
           onClick={() => setActiveTab("overview")}
         >
-          Overview
+          <div className="flex items-center justify-center gap-2">
+            <Eye className="h-4 w-4" />
+            Overview
+          </div>
         </button>
         <button
-          className={`px-4 py-2 border-b-2 font-medium text-sm ${
+          className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "submit"
-              ? "border-primary text-primary"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
+              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
           onClick={() => setActiveTab("submit")}
         >

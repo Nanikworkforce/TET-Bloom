@@ -1,77 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { 
+  Eye, 
+  Calendar, 
+  Clock, 
+  Search, 
+  Filter,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw,
+  FileText,
+  Star,
+  Users,
+  BookOpen,
+  MessageSquare,
+  Target,
+  Sparkles
+} from "lucide-react";
 
-// Mock data for observations
-const mockObservations = [
-  {
-    id: "1",
-    observer: "Administrator Johnson",
-    date: "Mar 15, 2023",
-    time: "10:30 AM",
-    class: "Mathematics 101",
-    grade: "7th Grade",
-    status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800",
-    lessonPlanSubmitted: false,
-    dueDate: "Mar 1, 2023"
-  },
-  {
-    id: "2",
-    observer: "Vice Administrator Smith",
-    date: "Mar 22, 2023",
-    time: "1:15 PM",
-    class: "Mathematics 102",
-    grade: "7th Grade",
-    status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800",
-    lessonPlanSubmitted: true,
-    dueDate: "Mar 8, 2023"
-  },
-  {
-    id: "3",
-    observer: "Administrator Johnson",
-    date: "Feb 15, 2023",
-    time: "9:30 AM",
-    class: "Mathematics 101",
-    grade: "7th Grade",
-    status: "completed",
-    statusColor: "bg-green-100 text-green-800",
-    lessonPlanSubmitted: true,
-    dueDate: "Feb 1, 2023",
-    feedback: {
-      status: "pending_approval",
-      glows: "Great student engagement strategies. Clear explanations of complex concepts.",
-      grows: "Consider more hands-on activities for kinesthetic learners."
-    }
-  },
-  {
-    id: "4",
-    observer: "Vice Administrator Smith",
-    date: "Jan 20, 2023",
-    time: "11:00 AM",
-    class: "Mathematics 103",
-    grade: "7th Grade",
-    status: "completed",
-    statusColor: "bg-green-100 text-green-800",
-    lessonPlanSubmitted: true,
-    dueDate: "Jan 6, 2023",
-    feedback: {
-      status: "approved",
-      glows: "Excellent classroom management. Well-structured lesson flow.",
-      grows: "Could incorporate more group discussions for collaborative learning."
-    }
-  }
-];
+// Interfaces for real data
+interface TeacherData {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
+
+interface ObservationSchedule {
+  id: string;
+  date: string;
+  time: string;
+  status: string;
+  observation_type: string;
+  notes?: string;
+  teacher: TeacherData;
+  observation_group?: {
+    id: string;
+    name: string;
+    created_by: {
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+    };
+    status: string;
+  };
+}
 
 export default function TeacherObservationsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("upcoming");
   const [selectedObservation, setSelectedObservation] = useState<string | null>(null);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
@@ -85,8 +78,86 @@ export default function TeacherObservationsPage() {
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined);
   const [observationId, setObservationId] = useState<string | null>(null);
   
-  const upcomingObservations = mockObservations.filter(observation => observation.status === "scheduled");
-  const pastObservations = mockObservations.filter(observation => observation.status === "completed");
+  // State for real data
+  const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [observations, setObservations] = useState<ObservationSchedule[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch teacher data
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      if (!user?.id) return;
+
+      try {
+        const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+        if (allTeachersResponse.ok) {
+          const allTeachers = await allTeachersResponse.json();
+          
+          const teacherRecord = allTeachers.find((teacher: TeacherData) => 
+            teacher.user.email === user.email || teacher.user.id === user.id
+          );
+          
+          if (teacherRecord) {
+            const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+            if (individualResponse.ok) {
+              const teacherDetails = await individualResponse.json();
+              setTeacherData(teacherDetails);
+            } else {
+              setTeacherData(teacherRecord);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching teacher data:', error);
+      }
+    };
+
+    fetchTeacherData();
+  }, [user?.id, user?.email]);
+
+  // Fetch observations for the teacher
+  useEffect(() => {
+    const fetchObservations = async () => {
+      if (!teacherData?.id) return;
+
+      try {
+        setLoading(true);
+        const response = await fetch('http://127.0.0.1:8000/api/schedules/');
+        
+        if (response.ok) {
+          const allSchedules = await response.json();
+          
+          // Filter schedules for the current teacher
+          const teacherObservations = allSchedules.filter((schedule: ObservationSchedule) => 
+            schedule.teacher?.id === teacherData.id
+          );
+          
+          // Sort by date (most recent first)
+          const sortedObservations = teacherObservations.sort((a: ObservationSchedule, b: ObservationSchedule) => 
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+          
+          setObservations(sortedObservations);
+        } else {
+          console.error('Failed to fetch schedules:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching observations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchObservations();
+  }, [teacherData?.id]);
+  
+  // Filter observations by status
+  const upcomingObservations = observations.filter(observation => 
+    observation.status === "Scheduled" && new Date(observation.date) >= new Date()
+  );
+  const pastObservations = observations.filter(observation => 
+    observation.status === "Completed" || (observation.status === "Scheduled" && new Date(observation.date) < new Date())
+  );
   
   const handleSupportingMaterialsSubmit = (observationId: string) => {
     // In a real app, this would handle the file upload to the server
@@ -126,251 +197,303 @@ export default function TeacherObservationsPage() {
     setSearchTerm(event.target.value);
   };
 
+  // Helper functions
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  const formatTime = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const getObserverName = (observation: ObservationSchedule) => {
+    if (observation.observation_group?.created_by?.name) {
+      return observation.observation_group.created_by.name;
+    }
+    return "Administrator";
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'scheduled':
+        return 'bg-blue-100 text-blue-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">My Observations</h1>
-          <p className="text-gray-600">View and prepare for upcoming observations</p>
+    <div className="space-y-8">
+      {/* Modern Header */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
+        
+        <div className="relative z-10 p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="text-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                  <Eye className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold">My Observations</h1>
+                  <p className="text-blue-100 text-lg mt-1">View and prepare for upcoming observations</p>
+                </div>
+              </div>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{upcomingObservations.length}</div>
+                  <div className="text-blue-100 text-sm">Upcoming</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{pastObservations.length}</div>
+                  <div className="text-blue-100 text-sm">Completed</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{upcomingObservations.length + pastObservations.length}</div>
+                  <div className="text-blue-100 text-sm">Total</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                <Calendar className="mr-2 h-5 w-5" />
+                Schedule Request
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b">
+      {/* Modern Tabs */}
+      <div className="bg-white rounded-2xl shadow-lg p-2 flex gap-2">
         <button
-          className={`py-2 px-4 font-medium text-sm ${
+          className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "upcoming"
-              ? "border-b-2 border-primary text-primary"
-              : "text-gray-600 hover:text-gray-800"
+              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
           onClick={() => setActiveTab("upcoming")}
         >
-          Upcoming Observations
+          <div className="flex items-center justify-center gap-2">
+            <Clock className="h-4 w-4" />
+            Upcoming Observations
+          </div>
         </button>
         <button
-          className={`py-2 px-4 font-medium text-sm ${
+          className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "past"
-              ? "border-b-2 border-primary text-primary"
-              : "text-gray-600 hover:text-gray-800"
+              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
           onClick={() => setActiveTab("past")}
         >
-          Past Observations
+          <div className="flex items-center justify-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Past Observations
+          </div>
         </button>
       </div>
 
-      {/* Observations List */}
-      <div className="space-y-4">
-        {(activeTab === "upcoming" ? upcomingObservations : pastObservations).map((observation) => (
-          <Card key={observation.id} className="border bg-white overflow-hidden">
-            <div className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold">{observation.class}</h3>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${observation.statusColor}`}>
-                      {observation.status}
-                    </span>
+      {/* Modern Observations List */}
+      <div className="space-y-6">
+        {loading ? (
+          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
+            <div className="p-8 text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <RefreshCw className="h-6 w-6 text-blue-500 animate-spin" />
+                <p className="text-gray-500 text-lg">Loading observations...</p>
+              </div>
+            </div>
+          </Card>
+        ) : (activeTab === "upcoming" ? upcomingObservations : pastObservations).length === 0 ? (
+          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div className="p-8 text-center">
+              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+                {activeTab === "upcoming" ? (
+                  <Clock className="h-12 w-12 text-blue-600" />
+                ) : (
+                  <CheckCircle className="h-12 w-12 text-green-600" />
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                {activeTab === "upcoming" ? "No upcoming observations" : "No past observations"}
+              </h3>
+              <p className="text-gray-600">
+                {activeTab === "upcoming" 
+                  ? "You're all caught up! No observations scheduled at this time." 
+                  : "Your observation history will appear here once you complete some observations."
+                }
+              </p>
+            </div>
+          </Card>
+        ) : (
+          (activeTab === "upcoming" ? upcomingObservations : pastObservations).map((observation) => (
+            <Card key={observation.id} className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white hover:shadow-2xl transition-all duration-300">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-100 p-6 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 p-2 rounded-xl">
+                      <BookOpen className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-xl text-gray-800">{teacherData?.subject || 'Subject'}</h3>
+                      <p className="text-gray-600 text-sm">Grade {teacherData?.grade || 'N/A'}</p>
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm mt-3">
-                    <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[90px]">Observer:</span>
-                      <span>{observation.observer}</span>
+                  <span className={`px-4 py-2 text-sm font-medium rounded-2xl ${getStatusColor(observation.status)}`}>
+                    {observation.status}
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-600 font-medium">Observer:</span>
+                      <span className="font-semibold text-gray-800">{getObserverName(observation)}</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[90px]">Class:</span>
-                      <span>{observation.class} • {observation.grade}</span>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-600 font-medium">Date & Time:</span>
+                      <span className="font-semibold text-gray-800">{formatDate(observation.date)}, {formatTime(observation.time)}</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[90px]">Date & Time:</span>
-                      <span>{observation.date}, {observation.time}</span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-600 font-medium">Type:</span>
+                      <span className="font-semibold text-gray-800 capitalize">{observation.observation_type.replace('-', ' ')}</span>
                     </div>
+                    {observation.notes && (
+                      <div className="flex items-start gap-3">
+                        <MessageSquare className="h-4 w-4 text-gray-500 mt-0.5" />
+                        <span className="text-gray-600 font-medium">Notes:</span>
+                        <span className="font-medium text-gray-800">{observation.notes}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
-                <div className="flex flex-col gap-2 min-w-[130px]">
-                  {/* Actions for upcoming observations */}
-                  {observation.status === "scheduled" && (
+                {/* Modern Action Buttons */}
+                <div className="flex flex-wrap gap-3">
+                  {observation.status === "Scheduled" && (
                     <>
                       <Button 
-                        variant={observation.lessonPlanSubmitted ? "outline" : "default"} 
-                        size="sm" 
-                        className="rounded-lg w-full"
+                        className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105"
                         onClick={() => {
                           setUploadingFor(observation.id);
                           setSelectedObservation(null);
                         }}
                       >
-                        {observation.lessonPlanSubmitted ? "Update Supporting Materials" : "Submit Supporting Materials"}
+                        <FileText className="mr-2 h-4 w-4" />
+                        Submit Materials
                       </Button>
                       <Button 
                         variant="outline" 
-                        size="sm" 
-                        className="rounded-lg w-full"
+                        className="rounded-2xl border-blue-200 text-blue-600 hover:bg-blue-50"
                         onClick={() => {
                           setSelectedObservation(observation.id === selectedObservation ? null : observation.id);
                           setUploadingFor(null);
                         }}
                       >
+                        <Eye className="mr-2 h-4 w-4" />
                         {observation.id === selectedObservation ? "Hide Details" : "View Details"}
                       </Button>
                     </>
                   )}
                   
-                  {/* Actions for completed observations */}
-                  {observation.status === "completed" && (
-                    <>
-                      {observation.feedback && observation.feedback.status === "pending_approval" && (
-                        <Button 
-                          size="sm" 
-                          className="rounded-lg w-full"
-                          onClick={() => {
-                            handleFeedbackResponse(observation.id, true);
-                          }}
-                        >
-                          Review Feedback
-                        </Button>
-                      )}
-                      
-                      {observation.feedback && observation.feedback.status === "approved" && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="rounded-lg w-full"
-                          onClick={() => {
-                            setSelectedObservation(observation.id === selectedObservation ? null : observation.id);
-                          }}
-                        >
-                          {observation.id === selectedObservation ? "Hide Feedback" : "View Feedback"}
-                        </Button>
-                      )}
-                    </>
+                  {observation.status === "Completed" && (
+                    <Button 
+                      variant="outline" 
+                      className="rounded-2xl border-green-200 text-green-600 hover:bg-green-50"
+                      onClick={() => {
+                        setSelectedObservation(observation.id === selectedObservation ? null : observation.id);
+                      }}
+                    >
+                      <Star className="mr-2 h-4 w-4" />
+                      {observation.id === selectedObservation ? "Hide Details" : "View Feedback"}
+                    </Button>
                   )}
                 </div>
-              </div>
               
-              {/* Supporting Materials Upload Section */}
-              {uploadingFor === observation.id && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="font-medium mb-3">Submit Supporting Materials</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="supporting-materials">Supporting Materials</Label>
-                      <Input
-                        id="supporting-materials"
-                        type="file"
-                        accept=".pdf,.docx,.pptx,.xlsx"
-                        multiple
-                        className="mt-1 rounded-lg"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        You can select multiple files (up to 5) - presentations, worksheets, handouts, etc.
-                      </p>
+                {/* Modern Supporting Materials Upload Section */}
+                {uploadingFor === observation.id && (
+                  <div className="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl border">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="bg-blue-100 p-2 rounded-xl">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <h4 className="font-semibold text-lg text-gray-800">Submit Supporting Materials</h4>
                     </div>
-                    
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setUploadingFor(null)}
-                        className="rounded-lg"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        disabled={isUploading}
-                        onClick={() => handleSupportingMaterialsSubmit(observation.id)}
-                        className="rounded-lg"
-                      >
-                        {isUploading ? "Uploading..." : "Submit"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Feedback Review Section */}
-              {feedback.id === observation.id && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="font-medium mb-3">Review Feedback</h4>
-                  
-                  <div className="space-y-4">
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <div className="font-medium text-green-700 mb-1">Strengths (Glows)</div>
-                      <div className="text-sm">{observation.feedback?.glows}</div>
-                    </div>
-                    
-                    <div className="bg-amber-50 p-3 rounded-lg">
-                      <div className="font-medium text-amber-700 mb-1">Areas for Growth</div>
-                      <div className="text-sm">{observation.feedback?.grows}</div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          id="approve"
-                          name="feedback-response"
-                          checked={feedback.approve}
-                          onChange={() => setFeedback({...feedback, approve: true})}
-                          className="h-4 w-4"
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="supporting-materials" className="text-sm font-medium text-gray-700">Supporting Materials</Label>
+                        <Input
+                          id="supporting-materials"
+                          type="file"
+                          accept=".pdf,.docx,.pptx,.xlsx"
+                          multiple
+                          className="mt-2 rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                         />
-                        <Label htmlFor="approve">I accept this feedback</Label>
+                        <p className="text-sm text-gray-600 mt-2">
+                          You can select multiple files (up to 5) - presentations, worksheets, handouts, etc.
+                        </p>
                       </div>
                       
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          id="request-review"
-                          name="feedback-response"
-                          checked={!feedback.approve}
-                          onChange={() => setFeedback({...feedback, approve: false})}
-                          className="h-4 w-4"
-                        />
-                        <Label htmlFor="request-review">I'd like to request a review</Label>
+                      <div className="flex items-center justify-end gap-3 pt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setUploadingFor(null)}
+                          className="rounded-2xl border-gray-300 hover:bg-gray-50"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          disabled={isUploading}
+                          onClick={() => handleSupportingMaterialsSubmit(observation.id)}
+                          className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300"
+                        >
+                          {isUploading ? (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Submit
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    </div>
-                    
-                    {!feedback.approve && (
-                      <div>
-                        <Label htmlFor="review-comments">Comments or Questions</Label>
-                        <textarea
-                          id="review-comments"
-                          className="w-full mt-1 p-2 border rounded-lg min-h-[100px]"
-                          placeholder="Please explain your concerns or questions about the feedback..."
-                          value={feedback.comments}
-                          onChange={(e) => setFeedback({...feedback, comments: e.target.value})}
-                        ></textarea>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setFeedback({id: "", approve: true, comments: ""})}
-                        className="rounded-lg"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        disabled={!feedback.approve && !feedback.comments}
-                        onClick={submitFeedbackResponse}
-                        className="rounded-lg"
-                      >
-                        {feedback.approve ? "Submit Approval" : "Request Review"}
-                      </Button>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              
+
               
               {/* Observation Details Section */}
-              {selectedObservation === observation.id && observation.status === "scheduled" && (
+              {selectedObservation === observation.id && observation.status === "Scheduled" && (
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="font-medium mb-3">Observation Details</h4>
                   
@@ -379,9 +502,7 @@ export default function TeacherObservationsPage() {
                       <h5 className="font-medium text-gray-600">Preparation Checklist</h5>
                       <ul className="mt-2 space-y-2">
                         <li className="flex items-start gap-2">
-                          <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs ${observation.lessonPlanSubmitted ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                            {observation.lessonPlanSubmitted ? '✓' : '!'}
-                          </span>
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs bg-gray-100 text-gray-400">!</span>
                           <span>Submit supporting materials</span>
                         </li>
                         <li className="flex items-start gap-2">
@@ -408,63 +529,33 @@ export default function TeacherObservationsPage() {
                 </div>
               )}
               
-              {/* Past Observation Feedback Section */}
-              {selectedObservation === observation.id && observation.status === "completed" && (
+              {/* Past Observation Details Section */}
+              {selectedObservation === observation.id && observation.status === "Completed" && (
                 <div className="mt-4 pt-4 border-t">
-                  <h4 className="font-medium mb-3">Observation Feedback</h4>
+                  <h4 className="font-medium mb-3">Observation Summary</h4>
                   
-                  <div className="space-y-4">
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <div className="font-medium text-green-700 mb-1">Strengths (Glows)</div>
-                      <div className="text-sm">{observation.feedback?.glows}</div>
-                    </div>
-                    
-                    <div className="bg-amber-50 p-3 rounded-lg">
-                      <div className="font-medium text-amber-700 mb-1">Areas for Growth</div>
-                      <div className="text-sm">{observation.feedback?.grows}</div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <div>
-                        Status: <span className="font-medium text-blue-600">{observation.feedback?.status === "approved" ? "Approved by You" : "Pending Your Approval"}</span>
+                  <div className="space-y-3">
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <div className="font-medium text-blue-700 mb-1">Observation Completed</div>
+                      <div className="text-sm text-blue-600">
+                        This {observation.observation_type.replace('-', ' ')} observation was completed on {formatDate(observation.date)}.
+                        {observation.notes && ` Notes: ${observation.notes}`}
                       </div>
-                      
-                      {observation.feedback?.status === "pending_approval" && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="rounded-lg"
-                          onClick={() => {
-                            handleFeedbackResponse(observation.id, true);
-                          }}
-                        >
-                          Review Feedback
-                        </Button>
-                      )}
+                    </div>
+                    
+                    <div className="text-sm text-gray-600">
+                      <p>Feedback and detailed results will be available once the administrator completes the evaluation process.</p>
                     </div>
                   </div>
                 </div>
               )}
             </div>
           </Card>
-        ))}
+        ))
+        )}
       </div>
       
-      {/* Empty State */}
-      {((activeTab === "upcoming" && upcomingObservations.length === 0) ||
-        (activeTab === "past" && pastObservations.length === 0)) && (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border">
-          <div className="text-4xl mb-3">📋</div>
-          <h3 className="text-lg font-medium text-gray-800 mb-1">
-            No {activeTab === "upcoming" ? "upcoming" : "past"} observations
-          </h3>
-          <p className="text-gray-600">
-            {activeTab === "upcoming"
-              ? "You don't have any scheduled observations at this time."
-              : "You don't have any completed observations yet."}
-          </p>
-        </div>
-      )}
+
     </div>
   );
 } 

@@ -1,9 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import Calendar from "@/components/ui/calendar";
+import { 
+  Users, 
+  GraduationCap, 
+  UserCheck, 
+  UsersRound, 
+  TrendingUp, 
+  Activity,
+  Clock,
+  AlertCircle,
+  Calendar as CalendarIcon,
+  Sparkles
+} from "lucide-react";
 
 interface StatsData {
   total_users: number;
@@ -12,29 +25,67 @@ interface StatsData {
   total_observation_groups: number;
 }
 
-// Mock data for recent activity (keeping this as is for now)
+// Mock data for recent activity
 const recentActivity = [
   {
     id: "1",
     action: "Created new user",
     user: "Emily Rodriguez (Teacher)",
     date: "Mar 3, 2023",
-    time: "1:00 PM"
+    time: "1:00 PM",
+    type: "user",
+    icon: Users
   },
   {
     id: "2",
     action: "Modified observation group",
     user: "Math Department",
     date: "Mar 2, 2023",
-    time: "11:30 AM"
+    time: "11:30 AM",
+    type: "group",
+    icon: UsersRound
   },
   {
     id: "3",
     action: "Imported 10 teacher accounts",
     user: "Bulk Import",
     date: "Mar 1, 2023",
-    time: "9:45 AM"
+    time: "9:45 AM",
+    type: "import",
+    icon: Activity
   },
+];
+
+// Mock calendar events
+const mockEvents = [
+  {
+    id: "1",
+    title: "Teacher Training Session",
+    date: new Date(2024, new Date().getMonth(), 15),
+    color: "bg-blue-500",
+    description: "Professional development workshop"
+  },
+  {
+    id: "2",
+    title: "Monthly Review Meeting",
+    date: new Date(2024, new Date().getMonth(), 22),
+    color: "bg-green-500",
+    description: "System performance review"
+  },
+  {
+    id: "3",
+    title: "New User Onboarding",
+    date: new Date(2024, new Date().getMonth(), 28),
+    color: "bg-purple-500",
+    description: "Orientation for new staff"
+  },
+  {
+    id: "4",
+    title: "System Maintenance",
+    date: new Date(2024, new Date().getMonth() + 1, 5),
+    color: "bg-red-500",
+    description: "Scheduled maintenance window"
+  }
 ];
 
 export default function SuperUserDashboard() {
@@ -65,147 +116,265 @@ export default function SuperUserDashboard() {
     { 
       label: "Total Users", 
       key: "total_users" as keyof StatsData,
-      icon: "👥",
-      link: "/super/users"
+      icon: Users,
+      link: "/super/users",
+      gradient: "from-blue-500 to-cyan-500",
+      bgColor: "from-blue-50 to-cyan-50",
+      iconColor: "text-blue-600"
     },
     { 
       label: "Teachers", 
       key: "total_teachers" as keyof StatsData,
-      icon: "👩‍🏫",
-      link: "/super/users?role=teacher"
+      icon: GraduationCap,
+      link: "/super/users?role=teacher",
+      gradient: "from-green-500 to-emerald-500",
+      bgColor: "from-green-50 to-emerald-50",
+      iconColor: "text-green-600"
     },
     { 
       label: "Administrators", 
       key: "total_administrators" as keyof StatsData,
-      icon: "👨‍💼",
-      link: "/super/users?role=administrator"
+      icon: UserCheck,
+      link: "/super/users?role=administrator",
+      gradient: "from-purple-500 to-pink-500",
+      bgColor: "from-purple-50 to-pink-50",
+      iconColor: "text-purple-600"
     },
     { 
       label: "Observation Groups", 
       key: "total_observation_groups" as keyof StatsData,
-      icon: "👥",
-      link: "/super/groups"
+      icon: UsersRound,
+      link: "/super/groups",
+      gradient: "from-orange-500 to-red-500",
+      bgColor: "from-orange-50 to-red-50",
+      iconColor: "text-orange-600"
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Welcome header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Super User Dashboard</h1>
-          <p className="text-gray-600">System-wide management and configuration</p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/super/users/create">
-            <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
-              <span className="mr-2">➕</span> Create User
-            </Button>
-          </Link>
-          <Link href="/super/users/import">
-            <Button variant="outline" className="rounded-full shadow-sm">
-              <span className="mr-2">📥</span> Import Users
-            </Button>
-          </Link>
+    <div className="space-y-8">
+      {/* Modern Header with Gradient */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-3xl shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
+        
+        <div className="relative z-10 p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="text-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                  <Sparkles className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold">Super User Dashboard</h1>
+                  <p className="text-blue-100 text-lg mt-1">System-wide management and configuration</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <Link href="/super/users/create">
+                <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                  <Users className="mr-2 h-5 w-5" />
+                  Create User
+                </Button>
+              </Link>
+              <Link href="/super/users/import">
+                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                  <Activity className="mr-2 h-5 w-5" />
+                  Import Users
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Modern Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {loading ? (
           // Loading state
           Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index} className="p-4 h-full border bg-white">
-              <div className="flex justify-between items-start">
+            <Card key={index} className="relative overflow-hidden bg-white border-0 shadow-xl rounded-3xl">
+              <div className="p-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-12 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-24"></div>
+                  <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-24 mb-4"></div>
+                  <div className="h-10 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-16 mb-3"></div>
+                  <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-20"></div>
                 </div>
-                <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="absolute top-6 right-6 w-14 h-14 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl animate-pulse"></div>
               </div>
             </Card>
           ))
         ) : error ? (
           // Error state
           <div className="col-span-full">
-            <Card className="p-4 border-red-200 bg-red-50">
-              <p className="text-red-600">Error loading stats: {error}</p>
+            <Card className="p-6 border-0 shadow-xl rounded-3xl bg-gradient-to-br from-red-50 to-rose-100">
+              <div className="flex items-center gap-3">
+                <div className="bg-red-100 p-3 rounded-2xl">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-800">Error Loading Stats</h3>
+                  <p className="text-red-600">{error}</p>
+                </div>
+              </div>
             </Card>
           </div>
         ) : (
           // Stats display
-          statsConfig.map((stat, index) => (
-            <Link href={stat.link} key={index} className="block">
-              <Card className="p-4 h-full border hover:border-primary/40 transition-colors hover:shadow-md bg-white">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                    <p className="text-2xl font-bold mt-1 text-gray-800">
-                      {stats?.[stat.key] || 0}
-                    </p>
-                    <div className="mt-1 text-xs font-medium text-gray-500">
-                      Current total
+          statsConfig.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <Link href={stat.link} key={index} className="block group">
+                <Card className={`relative overflow-hidden border-0 shadow-xl rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 bg-gradient-to-br ${stat.bgColor}`}>
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-600 mb-2">{stat.label}</p>
+                        <p className="text-3xl font-bold text-gray-800 mb-1">
+                          {stats?.[stat.key] || 0}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-green-500" />
+                          <span className="text-xs font-medium text-green-600">
+                            Active
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className={`bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <IconComponent className={`h-8 w-8 ${stat.iconColor}`} />
+                      </div>
                     </div>
+                    
+                    {/* Decorative gradient overlay */}
+                    <div className={`absolute inset-0 bg-gradient-to-r ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-3xl`}></div>
+                    
+                    {/* Bottom accent line */}
+                    <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient} rounded-b-3xl`}></div>
                   </div>
-                  <div className="text-3xl bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center text-primary/90">
-                    {stat.icon}
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))
+                </Card>
+              </Link>
+            );
+          })
         )}
       </div>
 
-      {/* Recent Activity */}
-      <Card className="border p-0 overflow-hidden bg-white">
-        <div className="border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-secondary/5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">Recent Activity</h2>
-            <Link href="/super/activity" className="text-primary text-sm font-medium hover:underline">
-              View All
-            </Link>
-          </div>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Calendar Section */}
+        <div>
+          <Calendar 
+            events={mockEvents} 
+            onDateClick={(date) => console.log('Date clicked:', date)}
+            onEventClick={(event) => console.log('Event clicked:', event)}
+            className="shadow-xl max-w-md mx-auto lg:max-w-none"
+          />
         </div>
-        <div className="divide-y">
-          {recentActivity.map((activity) => (
-            <div key={activity.id} className="p-4 hover:bg-gray-50">
-              <div className="flex justify-between items-start mb-2">
-                <div className="font-medium">{activity.action}</div>
-                <div className="text-xs text-gray-500">{activity.date}, {activity.time}</div>
-              </div>
-              <div className="text-sm text-gray-600">{activity.user}</div>
-            </div>
-          ))}
-        </div>
-      </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-5 border bg-white hover:shadow-md transition-shadow">
-          <h3 className="font-semibold mb-2">User Management</h3>
-          <p className="text-sm text-gray-600 mb-4">Create, edit, or deactivate user accounts</p>
-          <Link href="/super/users">
-            <Button variant="outline" className="w-full rounded-lg">Manage Users</Button>
-          </Link>
-        </Card>
-        
-        <Card className="p-5 border bg-white hover:shadow-md transition-shadow">
-          <h3 className="font-semibold mb-2">Observation Groups</h3>
-          <p className="text-sm text-gray-600 mb-4">Organize teachers into observation groups</p>
-          <Link href="/super/groups">
-            <Button variant="outline" className="w-full rounded-lg">Manage Groups</Button>
-          </Link>
-        </Card>
-        
-        <Card className="p-5 border bg-white hover:shadow-md transition-shadow">
-          <h3 className="font-semibold mb-2">System Settings</h3>
-          <p className="text-sm text-gray-600 mb-4">Configure system-wide settings and preferences</p>
-          <Link href="/super/settings">
-            <Button variant="outline" className="w-full rounded-lg">System Settings</Button>
-          </Link>
-        </Card>
+        {/* Right Sidebar */}
+        <div className="space-y-6">
+          {/* Recent Activity */}
+          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
+            <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                    <Activity className="h-5 w-5" />
+                  </div>
+                  <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+                </div>
+                <Link href="/super/activity" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
+                  View All
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-gray-100">
+                {recentActivity.map((activity) => {
+                  const IconComponent = activity.icon;
+                  return (
+                    <div key={activity.id} className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-2 rounded-xl flex-shrink-0">
+                          <IconComponent className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="font-medium text-gray-800 text-sm">{activity.action}</p>
+                            <p className="text-xs text-gray-500 ml-2">{activity.time}</p>
+                          </div>
+                          <p className="text-sm text-gray-600">{activity.user}</p>
+                          <p className="text-xs text-gray-500 mt-1">{activity.date}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-100">
+            <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <Link href="/super/users" className="block">
+                <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-blue-100 p-2 rounded-xl group-hover:bg-blue-200 transition-colors">
+                      <Users className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">User Management</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">Create, edit, or deactivate user accounts</p>
+                  <div className="text-blue-600 text-sm font-medium group-hover:text-blue-700">
+                    Manage Users →
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/super/groups" className="block">
+                <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-green-100 p-2 rounded-xl group-hover:bg-green-200 transition-colors">
+                      <UsersRound className="h-5 w-5 text-green-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">Observation Groups</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">Organize teachers into observation groups</p>
+                  <div className="text-green-600 text-sm font-medium group-hover:text-green-700">
+                    Manage Groups →
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/super/settings" className="block">
+                <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-purple-100 p-2 rounded-xl group-hover:bg-purple-200 transition-colors">
+                      <AlertCircle className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">System Settings</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">Configure system-wide settings and preferences</p>
+                  <div className="text-purple-600 text-sm font-medium group-hover:text-purple-700">
+                    System Settings →
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

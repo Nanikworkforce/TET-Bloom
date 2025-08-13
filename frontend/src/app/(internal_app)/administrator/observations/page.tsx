@@ -2,12 +2,29 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ObservationType, ObservationRecord } from "@/lib/types";
 import { scheduleApi } from "@/lib/api";
+import { 
+  Eye, 
+  Calendar, 
+  Clock, 
+  Search, 
+  Filter, 
+  Plus, 
+  BarChart3,
+  Edit,
+  X,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw,
+  FileText,
+  Star,
+  Users
+} from "lucide-react";
 
 // Mock data as fallback
 const mockObservations: ObservationRecord[] = [
@@ -235,24 +252,62 @@ export default function ObservationsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Teacher Observations</h1>
-          <p className="text-gray-600">Schedule, manage, and review observation sessions</p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/administrator/observations/schedule">
-            <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
-              <span className="mr-2">➕</span> Schedule New Observation
-            </Button>
-          </Link>
-          <Link href="/administrator/observations/t-tess">
-            <Button className="rounded-full shadow-sm bg-green-600 hover:bg-green-700 text-white">
-              <span className="mr-2">📊</span> T-TESS Evaluation
-            </Button>
-          </Link>
+    <div className="space-y-8">
+      {/* Modern Header */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
+        
+        <div className="relative z-10 p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="text-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                  <Eye className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold">Teacher Observations</h1>
+                  <p className="text-blue-100 text-lg mt-1">Schedule, manage, and review observation sessions</p>
+                </div>
+              </div>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{observations.length}</div>
+                  <div className="text-blue-100 text-sm">Total</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{observations.filter(o => o.status === 'scheduled').length}</div>
+                  <div className="text-blue-100 text-sm">Scheduled</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{observations.filter(o => o.status === 'completed').length}</div>
+                  <div className="text-blue-100 text-sm">Completed</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{observations.filter(o => o.status === 'completed' && !o.feedback).length}</div>
+                  <div className="text-blue-100 text-sm">Pending Feedback</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <Link href="/administrator/observations/schedule">
+                <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Schedule Observation
+                </Button>
+              </Link>
+              <Link href="/administrator/observations/t-tess">
+                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                  <BarChart3 className="mr-2 h-5 w-5" />
+                  T-TESS Evaluation
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 

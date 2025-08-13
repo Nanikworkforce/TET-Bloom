@@ -6,6 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
+import { 
+  UsersRound, 
+  Plus, 
+  Eye, 
+  Edit, 
+  Users, 
+  Search, 
+  Filter,
+  Calendar,
+  Shield,
+  GraduationCap,
+  TrendingUp
+} from "lucide-react";
 
 // Mock data for observation groups
 const mockGroups = [

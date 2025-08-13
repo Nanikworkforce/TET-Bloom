@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth-context";
+import { useState, useEffect } from "react";
 
 // Mock data
 const feedbackEntries = [
@@ -94,7 +98,75 @@ const feedbackEntries = [
   }
 ];
 
+interface TeacherData {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
+
 export default function TeacherFeedbackPage() {
+  const { user } = useAuth();
+  const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch teacher data from backend
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      if (!user?.id) return;
+
+      try {
+        const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+        if (allTeachersResponse.ok) {
+          const allTeachers = await allTeachersResponse.json();
+          
+          const teacherRecord = allTeachers.find((teacher: TeacherData) => 
+            teacher.user.email === user.email || teacher.user.id === user.id
+          );
+          
+          if (teacherRecord) {
+            const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+            if (individualResponse.ok) {
+              const teacherDetails = await individualResponse.json();
+              setTeacherData(teacherDetails);
+            } else {
+              setTeacherData(teacherRecord);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching teacher data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeacherData();
+  }, [user?.id, user?.email]);
+
+  // Get teacher's name for dynamic replacement
+  const getTeacherName = () => {
+    if (teacherData?.user?.name) {
+      return teacherData.user.name;
+    }
+    if (user?.fullName) {
+      return user.fullName;
+    }
+    return "the teacher";
+  };
+
+  // Create dynamic feedback entries with real teacher name
+  const dynamicFeedbackEntries = feedbackEntries.map(entry => ({
+    ...entry,
+    comments: entry.comments.replace(/Ms\. Chen/g, getTeacherName())
+  }));
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -201,7 +273,7 @@ export default function TeacherFeedbackPage() {
 
       {/* Feedback entries */}
       <div className="space-y-6">
-        {feedbackEntries.map((feedback) => (
+        {dynamicFeedbackEntries.map((feedback) => (
           <Card key={feedback.id} className="bg-white border overflow-hidden">
             {/* Header */}
             <div className="flex flex-wrap justify-between items-center p-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5">

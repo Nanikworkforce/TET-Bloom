@@ -57,6 +57,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<AuthState>(initialState);
   const router = useRouter();
 
+  // Helper function for retry with exponential backoff
+  const retryWithBackoff = async <T,>(
+    fn: () => Promise<T>,
+    maxRetries: number = 3,
+    baseDelay: number = 1000
+  ): Promise<T> => {
+    let lastError: any;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          console.log(`Retry attempt ${attempt}/${maxRetries} after ${delay}ms delay`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        console.error(`Attempt ${attempt + 1} failed:`, error);
+        
+        if (attempt === maxRetries) {
+          console.error('All retry attempts exhausted');
+          throw lastError;
+        }
+      }
+    }
+    
+    throw lastError;
+  };
+
   // Fetch user profile data after authentication
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -231,42 +262,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
      // --------------------------------------------------
      console.log('Starting Supabase authentication...');
      try {
-       console.log('Calling supabase.auth.signInWithPassword...');
+       // Attempt Supabase authentication with retry mechanism
+       const result = await retryWithBackoff(async () => {
+         console.log('Calling supabase.auth.signInWithPassword...');
+         
+         // Add timeout to prevent hanging - increased to 30 seconds for better network tolerance
+         const authPromise = supabase.auth.signInWithPassword({
+           email,
+           password,
+         });
+         
+         const timeoutPromise = new Promise((_, reject) => {
+           setTimeout(() => reject(new Error('Authentication timeout')), 30000);
+         });
+         
+         return await Promise.race([authPromise, timeoutPromise]) as any;
+       }, 2, 2000); // 2 retries, starting with 2 second delay
        
-       // Add timeout to prevent hanging
-       const authPromise = supabase.auth.signInWithPassword({
-         email,
-         password,
-       });
+       console.log('Supabase auth response received:', { data: !!result?.data, error: !!result?.error });
        
-       const timeoutPromise = new Promise((_, reject) => {
-         setTimeout(() => reject(new Error('Authentication timeout')), 10000);
-       });
-       
-       const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
-       console.log('Supabase auth response received:', { data: !!data, error: !!error });
+       const { data, error } = result;
 
       if (error) {
         // If Supabase auth fails, try Django backend as fallback
         console.log('Supabase auth failed, trying Django backend fallback...');
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-          });
+          const response = await retryWithBackoff(async () => {
+            return await fetch('http://127.0.0.1:8000/api/auth/login/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email, password }),
+            });
+          }, 2, 1000); // 2 retries, starting with 1 second delay
           
           if (response.ok) {
             const userData = await response.json();
+            console.log('Django user data received:', userData);
+            
+            // Map Django roles to frontend routes
+            const mapDjangoRole = (role: string) => {
+              const normalizedRole = role?.toLowerCase().replace(/\s+/g, '_');
+              console.log('Mapping role:', role, '→', normalizedRole);
+              
+              switch (normalizedRole) {
+                case 'super_user':
+                case 'super user':
+                  return 'super_user';
+                case 'administrator':
+                case 'admin':
+                  return 'administrator';
+                case 'teacher':
+                  return 'teacher';
+                default:
+                  console.warn('Unknown role:', role, 'defaulting to teacher');
+                  return 'teacher';
+              }
+            };
+            
+            const mappedRole = mapDjangoRole(userData.role);
+            
             // Create a mock user profile for Django users
-            const profile = {
+            const profile: UserProfile = {
               id: userData.id || `django-${email}`,
               email: email,
               fullName: userData.name || 'Django User',
-              role: userData.role?.toLowerCase().replace(' ', '_') || 'teacher',
+              role: mappedRole as UserRole,
             };
+            
+            console.log('Final profile:', profile);
             
             setState({
               user: profile,
@@ -275,13 +340,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             });
             
             // Redirect based on role
+            console.log('Redirecting based on role:', profile.role);
             if (profile.role === 'super_user') {
+              console.log('Redirecting to /super');
               router.push('/super');
             } else if (profile.role === 'administrator') {
+              console.log('Redirecting to /administrator');
               router.push('/administrator');
             } else if (profile.role === 'teacher') {
+              console.log('Redirecting to /teacher');
               router.push('/teacher');
             } else {
+              console.log('Redirecting to / (default)');
               router.push('/');
             }
             
@@ -366,7 +436,117 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: null };
     } catch (err) {
       console.error('Sign in error:', err);
-      return { error: err };
+      
+      // If we get a timeout or any other error, try Django backend as fallback
+      let errorMessage = 'Authentication failed';
+      
+      if (err instanceof Error && (err.message.includes('timeout') || err.message.includes('Authentication timeout'))) {
+        console.log('Authentication timeout occurred, trying Django backend fallback...');
+        errorMessage = 'Authentication service timed out. Attempting fallback authentication...';
+      } else if (err instanceof Error && err.message.includes('fetch')) {
+        console.log('Network error during Supabase auth, trying Django backend fallback...');
+        errorMessage = 'Network connection issue. Attempting alternative authentication...';
+      } else {
+        console.log('Supabase auth threw an error, trying Django backend fallback...');
+        errorMessage = 'Primary authentication failed. Attempting fallback authentication...';
+      }
+      
+      console.log('Error context:', errorMessage);
+      
+      try {
+        const response = await retryWithBackoff(async () => {
+          return await fetch('http://127.0.0.1:8000/api/auth/login/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+        }, 2, 1000); // 2 retries, starting with 1 second delay
+        
+        if (response.ok) {
+          const userData = await response.json();
+          console.log('Django user data received:', userData);
+          
+          // Map Django roles to frontend routes
+          const mapDjangoRole = (role: string) => {
+            const normalizedRole = role?.toLowerCase().replace(/\s+/g, '_');
+            console.log('Mapping role:', role, '→', normalizedRole);
+            
+            switch (normalizedRole) {
+              case 'super_user':
+              case 'super user':
+                return 'super_user';
+              case 'administrator':
+              case 'admin':
+                return 'administrator';
+              case 'teacher':
+                return 'teacher';
+              default:
+                console.warn('Unknown role:', role, 'defaulting to teacher');
+                return 'teacher';
+            }
+          };
+          
+          const mappedRole = mapDjangoRole(userData.role);
+          
+          // Create a mock user profile for Django users
+          const profile: UserProfile = {
+            id: userData.id || `django-${email}`,
+            email: email,
+            fullName: userData.name || 'Django User',
+            role: mappedRole as UserRole,
+          };
+          
+          console.log('Final profile:', profile);
+          
+          setState({
+            user: profile,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          
+          // Redirect based on role
+          console.log('Redirecting based on role:', profile.role);
+          if (profile.role === 'super_user') {
+            console.log('Redirecting to /super');
+            router.push('/super');
+          } else if (profile.role === 'administrator') {
+            console.log('Redirecting to /administrator');
+            router.push('/administrator');
+          } else if (profile.role === 'teacher') {
+            console.log('Redirecting to /teacher');
+            router.push('/teacher');
+          } else {
+            console.log('Redirecting to / (default)');
+            router.push('/');
+          }
+          
+          return { error: null };
+        }
+      } catch (backendError) {
+        console.error('Django backend auth also failed:', backendError);
+        
+        // Both authentication methods failed, provide comprehensive error message
+        const finalError = new Error(
+          'Authentication failed: Both primary and fallback authentication services are unavailable. ' +
+          'Please check your network connection and try again later.'
+        );
+        
+        // Add context about the original errors
+        (finalError as any).originalError = err;
+        (finalError as any).backendError = backendError;
+        
+        return { error: finalError };
+      }
+      
+      // If we reach here, Django fallback failed but didn't throw
+      const fallbackError = new Error(
+        'Authentication failed: Invalid credentials or service unavailable. Please check your email and password.'
+      );
+      (fallbackError as any).originalError = err;
+      
+      return { error: fallbackError };
     }
   };
 

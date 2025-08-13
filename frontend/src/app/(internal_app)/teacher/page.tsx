@@ -1,30 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import { useState, useEffect } from "react";
 
-// Mock data
-const upcomingObservations = [
-  {
-    id: "1",
-    observer: "Administrator Johnson",
-    date: "Mar 15, 2023",
-    time: "10:30 AM",
-    class: "Mathematics 101",
-    grade: "7th Grade",
-    status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800"
-  },
-  {
-    id: "2",
-    observer: "Vice Administrator Smith",
-    date: "Mar 22, 2023",
-    time: "1:15 PM",
-    class: "Mathematics 102",
-    grade: "7th Grade",
-    status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800"
-  }
-];
+// Note: Observation data is now fetched from the backend API
 
 const recentFeedback = [
   {
@@ -91,14 +73,210 @@ const develGoals = [
   }
 ];
 
+interface TeacherData {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
+
+interface ObservationSchedule {
+  id: string;
+  date: string;
+  time: string;
+  status: string;
+  observation_type: string;
+  notes?: string;
+  teacher: TeacherData;
+  observation_group?: {
+    id: string;
+    name: string;
+    created_by: {
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+    };
+    status: string;
+  };
+}
+
 export default function TeacherDashboard() {
+  const { user } = useAuth();
+  const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [observations, setObservations] = useState<ObservationSchedule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [observationsLoading, setObservationsLoading] = useState(true);
+
+  // Fetch individual teacher data from backend
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      if (!user?.id) return;
+
+      try {
+        // First, get all teachers to find the teacher record that matches the user
+        const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+        if (allTeachersResponse.ok) {
+          const allTeachers = await allTeachersResponse.json();
+          console.log('All teachers:', allTeachers);
+          
+          // Find the teacher record that matches the current user
+          const teacherRecord = allTeachers.find((teacher: TeacherData) => 
+            teacher.user.email === user.email || teacher.user.id === user.id
+          );
+          
+          if (teacherRecord) {
+            console.log('Found teacher record:', teacherRecord);
+            
+            // Now fetch individual teacher details using the specific endpoint
+            const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+            if (individualResponse.ok) {
+              const teacherDetails = await individualResponse.json();
+              console.log('Individual teacher details:', teacherDetails);
+              setTeacherData(teacherDetails);
+            } else {
+              console.error('Failed to fetch individual teacher details:', individualResponse.status);
+              // Fallback to the teacher record we found
+              setTeacherData(teacherRecord);
+            }
+          } else {
+            console.log('Teacher record not found for user:', user.email);
+          }
+        } else {
+          console.error('Failed to fetch teachers list:', allTeachersResponse.status);
+        }
+      } catch (error) {
+        console.error('Error fetching teacher data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeacherData();
+  }, [user?.id, user?.email]);
+
+  // Fetch observations for the teacher
+  useEffect(() => {
+    const fetchObservations = async () => {
+      if (!teacherData?.id) return;
+
+      try {
+        setObservationsLoading(true);
+        const response = await fetch('http://127.0.0.1:8000/api/schedules/');
+        
+        if (response.ok) {
+          const allSchedules = await response.json();
+          console.log('All schedules:', allSchedules);
+          
+          // Filter schedules for the current teacher
+          const teacherObservations = allSchedules.filter((schedule: ObservationSchedule) => 
+            schedule.teacher?.id === teacherData.id
+          );
+          
+          console.log('Teacher observations:', teacherObservations);
+          
+          // Sort by date (most recent first)
+          const sortedObservations = teacherObservations.sort((a: ObservationSchedule, b: ObservationSchedule) => 
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+          
+          // Filter for upcoming observations (scheduled status)
+          const upcomingObservations = sortedObservations.filter((obs: ObservationSchedule) => 
+            obs.status === 'Scheduled' && new Date(obs.date) >= new Date()
+          );
+          
+          setObservations(upcomingObservations);
+        } else {
+          console.error('Failed to fetch schedules:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching observations:', error);
+      } finally {
+        setObservationsLoading(false);
+      }
+    };
+
+    fetchObservations();
+  }, [teacherData?.id]);
+  
+  // Get teacher's name from API data or fallback to auth data
+  const getTeacherName = () => {
+    if (teacherData?.user?.name) {
+      const firstName = teacherData.user.name.split(' ')[0];
+      return firstName;
+    }
+    
+    if (user?.fullName) {
+      const firstName = user.fullName.split(' ')[0];
+      return firstName;
+    }
+    
+    return "Teacher";
+  };
+
+  // Format date for display
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  // Format time for display
+  const formatTime = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  // Get observer name from observation group or fall back
+  const getObserverName = (observation: ObservationSchedule) => {
+    if (observation.observation_group?.created_by?.name) {
+      return observation.observation_group.created_by.name;
+    }
+    return "Administrator";
+  };
+
+  // Get status color for display
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'scheduled':
+        return 'bg-blue-100 text-blue-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome, Ms. Chen</h1>
-          <p className="text-gray-600">Your teaching journey at a glance</p>
+          <h1 className="text-2xl font-bold text-gray-800">Welcome, {getTeacherName()}!</h1>
+          {teacherData ? (
+            <p className="text-gray-600">
+              {teacherData.subject} • {teacherData.grade} • {teacherData.years_of_experience} years experience
+            </p>
+          ) : (
+            <p className="text-gray-600">Your teaching journey at a glance</p>
+          )}
+          {loading && (
+            <p className="text-gray-400 text-sm">Loading teacher details...</p>
+          )}
         </div>
       </div>
 
@@ -112,8 +290,11 @@ export default function TeacherDashboard() {
               </div>
               <h2 className="font-semibold">Upcoming Observations</h2>
             </div>
-            <p className="text-4xl font-bold">{upcomingObservations.length}</p>
-            <p className="text-gray-600 mt-1">Next: {upcomingObservations[0]?.date}</p>
+            <p className="text-4xl font-bold">{observationsLoading ? '...' : observations.length}</p>
+            <p className="text-gray-600 mt-1">
+              {observationsLoading ? 'Loading...' : 
+               observations.length > 0 ? `Next: ${formatDate(observations[0].date)}` : 'No upcoming observations'}
+            </p>
             <div className="mt-auto pt-4">
               <Link href="/teacher/observations">
                 <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
@@ -155,23 +336,35 @@ export default function TeacherDashboard() {
             </Link>
           </div>
         </div>
-        {upcomingObservations.length > 0 ? (
+        {observationsLoading ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-500">Loading observations...</p>
+          </div>
+        ) : observations.length > 0 ? (
           <div className="divide-y">
-            {upcomingObservations.map((observation) => (
+            {observations.map((observation) => (
               <div key={observation.id} className="p-4 hover:bg-gray-50">
                 <div className="flex justify-between items-start mb-2">
-                  <div className="font-medium">{observation.observer}</div>
-                  <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${observation.statusColor}`}>
+                  <div className="font-medium">{getObserverName(observation)}</div>
+                  <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(observation.status)}`}>
                     {observation.status}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mt-1">
-                  <div className="text-gray-600">Class:</div>
-                  <div>{observation.class}</div>
+                  <div className="text-gray-600">Subject:</div>
+                  <div>{teacherData?.subject || 'N/A'}</div>
                   <div className="text-gray-600">Grade:</div>
-                  <div>{observation.grade}</div>
+                  <div>{teacherData?.grade || 'N/A'}</div>
                   <div className="text-gray-600">Date & Time:</div>
-                  <div>{observation.date}, {observation.time}</div>
+                  <div>{formatDate(observation.date)}, {formatTime(observation.time)}</div>
+                  <div className="text-gray-600">Type:</div>
+                  <div className="capitalize">{observation.observation_type.replace('-', ' ')}</div>
+                  {observation.notes && (
+                    <>
+                      <div className="text-gray-600">Notes:</div>
+                      <div className="text-sm">{observation.notes}</div>
+                    </>
+                  )}
                 </div>
                 <div className="mt-3 flex gap-2">
                   <Link href={`/teacher/observations/${observation.id}`}>

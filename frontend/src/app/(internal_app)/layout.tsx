@@ -2,29 +2,67 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import { useAuth } from "@/lib/auth-context";
+import { 
+  LayoutDashboard, 
+  Users, 
+  UsersRound, 
+  Eye, 
+  FileText, 
+  Settings, 
+  HelpCircle, 
+  LogOut,
+  Menu,
+  X,
+  Sparkles,
+  ChevronRight
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface NavItemProps {
   href: string;
-  icon: string;
+  icon: React.ElementType;
   label: string;
   active: boolean;
   onClick?: () => void;
   disabled?: boolean;
 }
 
-function NavItem({ href, icon, label, active, onClick, disabled }: NavItemProps) {
+interface TeacherData {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
+
+interface AdministratorData {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+function NavItem({ href, icon: Icon, label, active, onClick, disabled }: NavItemProps) {
   return (
     <Link
       href={disabled ? "#" : href}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+      className={`group flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
         active 
-          ? "bg-primary text-white shadow-md" 
+          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25" 
           : disabled
             ? "text-gray-400 cursor-not-allowed"
-            : "text-gray-600 hover:bg-primary/10 hover:text-primary"
+            : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-700 hover:shadow-md hover:-translate-y-0.5"
       }`}
       onClick={(e) => {
         if (disabled) {
@@ -38,8 +76,22 @@ function NavItem({ href, icon, label, active, onClick, disabled }: NavItemProps)
       aria-disabled={disabled}
       tabIndex={disabled ? -1 : undefined}
     >
-      <span className="text-xl">{icon}</span>
+      <div className={`p-1.5 rounded-xl transition-all duration-300 ${
+        active 
+          ? "bg-white/20" 
+          : "bg-gray-100 group-hover:bg-blue-100 group-hover:scale-110"
+      }`}>
+        <Icon size={18} />
+      </div>
       <span className="font-medium">{label}</span>
+      {!disabled && (
+        <ChevronRight 
+          size={14} 
+          className={`ml-auto transition-all duration-300 ${
+            active ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-1"
+          }`} 
+        />
+      )}
     </Link>
   );
 }
@@ -48,32 +100,32 @@ const adminNav = [
   {
     label: "Dashboard",
     href: "/administrator",
-    icon: "📊",
+    icon: LayoutDashboard,
   },
   {
     label: "Teachers",
     href: "/administrator/teachers",
-    icon: "👩‍🏫",
+    icon: Users,
   },
   {
     label: "Observation Groups",
     href: "/administrator/groups",
-    icon: "👪",
+    icon: UsersRound,
   },
   {
     label: "Observations",
     href: "/administrator/observations",
-    icon: "👁️",
+    icon: Eye,
   },
   {
     label: "Settings",
     href: "/administrator/settings",
-    icon: "⚙️",
+    icon: Settings,
   },
   {
     label: "Help & Docs",
     href: "/administrator/help",
-    icon: "❓",
+    icon: HelpCircle,
   },
 ];
 
@@ -81,27 +133,27 @@ const superUserNav = [
   {
     label: "Dashboard",
     href: "/super",
-    icon: "📊",
+    icon: LayoutDashboard,
   },
   {
     label: "User Management",
     href: "/super/users",
-    icon: "👥",
+    icon: Users,
   },
   {
     label: "Observation Groups",
     href: "/super/groups",
-    icon: "👪",
+    icon: UsersRound,
   },
   {
     label: "System Settings",
     href: "/super/settings",
-    icon: "⚙️",
+    icon: Settings,
   },
   {
     label: "Help & Docs",
     href: "/super/help",
-    icon: "❓",
+    icon: HelpCircle,
   },
 ];
 
@@ -115,6 +167,8 @@ export default function DashboardLayout({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user } = useAuth();
+  const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [administratorData, setAdministratorData] = useState<AdministratorData | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isSuperUser = user?.role === "SUPER_USER" as any;
@@ -122,6 +176,61 @@ export default function DashboardLayout({
   // Determine if current path is for administrator or teacher
   const isAdministrator = pathname.includes('/administrator');
   const isTeacher = pathname.includes('/teacher');
+
+  // Fetch teacher or administrator data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user?.id) return;
+
+      try {
+        if (isTeacher) {
+          // Fetch teacher data
+          const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+          if (allTeachersResponse.ok) {
+            const allTeachers = await allTeachersResponse.json();
+            
+            const teacherRecord = allTeachers.find((teacher: TeacherData) => 
+              teacher.user.email === user.email || teacher.user.id === user.id
+            );
+            
+            if (teacherRecord) {
+              const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+              if (individualResponse.ok) {
+                const teacherDetails = await individualResponse.json();
+                setTeacherData(teacherDetails);
+              } else {
+                setTeacherData(teacherRecord);
+              }
+            }
+          }
+        } else if (isAdministrator) {
+          // Fetch administrator data
+          const allAdminsResponse = await fetch('http://127.0.0.1:8000/api/administrators/');
+          if (allAdminsResponse.ok) {
+            const allAdministrators = await allAdminsResponse.json();
+            
+            const adminRecord = allAdministrators.find((admin: AdministratorData) => 
+              admin.user.email === user.email || admin.user.id === user.id
+            );
+            
+            if (adminRecord) {
+              const individualResponse = await fetch(`http://127.0.0.1:8000/api/administrators/${adminRecord.id}/`);
+              if (individualResponse.ok) {
+                const adminDetails = await individualResponse.json();
+                setAdministratorData(adminDetails);
+              } else {
+                setAdministratorData(adminRecord);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [user?.id, user?.email, isTeacher, isAdministrator]);
   
   // Determine the role based on the path
   const userRole = isTeacher 
@@ -130,31 +239,53 @@ export default function DashboardLayout({
       ? "administrator" 
       : "super";
 
+  // Get display name based on role and data
+  const getDisplayName = () => {
+    if (userRole === "teacher") {
+      if (teacherData?.user?.name) {
+        return teacherData.user.name;
+      }
+      if (user?.fullName) {
+        return user.fullName;
+      }
+      return "Teacher";
+    } else if (userRole === "administrator") {
+      if (administratorData?.user?.name) {
+        return administratorData.user.name;
+      }
+      if (user?.fullName) {
+        return user.fullName;
+      }
+      return "Administrator";
+    }
+    return "Super User";
+  };
+
   // Navigation items based on role
   const administratorNavItems = [
     {
       href: "/administrator",
-      icon: "📊",
+      icon: LayoutDashboard,
       label: "Overview",
     },
     {
       href: "/administrator/groups",
-      icon: "👪",
+      icon: UsersRound,
       label: "Observation Groups",
     },
     {
       href: "/administrator/observations",
-      icon: "👁️",
+      icon: Eye,
       label: "Observations",
     },
     {
       href: "/administrator/lesson-plans",
-      icon: "📝",
+      icon: FileText,
       label: "Lesson Plans",
     },
     {
       href: "/administrator/settings",
-      icon: "⚙️",
+      icon: Settings,
       label: "Settings",
     },
   ];
@@ -163,33 +294,33 @@ export default function DashboardLayout({
   const teacherNavItems = [
     {
       href: "/teacher",
-      icon: "📊",
+      icon: LayoutDashboard,
       label: "Overview",
     },
     {
       href: "/teacher/observations",
-      icon: "👁️",
+      icon: Eye,
       label: "Observations",
     },
     {
       href: "/teacher/feedback",
-      icon: "💬",
+      icon: FileText,
       label: "Feedback",
     },
     {
       href: "/teacher/lesson-plans",
-      icon: "📝",
+      icon: FileText,
       label: "Lesson Plans",
     },
     {
       href: "/teacher/settings",
-      icon: "⚙️",
+      icon: Settings,
       label: "Settings",
       disabled: true,
     },
     {
       href: "/teacher/help",
-      icon: "❓",
+      icon: HelpCircle,
       label: "Help & Docs",
     },
   ];
@@ -201,31 +332,36 @@ export default function DashboardLayout({
       : superUserNav;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-primary">TET</span>
-            <span className="text-2xl font-semibold">Bloom</span>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Modern Header */}
+      <header className="bg-white/80 backdrop-blur-lg border-b border-white/20 sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-2xl">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TET</span>
+              <span className="text-2xl font-semibold text-gray-800 ml-1">Bloom</span>
+            </div>
           </div>
           
           {/* Mobile menu button */}
-          <button 
-            className="md:hidden p-2 rounded-full hover:bg-gray-100"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden rounded-2xl"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? "✕" : "☰"}
-          </button>
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </Button>
           
           {/* User menu */}
-          <div className="hidden md:flex items-center gap-4">
-            {/* NotificationsDropdown component removed */}
-            
-            {/* Role switcher (for demo purposes) */}
-            <div className="mr-4">
+          <div className="hidden md:flex items-center gap-6">
+            {/* Role switcher */}
+            <div className="relative">
               <select 
-                className="px-2 py-1 border rounded-md text-sm"
+                className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 defaultValue={userRole}
                 onChange={(e) => {
                   const newRole = e.target.value;
@@ -238,26 +374,60 @@ export default function DashboardLayout({
               </select>
             </div> 
             
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+            <div className="flex items-center gap-3 bg-white/60 backdrop-blur-sm rounded-2xl px-4 py-2 border border-gray-200">
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-white ${
+                userRole === "administrator" 
+                  ? "bg-gradient-to-r from-green-500 to-emerald-600" 
+                  : userRole === "teacher" 
+                    ? "bg-gradient-to-r from-blue-500 to-indigo-600" 
+                    : "bg-gradient-to-r from-purple-500 to-pink-600"
+              }`}>
                 {userRole === "administrator" ? "A" : userRole === "teacher" ? "T" : "S"}
               </div>
-              <span className="font-medium">
-                {userRole === "administrator" 
-                  ? "Administrator" 
-                  : userRole === "teacher" 
-                    ? "Ms. Chen" 
-                    : "Super User"}
-              </span>
+              <div>
+                <div className="font-semibold text-gray-800 text-sm">
+                {getDisplayName()}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {userRole === "administrator" 
+                    ? "Administrator" 
+                    : userRole === "teacher" 
+                      ? "Teacher" 
+                      : "Super User"}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       <div className="flex-1 flex">
-        {/* Sidebar - Desktop */}
-        <aside className="hidden md:block w-64 border-r bg-white p-4 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-          <nav className="flex flex-col gap-1">
+        {/* Modern Sidebar - Desktop */}
+        <aside className="hidden md:block w-72 bg-white/40 backdrop-blur-xl border-r border-white/20 p-6 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto">
+          {/* Sidebar Header */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 text-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-white/20 p-2 rounded-xl">
+                  <LayoutDashboard size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Dashboard</h3>
+                  <p className="text-blue-100 text-sm">
+                    {userRole === "administrator" 
+                      ? "Administrator Panel" 
+                      : userRole === "teacher" 
+                        ? "Teacher Portal" 
+                        : "Super User Console"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex flex-col gap-2 mb-8">
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Navigation</h4>
             {navItems.map((item) => (
               <NavItem
                 key={item.href}
@@ -265,57 +435,63 @@ export default function DashboardLayout({
                 icon={item.icon}
                 label={item.label}
                 active={pathname === item.href}
-                disabled={(item as NavItemProps).disabled}
+                disabled={false}
               />
             ))}
           </nav>
           
-          <div className="mt-8 pt-4 border-t">
+          {/* Logout Section */}
+          <div className="mt-auto pt-6 border-t border-gray-200">
             <NavItem
               href="/logout"
-              icon="🚪"
-              label="Log out"
+              icon={LogOut}
+              label="Sign Out"
               active={false}
             />
           </div>
         </aside>
 
-        {/* Mobile navigation overlay */}
+        {/* Modern Mobile navigation overlay */}
         {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 bg-black/50 z-20" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="bg-white w-64 h-full p-4" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-primary">TET</span>
-                  <span className="text-xl font-semibold">Bloom</span>
+          <div className="md:hidden fixed inset-0 bg-black/50 z-30" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="bg-white/95 backdrop-blur-xl w-80 h-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-2xl">
+                    <Sparkles className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TET</span>
+                    <span className="text-xl font-semibold text-gray-800 ml-1">Bloom</span>
+                  </div>
                 </div>
-                <button 
-                  className="p-2 rounded-full hover:bg-gray-100"
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-2xl"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  ✕
-                </button>
+                  <X size={20} />
+                </Button>
               </div>
               
               {/* User info in mobile menu */}
-              <div className="flex items-center gap-2 mb-6 p-2 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 text-white mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2 rounded-xl">
+                    <div className="w-6 h-6 flex items-center justify-center font-bold">
                   {userRole === "administrator" ? "A" : userRole === "teacher" ? "T" : "S"}
                 </div>
-                <div>
-                  <div className="font-medium">
-                    {userRole === "administrator" 
-                      ? "Administrator" 
-                      : userRole === "teacher" 
-                        ? "Ms. Chen" 
-                        : "Super User"}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div>
+                    <div className="font-semibold">{getDisplayName()}</div>
+                    <div className="text-blue-100 text-sm">
                     {userRole === "administrator" 
                       ? "Administrator" 
                       : userRole === "teacher" 
                         ? "Teacher" 
                         : "Super User"}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -323,7 +499,7 @@ export default function DashboardLayout({
               {/* Role switcher in mobile menu */}
               <div className="mb-6">
                 <select 
-                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  className="w-full px-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl text-sm font-medium"
                   defaultValue={userRole}
                   onChange={(e) => {
                     const newRole = e.target.value;
@@ -336,7 +512,8 @@ export default function DashboardLayout({
                 </select>
               </div>
               
-              <nav className="flex flex-col gap-1">
+              <nav className="flex flex-col gap-2">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Navigation</h4>
                 {navItems.map((item) => (
                   <NavItem
                     key={item.href}
@@ -345,15 +522,15 @@ export default function DashboardLayout({
                     label={item.label}
                     active={pathname === item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    disabled={(item as NavItemProps).disabled}
+                    disabled={false}
                   />
                 ))}
                 
-                <div className="mt-8 pt-4 border-t">
+                <div className="mt-8 pt-6 border-t border-gray-200">
                   <NavItem
                     href="/logout"
-                    icon="🚪"
-                    label="Log out"
+                    icon={LogOut}
+                    label="Sign Out"
                     active={false}
                     onClick={() => setIsMobileMenuOpen(false)}
                   />
@@ -364,7 +541,7 @@ export default function DashboardLayout({
         )}
 
         {/* Main content */}
-        <main className="flex-1 p-4 md:p-6 bg-gray-50">
+        <main className="flex-1 p-6 lg:p-8">
           {children}
         </main>
       </div>
