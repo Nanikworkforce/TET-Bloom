@@ -29,7 +29,11 @@ SECRET_KEY = 'django-insecure-t*38384b-yw+l1^rehi#s4(b(-+25#lmfn2c4xqw^d0_7$xp$i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'tet-bloom.onrender.com'
+]
 
 
 # Application definition
