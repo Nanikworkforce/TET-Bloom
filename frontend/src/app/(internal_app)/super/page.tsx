@@ -62,14 +62,14 @@ const mockEvents = [
     id: "1",
     title: "Teacher Training Session",
     date: new Date(2024, new Date().getMonth(), 15),
-    color: "bg-blue-500",
+    color: "#84547c",
     description: "Professional development workshop"
   },
   {
     id: "2",
     title: "Monthly Review Meeting",
     date: new Date(2024, new Date().getMonth(), 22),
-    color: "bg-green-500",
+    color: "#e4a414",
     description: "System performance review"
   },
   {
@@ -118,18 +118,18 @@ export default function SuperUserDashboard() {
       key: "total_users" as keyof StatsData,
       icon: Users,
       link: "/super/users",
-      gradient: "from-blue-500 to-cyan-500",
-      bgColor: "from-blue-50 to-cyan-50",
-      iconColor: "text-blue-600"
+      gradient: "rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%",
+      bgColor: "rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%",
+      iconColor: "#84547c"
     },
     { 
       label: "Teachers", 
       key: "total_teachers" as keyof StatsData,
       icon: GraduationCap,
       link: "/super/users?role=teacher",
-      gradient: "from-green-500 to-emerald-500",
-      bgColor: "from-green-50 to-emerald-50",
-      iconColor: "text-green-600"
+      gradient: "rgba(228, 164, 20, 1) 0%, rgba(132, 84, 124, 1) 100%",
+      bgColor: "rgba(228, 164, 20, 0.05) 0%, rgba(132, 84, 124, 0.05) 100%",
+      iconColor: "#e4a414"
     },
     { 
       label: "Administrators", 
@@ -168,7 +168,7 @@ export default function SuperUserDashboard() {
                 </div>
                 <div>
                   <h1 className="text-3xl lg:text-4xl font-bold">Super User Dashboard</h1>
-                  <p className="text-blue-100 text-lg mt-1">System-wide management and configuration</p>
+                  <p className="text-white/90 text-lg mt-1">System-wide management and configuration</p>
                 </div>
               </div>
             </div>
@@ -228,7 +228,7 @@ export default function SuperUserDashboard() {
             const IconComponent = stat.icon;
             return (
               <Link href={stat.link} key={index} className="block group">
-                <Card className={`relative overflow-hidden border-0 shadow-xl rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 bg-gradient-to-br ${stat.bgColor}`}>
+                <Card className="relative overflow-hidden border-0 shadow-xl rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" style={{background: `linear-gradient(135deg, ${stat.bgColor})`}}>
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
@@ -237,23 +237,23 @@ export default function SuperUserDashboard() {
                           {stats?.[stat.key] || 0}
                         </p>
                         <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-green-500" />
-                          <span className="text-xs font-medium text-green-600">
+                          <TrendingUp className="h-4 w-4" style={{color: '#e4a414'}} />
+                          <span className="text-xs font-medium" style={{color: '#e4a414'}}>
                             Active
                           </span>
                         </div>
                       </div>
                       
                       <div className={`bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                        <IconComponent className={`h-8 w-8 ${stat.iconColor}`} />
+                        <IconComponent className="h-8 w-8" style={{color: stat.iconColor}} />
                       </div>
                     </div>
                     
                     {/* Decorative gradient overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-r ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-3xl`}></div>
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-3xl" style={{background: `linear-gradient(90deg, ${stat.gradient})`}}></div>
                     
                     {/* Bottom accent line */}
-                    <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient} rounded-b-3xl`}></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 rounded-b-3xl" style={{background: `linear-gradient(90deg, ${stat.gradient})`}}></div>
                   </div>
                 </Card>
               </Link>
@@ -296,10 +296,16 @@ export default function SuperUserDashboard() {
                 {recentActivity.map((activity) => {
                   const IconComponent = activity.icon;
                   return (
-                    <div key={activity.id} className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+                    <div key={activity.id} className="p-4 transition-all duration-200" 
+                         onMouseEnter={(e) => {
+                           e.currentTarget.style.background = 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)';
+                         }}
+                         onMouseLeave={(e) => {
+                           e.currentTarget.style.background = 'transparent';
+                         }}>
                       <div className="flex items-start gap-3">
                         <div className="p-2 rounded-xl flex-shrink-0" style={{background: 'linear-gradient(45deg, rgba(132, 84, 124, 0.2) 0%, rgba(228, 164, 20, 0.2) 100%)'}}>
-                          <IconComponent className="h-4 w-4 text-blue-600" />
+                          <IconComponent className="h-4 w-4" style={{color: '#84547c'}} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start mb-1">
@@ -318,7 +324,7 @@ export default function SuperUserDashboard() {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-100">
+          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden" style={{background: 'linear-gradient(135deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
             <CardHeader className="text-white p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
@@ -332,12 +338,12 @@ export default function SuperUserDashboard() {
                 <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-xl transition-colors" style={{backgroundColor: 'rgba(132, 84, 124, 0.2)'}}>
-                      <Users className="h-5 w-5 text-blue-600" />
+                      <Users className="h-5 w-5" style={{color: '#84547c'}} />
                     </div>
                     <h3 className="font-semibold text-gray-800">User Management</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">Create, edit, or deactivate user accounts</p>
-                  <div className="text-blue-600 text-sm font-medium group-hover:text-blue-700">
+                  <div className="text-sm font-medium" style={{color: '#84547c'}}>
                     Manage Users →
                   </div>
                 </div>
@@ -347,12 +353,12 @@ export default function SuperUserDashboard() {
                 <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-xl transition-colors" style={{backgroundColor: 'rgba(228, 164, 20, 0.2)'}}>
-                      <UsersRound className="h-5 w-5 text-green-600" />
+                      <UsersRound className="h-5 w-5" style={{color: '#e4a414'}} />
                     </div>
                     <h3 className="font-semibold text-gray-800">Observation Groups</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">Organize teachers into observation groups</p>
-                  <div className="text-green-600 text-sm font-medium group-hover:text-green-700">
+                  <div className="text-sm font-medium" style={{color: '#e4a414'}}>
                     Manage Groups →
                   </div>
                 </div>
@@ -361,13 +367,13 @@ export default function SuperUserDashboard() {
               <Link href="/super/settings" className="block">
                 <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-purple-100 p-2 rounded-xl group-hover:bg-purple-200 transition-colors">
-                      <AlertCircle className="h-5 w-5 text-purple-600" />
+                    <div className="p-2 rounded-xl transition-colors" style={{backgroundColor: 'rgba(132, 84, 124, 0.2)'}}>
+                      <AlertCircle className="h-5 w-5" style={{color: '#84547c'}} />
                     </div>
                     <h3 className="font-semibold text-gray-800">System Settings</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">Configure system-wide settings and preferences</p>
-                  <div className="text-purple-600 text-sm font-medium group-hover:text-purple-700">
+                  <div className="text-sm font-medium" style={{color: '#84547c'}}>
                     System Settings →
                   </div>
                 </div>

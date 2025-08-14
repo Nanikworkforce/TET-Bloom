@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { userApi, teacherApi, administratorApi, ApiError } from "@/lib/api";
+import { Users } from "lucide-react";
 
 
 export default function CreateUserPage() {
@@ -109,16 +110,35 @@ export default function CreateUserPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Create New User</h1>
-          <p className="text-gray-600">Create a new user account in the system.</p>
+      {/* Modern Header with Gradient */}
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
+        
+        <div className="relative z-10 p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="text-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                  <Users className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold">Create New User</h1>
+                  <p className="text-white/90 text-lg mt-1">Add a new user account to the system</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <Link href="/super/users">
+                <Button variant="outline" className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                  ← Back to User Management
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-        <Link href="/super/users">
-          <Button variant="outline" className="rounded-full shadow-sm">
-            ← Back to User Management
-          </Button>
-        </Link>
       </div>
 
       <Card className="border bg-white">
@@ -129,8 +149,8 @@ export default function CreateUserPage() {
         <CardContent>
           {inviteSent ? (
             <div className="text-center py-8">
-              <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{backgroundColor: 'rgba(228, 164, 20, 0.1)'}}>
+                <svg className="w-8 h-8" style={{color: '#e4a414'}} fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
               </div>
               <h2 className="text-xl font-semibold text-gray-800">User Created Successfully!</h2>
               <p className="text-gray-600 mt-2">
@@ -241,7 +261,7 @@ export default function CreateUserPage() {
                     Cancel
                   </Button>
                 </Link>
-                <Button type="submit" className="rounded-full" disabled={isLoading}>
+                <Button type="submit" className="rounded-full text-white" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}} disabled={isLoading}>
                   {isLoading ? "Creating User..." : "Invite User"}
                 </Button>
               </div>

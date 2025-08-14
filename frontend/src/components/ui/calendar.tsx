@@ -100,11 +100,34 @@ const Calendar: React.FC<CalendarProps> = ({
           key={day}
           className={cn(
             "h-8 w-8 flex items-center justify-center rounded-lg cursor-pointer transition-all duration-200 relative group",
-            "hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 hover:scale-105",
-            isToday(day) && "bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold shadow-md",
-            isSelected(day) && !isToday(day) && "bg-gradient-to-br from-blue-100 to-purple-100 text-blue-700 font-semibold",
-            hasEvents && !isToday(day) && !isSelected(day) && "bg-gradient-to-br from-green-50 to-emerald-50 text-green-700"
+            "hover:scale-105",
+            isToday(day) && "text-white font-bold shadow-md",
+            isSelected(day) && !isToday(day) && "font-semibold",
+            hasEvents && !isToday(day) && !isSelected(day) && ""
           )}
+          style={{
+            ...(isToday(day) ? {
+              background: 'linear-gradient(135deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'
+            } : {}),
+            ...(isSelected(day) && !isToday(day) ? {
+              backgroundColor: 'rgba(132, 84, 124, 0.1)',
+              color: '#84547c'
+            } : {}),
+            ...(hasEvents && !isToday(day) && !isSelected(day) ? {
+              backgroundColor: 'rgba(228, 164, 20, 0.1)',
+              color: '#e4a414'
+            } : {})
+          }}
+          onMouseEnter={(e) => {
+            if (!isToday(day) && !isSelected(day) && !hasEvents) {
+              (e.target as HTMLElement).style.background = 'linear-gradient(135deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isToday(day) && !isSelected(day) && !hasEvents) {
+              (e.target as HTMLElement).style.background = 'transparent';
+            }
+          }}
           onClick={() => handleDateClick(day)}
         >
           <span className="text-xs relative z-10">{day}</span>
@@ -116,7 +139,7 @@ const Calendar: React.FC<CalendarProps> = ({
                     key={event.id}
                     className={cn(
                       "w-1 h-1 rounded-full",
-                      event.color || "bg-emerald-500"
+                      event.color || "bg-[#e4a414]"
                     )}
                   />
                 ))}
@@ -149,7 +172,7 @@ const Calendar: React.FC<CalendarProps> = ({
   return (
     <div className={cn("bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden", className)}>
       {/* Calendar Header */}
-      <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-4 text-white">
+      <div className="p-4 text-white" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
@@ -215,7 +238,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
       {/* Selected Date Events */}
       {selectedDate && (
-        <div className="border-t border-gray-100 p-4 bg-gradient-to-r from-gray-50 to-blue-50">
+        <div className="border-t border-gray-100 p-4" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
           <h3 className="font-semibold text-gray-800 mb-3">
             Events for {selectedDate.toLocaleDateString('en-US', { 
               weekday: 'long', 
@@ -231,7 +254,7 @@ const Calendar: React.FC<CalendarProps> = ({
                   className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => onEventClick?.(event)}
                 >
-                  <div className={cn("w-3 h-3 rounded-full", event.color || "bg-emerald-500")} />
+                  <div className="w-3 h-3 rounded-full" style={{backgroundColor: event.color || "#e4a414"}} />
                   <div className="flex-1">
                     <div className="font-medium text-gray-800">{event.title}</div>
                     {event.description && (
