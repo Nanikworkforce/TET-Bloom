@@ -35,15 +35,15 @@ export const Sidebar = () => {
       {/* Logo and app name */}
       <div className="p-6 border-b">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-primary">TET</span>
-          <span className="text-2xl font-semibold">Bloom</span>
+          <span className="text-2xl font-bold" style={{color: '#84547c'}}>TET</span>
+          <span className="text-2xl font-semibold" style={{color: '#e4a414'}}>Bloom</span>
         </Link>
       </div>
 
       {/* User info */}
       <div className="px-6 py-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)', color: '#84547c'}}>
             <Icons.User size={20} />
           </div>
           <div>
@@ -74,9 +74,13 @@ export const Sidebar = () => {
                     className={cn(
                       "w-full justify-start gap-3 font-normal h-10 px-3", 
                       isActive 
-                        ? "bg-primary/10 text-primary font-medium hover:bg-primary/15" 
+                        ? "text-white font-medium" 
                         : "hover:bg-gray-100"
                     )}
+                    style={isActive ? {
+                      background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)',
+                      borderRadius: '8px'
+                    } : {}}
                   >
                     <Icon size={18} />
                     <span>{item.title}</span>

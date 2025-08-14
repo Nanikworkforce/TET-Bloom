@@ -62,6 +62,12 @@ export default function UserManagementPage() {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
+  // Bulk selection state
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkActionDialogOpen, setBulkActionDialogOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'activate' | 'deactivate'>('activate');
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  
   // Fetch users from API
   useEffect(() => {
     const fetchUsers = async () => {
@@ -142,10 +148,68 @@ export default function UserManagementPage() {
     }
   };
 
+  // Bulk selection handlers
+  const handleUserSelect = (userId: string) => {
+    const newSelected = new Set(selectedUserIds);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUserIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.length) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(filteredUsers.map(user => user.id)));
+    }
+  };
+
+  const getSelectedUsers = () => {
+    return users.filter(user => selectedUserIds.has(user.id));
+  };
+
+  const handleBulkAction = (action: 'activate' | 'deactivate') => {
+    setBulkAction(action);
+    setBulkActionDialogOpen(true);
+  };
+
+  const confirmBulkAction = async () => {
+    setBulkActionLoading(true);
+    
+    try {
+      const selectedUsers = getSelectedUsers();
+      const newStatus = bulkAction === 'activate' ? 'Active' : 'Inactive';
+      
+      // Update all selected users
+      await Promise.all(
+        selectedUsers.map(user => 
+          userApi.update(user.id, { ...user, status: newStatus })
+        )
+      );
+      
+      // Update local state
+      const updatedUsers = users.map(user => 
+        selectedUserIds.has(user.id) ? { ...user, status: newStatus } : user
+      );
+      
+      setUsers(updatedUsers);
+      setSelectedUserIds(new Set());
+      setBulkActionDialogOpen(false);
+    } catch (err) {
+      console.error("Error updating user statuses:", err);
+      setError("Failed to update user statuses. Please try again.");
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Modern Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -274,6 +338,57 @@ export default function UserManagementPage() {
         </CardContent>
       </Card>
 
+      {/* Bulk Actions */}
+      {selectedUserIds.size > 0 && (
+        <Card className="border-0 shadow-xl rounded-2xl overflow-hidden border-l-4" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.1) 0%, rgba(228, 164, 20, 0.1) 100%)', borderLeftColor: '#84547c'}}>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl" style={{backgroundColor: 'rgba(132, 84, 124, 0.2)'}}>
+                  <Users className="h-5 w-5" style={{color: '#84547c'}} />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    {selectedUserIds.size} user{selectedUserIds.size !== 1 ? 's' : ''} selected
+                  </p>
+                  <p className="text-sm text-gray-600">Choose an action to apply to selected users</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('activate')}
+                  className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 rounded-xl"
+                  disabled={getSelectedUsers().every(user => user.status === 'Active')}
+                >
+                  <UserCheck className="mr-2 h-4 w-4" />
+                  Activate Selected
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('deactivate')}
+                  className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100 rounded-xl"
+                  disabled={getSelectedUsers().every(user => user.status === 'Inactive')}
+                >
+                  <UserX className="mr-2 h-4 w-4" />
+                  Deactivate Selected
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedUserIds(new Set())}
+                  className="text-gray-600 hover:text-gray-800 rounded-xl"
+                >
+                  Clear Selection
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Modern User List */}
       <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
         {loading && (
@@ -307,8 +422,17 @@ export default function UserManagementPage() {
         {!loading && !error && (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
+              <thead className="border-b border-gray-200" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
                 <tr>
+                  <th className="px-4 py-4 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 border-gray-300 rounded"
+                      style={{accentColor: '#84547c'}}
+                    />
+                  </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Role & Details</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Created</th>
@@ -337,7 +461,29 @@ export default function UserManagementPage() {
                   };
 
                   return (
-                    <tr key={user.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+                    <tr key={user.id} className={`transition-all duration-200 ${selectedUserIds.has(user.id) ? '' : ''}`} 
+                        style={{
+                          backgroundColor: selectedUserIds.has(user.id) ? 'rgba(132, 84, 124, 0.1)' : 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!selectedUserIds.has(user.id)) {
+                            e.currentTarget.style.background = 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!selectedUserIds.has(user.id)) {
+                            e.currentTarget.style.background = 'transparent';
+                          }
+                        }}>
+                      <td className="px-4 py-5">
+                        <input
+                          type="checkbox"
+                          checked={selectedUserIds.has(user.id)}
+                          onChange={() => handleUserSelect(user.id)}
+                          className="h-4 w-4 border-gray-300 rounded"
+                          style={{accentColor: '#84547c'}}
+                        />
+                      </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-2 rounded-xl">
@@ -486,6 +632,84 @@ export default function UserManagementPage() {
                 <>
                   <UserCheck className="mr-2 h-4 w-4" />
                   Activate
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Action Confirmation Dialog */}
+      <AlertDialog open={bulkActionDialogOpen} onOpenChange={setBulkActionDialogOpen}>
+        <AlertDialogContent className="rounded-3xl border-0 shadow-2xl">
+          <AlertDialogHeader className="text-center">
+            <div className="mx-auto mb-4">
+              <div className={`p-4 rounded-2xl ${
+                bulkAction === 'deactivate' ? "bg-red-100" : "bg-green-100"
+              }`}>
+                {bulkAction === 'deactivate' ? (
+                  <UserX className="h-8 w-8 text-red-600 mx-auto" />
+                ) : (
+                  <UserCheck className="h-8 w-8 text-green-600 mx-auto" />
+                )}
+              </div>
+            </div>
+            <AlertDialogTitle className="text-xl font-semibold">
+              {bulkAction === 'deactivate' ? 'Deactivate Users' : 'Activate Users'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 mt-2">
+              {bulkAction === 'deactivate' 
+                ? `Are you sure you want to deactivate ${selectedUserIds.size} user${selectedUserIds.size !== 1 ? 's' : ''}? They will no longer be able to access the system.`
+                : `Are you sure you want to activate ${selectedUserIds.size} user${selectedUserIds.size !== 1 ? 's' : ''}? They will regain access to the system.`}
+            </AlertDialogDescription>
+            
+            {/* Show selected users */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-xl max-h-32 overflow-y-auto">
+              <p className="text-sm font-medium text-gray-700 mb-2">Selected users:</p>
+              <div className="space-y-1">
+                {getSelectedUsers().map(user => (
+                  <div key={user.id} className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    {user.name} ({user.email})
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3 mt-6">
+            <AlertDialogCancel 
+              className="rounded-2xl border-gray-200 hover:bg-gray-50"
+              disabled={bulkActionLoading}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmBulkAction}
+              disabled={bulkActionLoading}
+              className={`rounded-2xl transition-all duration-300 hover:scale-105 ${
+                bulkAction === 'deactivate'
+                  ? "bg-red-500 hover:bg-red-600 text-white" 
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              }`}
+            >
+              {bulkActionLoading ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  {bulkAction === 'deactivate' ? 'Deactivating...' : 'Activating...'}
+                </>
+              ) : (
+                <>
+                  {bulkAction === 'deactivate' ? (
+                    <>
+                      <UserX className="mr-2 h-4 w-4" />
+                      Deactivate {selectedUserIds.size} User{selectedUserIds.size !== 1 ? 's' : ''}
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="mr-2 h-4 w-4" />
+                      Activate {selectedUserIds.size} User{selectedUserIds.size !== 1 ? 's' : ''}
+                    </>
+                  )}
                 </>
               )}
             </AlertDialogAction>

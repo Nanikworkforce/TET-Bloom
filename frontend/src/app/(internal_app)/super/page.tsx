@@ -154,7 +154,7 @@ export default function SuperUserDashboard() {
   return (
     <div className="space-y-8">
       {/* Modern Header with Gradient */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -278,7 +278,7 @@ export default function SuperUserDashboard() {
         <div className="space-y-6">
           {/* Recent Activity */}
           <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-6">
+            <CardHeader className="text-white p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
@@ -298,7 +298,7 @@ export default function SuperUserDashboard() {
                   return (
                     <div key={activity.id} className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
                       <div className="flex items-start gap-3">
-                        <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-2 rounded-xl flex-shrink-0">
+                        <div className="p-2 rounded-xl flex-shrink-0" style={{background: 'linear-gradient(45deg, rgba(132, 84, 124, 0.2) 0%, rgba(228, 164, 20, 0.2) 100%)'}}>
                           <IconComponent className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -319,7 +319,7 @@ export default function SuperUserDashboard() {
 
           {/* Quick Actions */}
           <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-100">
-            <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6">
+            <CardHeader className="text-white p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                   <Sparkles className="h-5 w-5" />
@@ -331,7 +331,7 @@ export default function SuperUserDashboard() {
               <Link href="/super/users" className="block">
                 <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-blue-100 p-2 rounded-xl group-hover:bg-blue-200 transition-colors">
+                    <div className="p-2 rounded-xl transition-colors" style={{backgroundColor: 'rgba(132, 84, 124, 0.2)'}}>
                       <Users className="h-5 w-5 text-blue-600" />
                     </div>
                     <h3 className="font-semibold text-gray-800">User Management</h3>
@@ -346,7 +346,7 @@ export default function SuperUserDashboard() {
               <Link href="/super/groups" className="block">
                 <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-green-100 p-2 rounded-xl group-hover:bg-green-200 transition-colors">
+                    <div className="p-2 rounded-xl transition-colors" style={{backgroundColor: 'rgba(228, 164, 20, 0.2)'}}>
                       <UsersRound className="h-5 w-5 text-green-600" />
                     </div>
                     <h3 className="font-semibold text-gray-800">Observation Groups</h3>

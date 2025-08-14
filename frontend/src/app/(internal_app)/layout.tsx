@@ -60,10 +60,16 @@ function NavItem({ href, icon: Icon, label, active, onClick, disabled }: NavItem
       href={disabled ? "#" : href}
       className={`group flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
         active 
-          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25" 
+          ? "text-white shadow-lg"
+          : "text-gray-700 hover:bg-gray-100"
+        }" 
+        style={active ? {
+          background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)',
+          boxShadow: '0 10px 25px rgba(132, 84, 124, 0.25)'
+        } : {}} 
           : disabled
             ? "text-gray-400 cursor-not-allowed"
-            : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-700 hover:shadow-md hover:-translate-y-0.5"
+
       }`}
       onClick={(e) => {
         if (disabled) {
@@ -80,7 +86,9 @@ function NavItem({ href, icon: Icon, label, active, onClick, disabled }: NavItem
       <div className={`p-1.5 rounded-xl transition-all duration-300 ${
         active 
           ? "bg-white/20" 
-          : "bg-gray-100 group-hover:bg-blue-100 group-hover:scale-110"
+          : "bg-gray-100"
+        }" 
+        style={active ? {backgroundColor: 'rgba(255, 255, 255, 0.2)'} : {}}
       }`}>
         <Icon size={18} />
       </div>
@@ -333,16 +341,16 @@ export default function DashboardLayout({
       : superUserNav;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen flex flex-col" style={{background: 'linear-gradient(135deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 50%, rgba(132, 84, 124, 0.03) 100%)'}}>
       {/* Modern Header */}
       <header className="bg-white/80 backdrop-blur-lg border-b border-white/20 sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-2xl">
+            <div className="p-2 rounded-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TET</span>
+              <span className="text-2xl font-bold" style={{color: '#84547c'}}>TET</span>
               <span className="text-2xl font-semibold text-gray-800 ml-1">Bloom</span>
             </div>
           </div>
@@ -407,7 +415,7 @@ export default function DashboardLayout({
         <aside className="hidden md:block w-72 bg-white/40 backdrop-blur-xl border-r border-white/20 p-6 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto">
           {/* Sidebar Header */}
           <div className="mb-8">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 text-white">
+            <div className="rounded-2xl p-4 text-white" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
               <div className="flex items-center gap-3 mb-2">
                 <div className="bg-white/20 p-2 rounded-xl">
                   <LayoutDashboard size={20} />
@@ -458,11 +466,11 @@ export default function DashboardLayout({
             <div className="bg-white/95 backdrop-blur-xl w-80 h-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-2xl">
+                  <div className="p-2 rounded-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
                     <Sparkles className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TET</span>
+                    <span className="text-xl font-bold" style={{color: '#84547c'}}>TET</span>
                     <span className="text-xl font-semibold text-gray-800 ml-1">Bloom</span>
                   </div>
                 </div>
@@ -477,7 +485,7 @@ export default function DashboardLayout({
               </div>
               
               {/* User info in mobile menu */}
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 text-white mb-6">
+              <div className="rounded-2xl p-4 text-white mb-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
                 <div className="flex items-center gap-3">
                   <div className="bg-white/20 p-2 rounded-xl">
                     <div className="w-6 h-6 flex items-center justify-center font-bold">

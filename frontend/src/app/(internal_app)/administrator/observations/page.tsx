@@ -38,7 +38,8 @@ const mockObservations: ObservationRecord[] = [
     time: "10:30 AM",
     type: "formal",
     status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800",
+    statusColor: "text-white",
+    statusBg: "#84547c",
     observerId: "admin1",
     observerName: "Administrator Johnson"
   },
@@ -52,7 +53,8 @@ const mockObservations: ObservationRecord[] = [
     time: "9:15 AM",
     type: "walk-through",
     status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800",
+    statusColor: "text-white",
+    statusBg: "#84547c",
     observerId: "admin1",
     observerName: "Administrator Johnson"
   },
@@ -66,7 +68,8 @@ const mockObservations: ObservationRecord[] = [
     time: "1:00 PM",
     type: "formal",
     status: "scheduled",
-    statusColor: "bg-blue-100 text-blue-800",
+    statusColor: "text-white",
+    statusBg: "#84547c",
     observerId: "admin1",
     observerName: "Administrator Johnson"
   },
@@ -80,7 +83,8 @@ const mockObservations: ObservationRecord[] = [
     time: "11:00 AM",
     type: "formal",
     status: "completed",
-    statusColor: "bg-green-100 text-green-800",
+    statusColor: "text-white",
+    statusBg: "#e4a414",
     feedback: true,
     observerId: "admin1",
     observerName: "Administrator Johnson"
@@ -95,7 +99,8 @@ const mockObservations: ObservationRecord[] = [
     time: "2:30 PM",
     type: "walk-through",
     status: "completed",
-    statusColor: "bg-green-100 text-green-800",
+    statusColor: "text-white",
+    statusBg: "#e4a414",
     feedback: true,
     observerId: "admin1",
     observerName: "Administrator Johnson"
@@ -110,7 +115,8 @@ const mockObservations: ObservationRecord[] = [
     time: "9:45 AM",
     type: "walk-through",
     status: "completed",
-    statusColor: "bg-green-100 text-green-800",
+    statusColor: "text-white",
+    statusBg: "#e4a414",
     feedback: false,
     observerId: "admin1",
     observerName: "Administrator Johnson"
@@ -140,8 +146,8 @@ const types = ["All Types", "Formal", "Walk-through"];
 // Helper functions for observation type display
 const getTypeColor = (type: ObservationType) => {
   return type === 'formal' 
-    ? 'bg-blue-100 text-blue-800 border-blue-200' 
-    : 'bg-green-100 text-green-800 border-green-200';
+    ? 'text-white border-gray-200' 
+    : 'text-white border-green-200';
 };
 
 const getTypeIcon = (type: ObservationType) => {
@@ -155,9 +161,9 @@ const getTypeLabel = (type: ObservationType) => {
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case 'scheduled':
-      return 'bg-blue-100 text-blue-800';
+      return 'text-white';
     case 'completed':
-      return 'bg-green-100 text-green-800';
+      return 'text-white';
     case 'cancelled':
     case 'canceled':
       return 'bg-red-100 text-red-800';
@@ -254,7 +260,7 @@ export default function ObservationsPage() {
   return (
     <div className="space-y-8">
       {/* Modern Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -363,7 +369,7 @@ export default function ObservationsPage() {
             <label className="text-sm text-gray-600">To:</label>
             <input type="date" className="px-3 py-1 border rounded-md text-sm" />
           </div>
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button variant="outline" size="sm" className="rounded-full" style={{borderColor: '#84547c', color: '#84547c'}}>
             Apply Filter
           </Button>
           <Button variant="ghost" size="sm" className="text-gray-500 rounded-full">
@@ -374,10 +380,10 @@ export default function ObservationsPage() {
 
       {/* Tabs */}
       <div className="flex border-b">
-        <a href="#" className="px-4 py-2 border-b-2 border-primary text-primary font-medium">All</a>
-        <a href="#" className="px-4 py-2 text-gray-600 hover:text-primary">Scheduled</a>
-        <a href="#" className="px-4 py-2 text-gray-600 hover:text-primary">Completed</a>
-        <a href="#" className="px-4 py-2 text-gray-600 hover:text-primary">Canceled</a>
+        <a href="#" className="px-4 py-2 border-b-2 font-medium" style={{borderColor: '#84547c', color: '#84547c'}}>All</a>
+        <a href="#" className="px-4 py-2 text-gray-600 hover:underline" onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#84547c'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = ''}>Scheduled</a>
+        <a href="#" className="px-4 py-2 text-gray-600 hover:underline" onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#84547c'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = ''}>Completed</a>
+        <a href="#" className="px-4 py-2 text-gray-600 hover:underline" onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#84547c'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = ''}>Canceled</a>
       </div>
 
       {/* Observations list */}
@@ -395,10 +401,16 @@ export default function ObservationsPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="font-semibold text-lg">{observation.teacher}</h3>
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${observation.statusColor}`}>
+                      <span 
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${observation.statusColor}`}
+                        style={{backgroundColor: observation.statusBg}}
+                      >
                         {observation.status}
                       </span>
-                      <Badge className={getTypeColor(observation.type)}>
+                      <Badge 
+                        className={getTypeColor(observation.type)}
+                        style={{backgroundColor: observation.type === 'formal' ? '#84547c' : '#e4a414'}}
+                      >
                         {getTypeIcon(observation.type)} {getTypeLabel(observation.type)}
                       </Badge>
                     </div>
@@ -408,16 +420,16 @@ export default function ObservationsPage() {
                   {/* Date and time info */}
                   <div className="mt-2 flex items-center gap-6 flex-wrap">
                     <div className="flex items-center gap-1">
-                      <span className="text-primary">📅</span>
+                      <span style={{color: '#84547c'}}>📅</span>
                       <span className="text-sm">{observation.date}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-primary">⏰</span>
+                      <span style={{color: '#84547c'}}>⏰</span>
                       <span className="text-sm">{observation.time}</span>
                     </div>
                     {observation.status === 'completed' && (
                       <div className="flex items-center gap-1">
-                        <span className="text-primary">{observation.feedback ? '✅' : '❌'}</span>
+                        <span style={{color: '#84547c'}}>{observation.feedback ? '✅' : '❌'}</span>
                         <span className="text-sm">{observation.feedback ? 'Feedback Provided' : 'Feedback Pending'}</span>
                       </div>
                     )}
@@ -427,14 +439,14 @@ export default function ObservationsPage() {
                 {/* Right section: Action buttons - vertically centered */}
                 <div className="flex items-center justify-end md:min-w-48 gap-2">
                   <Link href={`/administrator/observations/${observation.id}`}>
-                    <Button size="sm" variant="outline" className="rounded-full whitespace-nowrap">
+                    <Button size="sm" variant="outline" className="rounded-full whitespace-nowrap" style={{borderColor: '#84547c', color: '#84547c'}}>
                       View Details
                     </Button>
                   </Link>
                   {observation.status === 'scheduled' && (
                     <>
                       <Link href={`/administrator/observations/schedule?edit=${observation.id}`}>
-                        <Button size="sm" variant="outline" className="rounded-full border-yellow-400 text-yellow-600 hover:bg-yellow-50 whitespace-nowrap">
+                        <Button size="sm" variant="outline" className="rounded-full whitespace-nowrap" style={{borderColor: '#e4a414', color: '#e4a414', backgroundColor: 'rgba(228, 164, 20, 0.05)'}}>
                           <span className="mr-1">✏️</span> Reschedule
                         </Button>
                       </Link>
@@ -472,7 +484,7 @@ export default function ObservationsPage() {
         </div>
         <div className="flex gap-1">
           <Button variant="outline" size="sm" disabled className="rounded-md">Previous</Button>
-          <Button variant="outline" size="sm" className="rounded-md bg-primary/10">1</Button>
+          <Button variant="outline" size="sm" className="rounded-md" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)', borderColor: '#84547c', color: '#84547c'}}>1</Button>
           <Button variant="outline" size="sm" disabled className="rounded-md">Next</Button>
         </div>
       </div>

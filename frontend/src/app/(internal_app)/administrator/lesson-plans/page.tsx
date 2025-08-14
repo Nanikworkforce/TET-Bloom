@@ -8,6 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { 
+  FileText, 
+  Search, 
+  Filter, 
+  Calendar, 
+  User, 
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  BookOpen
+} from "lucide-react";
 
 // Mock data for lesson plans submissions
 const mockLessonPlans = [
@@ -104,9 +115,9 @@ export default function AdministratorLessonPlansPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending_review":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending Review</Badge>;
+        return <Badge className="text-white" style={{backgroundColor: '#84547c'}}>Pending Review</Badge>;
       case "reviewed":
-        return <Badge className="bg-blue-100 text-blue-800">Reviewed</Badge>;
+        return <Badge className="text-white" style={{backgroundColor: '#84547c'}}>Reviewed</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">Unknown</Badge>;
     }
@@ -115,9 +126,9 @@ export default function AdministratorLessonPlansPage() {
   const getFeedbackBadge = (feedbackStatus: string | undefined) => {
     switch (feedbackStatus) {
       case "approved":
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+        return <Badge className="text-white" style={{backgroundColor: '#e4a414'}}>Approved</Badge>;
       case "needs_revision":
-        return <Badge className="bg-orange-100 text-orange-800">Needs Revision</Badge>;
+        return <Badge className="text-white" style={{backgroundColor: '#e4a414'}}>Needs Revision</Badge>;
       default:
         return null;
     }
@@ -140,42 +151,51 @@ export default function AdministratorLessonPlansPage() {
   const needsRevisionCount = mockLessonPlans.filter(p => p.feedback?.status === "needs_revision").length;
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Lesson Plans Management</h1>
-          <p className="text-gray-600">Review and provide feedback on teacher lesson plans</p>
+    <div className="space-y-8">
+      {/* Modern Header */}
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
+        
+        <div className="relative z-10 p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="text-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                  <FileText className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold">Lesson Plans Management</h1>
+                  <p className="text-white/90 text-lg mt-1">Review and provide feedback on teacher lesson plans</p>
+                </div>
+              </div>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{pendingCount}</div>
+                  <div className="text-white/90 text-sm">Pending Review</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{approvedCount}</div>
+                  <div className="text-white/90 text-sm">Approved</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{needsRevisionCount}</div>
+                  <div className="text-white/90 text-sm">Need Revision</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{reviewedCount}</div>
+                  <div className="text-white/90 text-sm">Total Reviewed</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
-            <div className="text-sm text-gray-600">Pending Review</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-            <div className="text-sm text-gray-600">Approved</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-600">{needsRevisionCount}</div>
-            <div className="text-sm text-gray-600">Need Revision</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{reviewedCount}</div>
-            <div className="text-sm text-gray-600">Total Reviewed</div>
-          </CardContent>
-        </Card>
-      </div>
+
 
       {/* Search and filters */}
       <Card className="p-4">
@@ -232,14 +252,15 @@ export default function AdministratorLessonPlansPage() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 min-w-[160px]">
-                    <Button size="sm" variant="outline" className="rounded-lg">
+                    <Button size="sm" variant="outline" className="rounded-lg" style={{borderColor: '#84547c', color: '#84547c'}}>
                       <span className="mr-2">📄</span>
                       Download ({plan.fileSize})
                     </Button>
                     {plan.status === "pending_review" && (
                       <Button 
                         size="sm" 
-                        className="rounded-lg"
+                        className="rounded-lg text-white"
+                        style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}
                         onClick={() => setSelectedPlan(plan.id)}
                       >
                         Provide Feedback
@@ -250,6 +271,7 @@ export default function AdministratorLessonPlansPage() {
                         size="sm" 
                         variant="outline" 
                         className="rounded-lg"
+                        style={{borderColor: '#e4a414', color: '#e4a414'}}
                         onClick={() => setSelectedPlan(plan.id)}
                       >
                         View Feedback
@@ -260,7 +282,7 @@ export default function AdministratorLessonPlansPage() {
 
                 {/* Existing Feedback Display */}
                 {plan.feedback && selectedPlan !== plan.id && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border-l-4 border-primary">
+                  <div className="mt-4 p-4 rounded-lg border-l-4" style={{backgroundColor: 'rgba(132, 84, 124, 0.05)', borderLeftColor: '#84547c'}}>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-medium text-sm">Your Feedback ({plan.feedback.reviewDate}):</span>
                       {getFeedbackBadge(plan.feedback.status)}
@@ -309,6 +331,7 @@ export default function AdministratorLessonPlansPage() {
                           type="button" 
                           variant="outline" 
                           className="rounded-lg"
+                          style={{borderColor: '#84547c', color: '#84547c'}}
                           onClick={() => {
                             setSelectedPlan(null);
                             setReviewForm({ status: "approved", comment: "" });
@@ -317,7 +340,8 @@ export default function AdministratorLessonPlansPage() {
                           Cancel
                         </Button>
                         <Button 
-                          className="rounded-lg"
+                          className="rounded-lg text-white"
+                          style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}
                           onClick={() => handleReviewSubmit(plan.id)}
                           disabled={isSubmitting || !reviewForm.comment.trim()}
                         >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { observationGroupApi, teacherApi, ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { 
   BarChart3, 
   Users, 
@@ -26,7 +28,8 @@ import {
   BookOpen,
   Brain,
   Heart,
-  Shield
+  Shield,
+  Download
 } from "lucide-react";
 
 // T-TESS Domains and Dimensions
@@ -89,15 +92,75 @@ const tTessDomains = [
   }
 ];
 
-// Performance levels
+// Interfaces for data structures
+interface ObservationGroup {
+  id: string;
+  name: string;
+  note?: string;
+  created_by: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  teachers: Teacher[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Teacher {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
+
+// Performance levels with custom colors
 const performanceLevels = [
-  { value: "distinguished", label: "Distinguished", color: "bg-green-100 text-green-800" },
-  { value: "accomplished", label: "Accomplished", color: "bg-blue-100 text-blue-800" },
-  { value: "developing", label: "Developing", color: "bg-yellow-100 text-yellow-800" },
-  { value: "improvement_needed", label: "Improvement Needed", color: "bg-red-100 text-red-800" }
+  { 
+    value: "distinguished", 
+    label: "Distinguished", 
+    color: "bg-[#da8a4e] text-white",
+    bgColor: "#da8a4e",
+    textColor: "#ffffff"
+  },
+  { 
+    value: "accomplished", 
+    label: "Accomplished", 
+    color: "bg-[#0eb4a0] text-white",
+    bgColor: "#0eb4a0",
+    textColor: "#ffffff"
+  },
+  { 
+    value: "proficient", 
+    label: "Proficient", 
+    color: "bg-[#925983] text-white",
+    bgColor: "#925983",
+    textColor: "#ffffff"
+  },
+  { 
+    value: "developing", 
+    label: "Developing", 
+    color: "bg-[#e4a414] text-white",
+    bgColor: "#e4a414",
+    textColor: "#ffffff"
+  },
+  { 
+    value: "improvement_needed", 
+    label: "Improvement Needed", 
+    color: "bg-[#004e9f] text-white",
+    bgColor: "#004e9f",
+    textColor: "#ffffff"
+  }
 ];
 
 interface EvaluationData {
+  observationGroupId: string;
   teacherName: string;
   teacherId: string;
   subject: string;
@@ -115,7 +178,9 @@ interface EvaluationData {
 }
 
 export default function TTessEvaluationPage() {
+  const { user } = useAuth();
   const [evaluationData, setEvaluationData] = useState<EvaluationData>({
+    observationGroupId: "",
     teacherName: "",
     teacherId: "",
     subject: "",
@@ -128,8 +193,75 @@ export default function TTessEvaluationPage() {
     goals: ""
   });
 
+  // State for observation groups and teachers
+  const [observationGroups, setObservationGroups] = useState<ObservationGroup[]>([]);
+  const [availableTeachers, setAvailableTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
+
+  // Fetch observation groups on component mount
+  useEffect(() => {
+    const fetchObservationGroups = async () => {
+      try {
+        setLoading(true);
+        const response = await observationGroupApi.getAll();
+        setObservationGroups((response.data as ObservationGroup[]) || []);
+        
+        // Auto-populate observer name if user is logged in
+        if (user?.fullName) {
+          setEvaluationData(prev => ({ 
+            ...prev, 
+            observerName: user.fullName 
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching observation groups:", err);
+        setError("Failed to load observation groups");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchObservationGroups();
+  }, [user]);
+
+  // Handle observation group selection and auto-populate teachers
+  const handleObservationGroupChange = (groupId: string) => {
+    setEvaluationData(prev => ({ 
+      ...prev, 
+      observationGroupId: groupId,
+      // Reset teacher fields when group changes
+      teacherName: "",
+      teacherId: "",
+      subject: "",
+      grade: ""
+    }));
+
+    // Find selected group and set available teachers
+    const selectedGroup = observationGroups.find(group => group.id === groupId);
+    if (selectedGroup) {
+      setAvailableTeachers(selectedGroup.teachers || []);
+    } else {
+      setAvailableTeachers([]);
+    }
+  };
+
+  // Handle teacher selection and auto-populate teacher info
+  const handleTeacherChange = (teacherId: string) => {
+    const selectedTeacher = availableTeachers.find(teacher => teacher.id === teacherId);
+    if (selectedTeacher) {
+      setEvaluationData(prev => ({
+        ...prev,
+        teacherId: teacherId,
+        teacherName: selectedTeacher.user.name,
+        subject: selectedTeacher.subject,
+        grade: selectedTeacher.grade
+      }));
+    }
+  };
 
   const handleDimensionChange = (dimensionId: string, field: 'rating' | 'evidence' | 'goals', value: string) => {
     setEvaluationData(prev => ({
@@ -155,16 +287,18 @@ export default function TTessEvaluationPage() {
     if (validRatings.length === 0) return '';
     
     const ratingValues = {
-      'distinguished': 4,
-      'accomplished': 3,
+      'distinguished': 5,
+      'accomplished': 4,
+      'proficient': 3,
       'developing': 2,
       'improvement_needed': 1
     };
     
     const average = validRatings.reduce((sum, rating) => sum + ratingValues[rating as keyof typeof ratingValues], 0) / validRatings.length;
     
-    if (average >= 3.5) return 'distinguished';
-    if (average >= 2.5) return 'accomplished';
+    if (average >= 4.5) return 'distinguished';
+    if (average >= 3.5) return 'accomplished';
+    if (average >= 2.5) return 'proficient';
     if (average >= 1.5) return 'developing';
     return 'improvement_needed';
   };
@@ -181,7 +315,7 @@ export default function TTessEvaluationPage() {
   return (
     <div className="space-y-8">
       {/* Modern Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-600 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -224,6 +358,14 @@ export default function TTessEvaluationPage() {
                   Back to Observations
                 </Button>
               </Link>
+              <a 
+                href="/documents/t-tess-rubric.pdf" 
+                download="T-TESS-Evaluation-Rubric.pdf"
+                className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105 flex items-center gap-2 no-underline"
+              >
+                <Download className="h-5 w-5" />
+                Download T-TESS PDF
+              </a>
             </div>
           </div>
         </div>
@@ -232,44 +374,106 @@ export default function TTessEvaluationPage() {
       {/* Step 1: Basic Information */}
       {currentStep === 1 && (
         <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-100 border-b border-gray-100 p-6">
+          <CardHeader className="border-b border-gray-100 p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.1) 0%, rgba(228, 164, 20, 0.1) 100%)'}}>
             <div className="flex items-center gap-3">
-              <div className="bg-blue-100 p-2 rounded-xl">
-                <User className="h-5 w-5 text-blue-600" />
+              <div className="p-2 rounded-xl" style={{backgroundColor: 'rgba(132, 84, 124, 0.2)'}}>
+                <User className="h-5 w-5" style={{color: '#84547c'}} />
               </div>
               <CardTitle className="text-xl font-semibold text-gray-800">Step 1: Basic Information</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="teacherName" className="text-sm font-medium text-gray-700">Teacher Name</Label>
-                <Input
-                  id="teacherName"
-                  value={evaluationData.teacherName}
-                  onChange={(e) => setEvaluationData(prev => ({ ...prev, teacherName: e.target.value }))}
-                  placeholder="Enter teacher name"
-                  className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600">{error}</p>
               </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Observation Group Selection */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="observationGroup" className="text-sm font-medium text-gray-700">
+                  Observation Group *
+                </Label>
+                <Select 
+                  value={evaluationData.observationGroupId} 
+                  onValueChange={handleObservationGroupChange}
+                  disabled={loading}
+                >
+                  <SelectTrigger className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder={loading ? "Loading groups..." : "Select an observation group"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {observationGroups.map((group) => (
+                      <SelectItem key={group.id} value={group.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{group.name}</span>
+                          <span className="text-xs text-gray-500">
+                            {group.teachers?.length || 0} teachers • Created by {group.created_by?.name}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Teacher Selection */}
               <div className="space-y-2">
-                <Label htmlFor="teacherId" className="text-sm font-medium text-gray-700">Teacher ID</Label>
-                <Input
-                  id="teacherId"
-                  value={evaluationData.teacherId}
-                  onChange={(e) => setEvaluationData(prev => ({ ...prev, teacherId: e.target.value }))}
-                  placeholder="Enter teacher ID"
-                  className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
+                <Label htmlFor="teacher" className="text-sm font-medium text-gray-700">
+                  Teacher *
+                </Label>
+                <Select 
+                  value={evaluationData.teacherId} 
+                  onValueChange={handleTeacherChange}
+                  disabled={!evaluationData.observationGroupId || availableTeachers.length === 0}
+                >
+                  <SelectTrigger className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder={
+                      !evaluationData.observationGroupId 
+                        ? "Select observation group first" 
+                        : availableTeachers.length === 0 
+                        ? "No teachers in selected group"
+                        : "Select a teacher"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTeachers.map((teacher) => (
+                      <SelectItem key={teacher.id} value={teacher.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{teacher.user.name}</span>
+                          <span className="text-xs text-gray-500">
+                            {teacher.subject} • {teacher.grade} • {teacher.years_of_experience} years exp.
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Display selected teacher info (read-only) */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Teacher Information</Label>
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                  {evaluationData.teacherName ? (
+                    <div className="space-y-1">
+                      <p className="font-medium text-gray-900">{evaluationData.teacherName}</p>
+                      <p className="text-sm text-gray-600">ID: {evaluationData.teacherId}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Select a teacher to view information</p>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subject" className="text-sm font-medium text-gray-700">Subject</Label>
                 <Input
                   id="subject"
                   value={evaluationData.subject}
-                  onChange={(e) => setEvaluationData(prev => ({ ...prev, subject: e.target.value }))}
-                  placeholder="Enter subject"
-                  className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  readOnly
+                  placeholder="Auto-populated from teacher selection"
+                  className="rounded-2xl border-gray-200 bg-gray-50"
                 />
               </div>
               <div className="space-y-2">
@@ -277,9 +481,9 @@ export default function TTessEvaluationPage() {
                 <Input
                   id="grade"
                   value={evaluationData.grade}
-                  onChange={(e) => setEvaluationData(prev => ({ ...prev, grade: e.target.value }))}
-                  placeholder="Enter grade level"
-                  className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  readOnly
+                  placeholder="Auto-populated from teacher selection"
+                  className="rounded-2xl border-gray-200 bg-gray-50"
                 />
               </div>
               <div className="space-y-2">
@@ -306,13 +510,23 @@ export default function TTessEvaluationPage() {
             <div className="flex justify-end pt-4">
               <Button 
                 onClick={() => setCurrentStep(2)} 
-                disabled={!evaluationData.teacherName}
-                className="rounded-2xl px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105"
+                disabled={!evaluationData.observationGroupId || !evaluationData.teacherId || !evaluationData.teacherName}
+                className="rounded-2xl px-8 py-3 text-white transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}
               >
                 Next Step
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Validation message */}
+            {(!evaluationData.observationGroupId || !evaluationData.teacherId) && (
+              <div className="text-center mt-4">
+                <p className="text-sm text-gray-500">
+                  Please select an observation group and teacher to continue
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

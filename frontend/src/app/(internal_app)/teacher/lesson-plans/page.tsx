@@ -124,7 +124,7 @@ export default function TeacherLessonPlansPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "submitted":
-        return <Badge className="bg-green-100 text-green-800">Submitted</Badge>;
+        return <Badge className="text-white" style={{backgroundColor: '#84547c'}}>Submitted</Badge>;
       case "pending":
         return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case "overdue":
@@ -137,11 +137,11 @@ export default function TeacherLessonPlansPage() {
   const getFeedbackBadge = (feedbackStatus: string | undefined) => {
     switch (feedbackStatus) {
       case "approved":
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+        return <Badge className="text-white" style={{backgroundColor: '#e4a414'}}>Approved</Badge>;
       case "needs_revision":
         return <Badge className="bg-orange-100 text-orange-800">Needs Revision</Badge>;
       case "pending":
-        return <Badge className="bg-blue-100 text-blue-800">Under Review</Badge>;
+        return <Badge className="text-white" style={{backgroundColor: '#84547c'}}>Under Review</Badge>;
       default:
         return null;
     }
@@ -155,7 +155,7 @@ export default function TeacherLessonPlansPage() {
   return (
     <div className="space-y-8">
       {/* Modern Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -169,7 +169,7 @@ export default function TeacherLessonPlansPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl lg:text-4xl font-bold">Lesson Plans</h1>
-                  <p className="text-green-100 text-lg mt-1">Submit and manage your weekly lesson plans</p>
+                  <p className="text-white/90 text-lg mt-1">Submit and manage your weekly lesson plans</p>
                 </div>
               </div>
               
@@ -177,19 +177,19 @@ export default function TeacherLessonPlansPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.status === 'submitted').length}</div>
-                  <div className="text-green-100 text-sm">Submitted</div>
+                  <div className="text-white/90 text-sm">Submitted</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.status === 'pending').length}</div>
-                  <div className="text-green-100 text-sm">Pending</div>
+                  <div className="text-white/90 text-sm">Pending</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.feedback?.status === 'approved').length}</div>
-                  <div className="text-green-100 text-sm">Approved</div>
+                  <div className="text-white/90 text-sm">Approved</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.feedback?.status === 'needs_revision').length}</div>
-                  <div className="text-green-100 text-sm">Need Revision</div>
+                  <div className="text-white/90 text-sm">Need Revision</div>
                 </div>
               </div>
             </div>
@@ -212,9 +212,13 @@ export default function TeacherLessonPlansPage() {
         <button
           className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "overview"
-              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
+              ? "text-white shadow-lg"
               : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
+          style={activeTab === "overview" ? {
+            background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)',
+            boxShadow: '0 10px 25px rgba(132, 84, 124, 0.25)'
+          } : {}}
           onClick={() => setActiveTab("overview")}
         >
           <div className="flex items-center justify-center gap-2">
@@ -225,9 +229,13 @@ export default function TeacherLessonPlansPage() {
         <button
           className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "submit"
-              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
+              ? "text-white shadow-lg"
               : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
+          style={activeTab === "submit" ? {
+            background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)',
+            boxShadow: '0 10px 25px rgba(132, 84, 124, 0.25)'
+          } : {}}
           onClick={() => setActiveTab("submit")}
         >
           Submit Lesson Plan
@@ -260,7 +268,7 @@ export default function TeacherLessonPlansPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="p-4">
-                <div className="text-2xl font-bold text-green-600">8</div>
+                <div className="text-2xl font-bold" style={{color: '#e4a414'}}>8</div>
                 <div className="text-sm text-gray-600">Approved</div>
               </CardContent>
             </Card>
@@ -272,7 +280,7 @@ export default function TeacherLessonPlansPage() {
             </Card>
             <Card>
               <CardContent className="p-4">
-                <div className="text-2xl font-bold text-blue-600">1</div>
+                <div className="text-2xl font-bold" style={{color: '#84547c'}}>1</div>
                 <div className="text-sm text-gray-600">Under Review</div>
               </CardContent>
             </Card>
@@ -386,8 +394,8 @@ export default function TeacherLessonPlansPage() {
                   
                   {!selectedFile ? (
                     <>
-                      <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                        <span className="text-primary text-2xl">📄</span>
+                      <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)'}}>
+                        <span className="text-2xl" style={{color: '#84547c'}}>📄</span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
                         Drag and drop your lesson plan, or
@@ -406,7 +414,7 @@ export default function TeacherLessonPlansPage() {
                     </>
                   ) : (
                     <div className="flex items-center justify-center gap-3">
-                      <span className="text-primary text-2xl">📄</span>
+                      <span className="text-2xl" style={{color: '#84547c'}}>📄</span>
                       <div className="text-left">
                         <p className="font-medium">{selectedFile.name}</p>
                         <p className="text-sm text-gray-500">
@@ -507,7 +515,7 @@ export default function TeacherLessonPlansPage() {
                             {selectedPlan.submitDate && (
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Submitted:</span>
-                                <span className="text-green-600">{selectedPlan.submitDate}</span>
+                                <span style={{color: '#e4a414'}}>{selectedPlan.submitDate}</span>
                               </div>
                             )}
                           </div>
@@ -519,7 +527,7 @@ export default function TeacherLessonPlansPage() {
                           <h3 className="font-medium text-gray-700 mb-2">File Information</h3>
                           <div className="border rounded-lg p-4 bg-gray-50">
                             <div className="flex items-start gap-3">
-                              <div className="text-primary text-2xl">📄</div>
+                              <div className="text-2xl" style={{color: '#84547c'}}>📄</div>
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium text-gray-900 truncate">
                                   Lesson_Plan_{selectedPlan.title.replace(/\s+/g, '_')}.pdf
@@ -592,10 +600,10 @@ export default function TeacherLessonPlansPage() {
                     {/* No Feedback Yet */}
                     {!selectedPlan.feedback && selectedPlan.status === "submitted" && (
                       <div className="border-t pt-6">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                          <div className="text-blue-600 text-2xl mb-2">⏳</div>
-                          <h4 className="font-medium text-blue-800 mb-1">Under Review</h4>
-                          <p className="text-blue-700 text-sm">
+                        <div className="rounded-lg p-4 text-center" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)', borderColor: '#84547c'}}>
+                          <div className="text-2xl mb-2" style={{color: '#84547c'}}>⏳</div>
+                          <h4 className="font-medium mb-1" style={{color: '#84547c'}}>Under Review</h4>
+                          <p className="text-sm" style={{color: '#84547c'}}>
                             Your lesson plan is currently being reviewed by an administrator. You'll receive feedback soon.
                           </p>
                         </div>

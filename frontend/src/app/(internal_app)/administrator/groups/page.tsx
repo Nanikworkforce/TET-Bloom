@@ -173,7 +173,7 @@ export default function AdministratorObservationGroupsPage() {
         </div>
         <div>
           <Link href="/administrator/groups/create">
-            <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
+            <Button className="rounded-full shadow-sm text-white" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
               <span className="mr-2">➕</span> Create Observation Group
             </Button>
           </Link>
@@ -281,7 +281,7 @@ export default function AdministratorObservationGroupsPage() {
                     <div className="flex items-center gap-2">
                       {group.name}
                       {group.observer === currentUserName && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{backgroundColor: '#84547c'}}>
                           Assigned to me
                         </span>
                       )}
@@ -295,7 +295,11 @@ export default function AdministratorObservationGroupsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{group.lastObservation}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      group.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      group.status === "Active" 
+                        ? "text-white" 
+                        : "bg-red-100 text-red-800"
+                    }"
+                    style={group.status === "Active" ? {backgroundColor: '#e4a414'} : {}}
                     }`}>
                       {group.status}
                     </span>
@@ -309,7 +313,7 @@ export default function AdministratorObservationGroupsPage() {
                       </Link>
                       {group.observer === currentUserName ? (
                         <Link href={`/administrator/groups/edit/${group.id}`}>
-                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                          <Button variant="ghost" size="sm" style={{color: '#84547c'}}>
                             Edit
                           </Button>
                         </Link>

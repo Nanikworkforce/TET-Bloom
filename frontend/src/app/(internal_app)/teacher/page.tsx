@@ -252,9 +252,11 @@ export default function TeacherDashboard() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
+        return 'text-white';
+        // Will use custom background color
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'text-white';
+        // Will use custom background color
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -286,7 +288,7 @@ export default function TeacherDashboard() {
         <Card className="p-5 border bg-white">
           <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 mb-2">
-              <div className="text-2xl bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center">
+              <div className="text-2xl w-10 h-10 rounded-full flex items-center justify-center text-white" style={{backgroundColor: '#84547c'}}>
                 📅
               </div>
               <h2 className="font-semibold">Upcoming Observations</h2>
@@ -298,7 +300,7 @@ export default function TeacherDashboard() {
             </p>
             <div className="mt-auto pt-4">
               <Link href="/teacher/observations">
-                <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
+                <Button variant="ghost" size="sm" className="w-full justify-start" style={{color: '#84547c'}}>
                   View Schedule <span className="ml-1">→</span>
                 </Button>
               </Link>
@@ -309,7 +311,7 @@ export default function TeacherDashboard() {
         <Card className="p-5 border bg-white">
           <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 mb-2">
-              <div className="text-2xl bg-green-100 text-green-600 w-10 h-10 rounded-full flex items-center justify-center">
+              <div className="text-2xl w-10 h-10 rounded-full flex items-center justify-center text-white" style={{backgroundColor: '#e4a414'}}>
                 📈
               </div>
               <h2 className="font-semibold">Performance Rating</h2>
@@ -318,7 +320,7 @@ export default function TeacherDashboard() {
             <p className="text-gray-600 mt-1">Based on last 5 observations</p>
             <div className="mt-auto pt-4">
               <Link href="/teacher/feedback">
-                <Button variant="ghost" size="sm" className="text-primary w-full justify-start hover:bg-primary/10">
+                <Button variant="ghost" size="sm" className="w-full justify-start" style={{color: '#84547c'}}>
                   View Feedback <span className="ml-1">→</span>
                 </Button>
               </Link>
@@ -329,10 +331,10 @@ export default function TeacherDashboard() {
 
       {/* Upcoming observations */}
       <Card className="border p-0 overflow-hidden bg-white">
-        <div className="border-b px-4 py-3 bg-gradient-to-r from-primary/5 to-secondary/5">
+        <div className="border-b px-4 py-3" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Upcoming Observations</h2>
-            <Link href="/teacher/observations" className="text-primary text-sm font-medium hover:underline">
+            <Link href="/teacher/observations" className="text-sm font-medium hover:underline" style={{color: '#84547c'}}>
               View All
             </Link>
           </div>
@@ -395,10 +397,10 @@ export default function TeacherDashboard() {
       <div className="grid grid-cols-1 gap-6">
         {/* Recent Feedback */}
         <Card className="border p-0 overflow-hidden bg-white">
-          <div className="border-b px-4 py-3 bg-gradient-to-r from-secondary/5 to-primary/5">
+          <div className="border-b px-4 py-3" style={{background: 'linear-gradient(90deg, rgba(228, 164, 20, 0.05) 0%, rgba(132, 84, 124, 0.05) 100%)'}}>
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-lg">Recent Feedback</h2>
-              <Link href="/teacher/feedback" className="text-primary text-sm font-medium hover:underline">
+              <Link href="/teacher/feedback" className="text-sm font-medium hover:underline" style={{color: '#84547c'}}>
                 View All
               </Link>
             </div>

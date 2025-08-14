@@ -226,9 +226,9 @@ export default function TeacherObservationsPage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
+        return 'text-white';
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'text-white';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -239,7 +239,7 @@ export default function TeacherObservationsPage() {
   return (
     <div className="space-y-8">
       {/* Modern Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -253,7 +253,7 @@ export default function TeacherObservationsPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl lg:text-4xl font-bold">My Observations</h1>
-                  <p className="text-blue-100 text-lg mt-1">View and prepare for upcoming observations</p>
+                  <p className="text-white/90 text-lg mt-1">View and prepare for upcoming observations</p>
                 </div>
               </div>
               
@@ -261,15 +261,15 @@ export default function TeacherObservationsPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{upcomingObservations.length}</div>
-                  <div className="text-blue-100 text-sm">Upcoming</div>
+                  <div className="text-white/90 text-sm">Upcoming</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{pastObservations.length}</div>
-                  <div className="text-blue-100 text-sm">Completed</div>
+                  <div className="text-white/90 text-sm">Completed</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{upcomingObservations.length + pastObservations.length}</div>
-                  <div className="text-blue-100 text-sm">Total</div>
+                  <div className="text-white/90 text-sm">Total</div>
                 </div>
               </div>
             </div>
@@ -289,9 +289,13 @@ export default function TeacherObservationsPage() {
         <button
           className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "upcoming"
-              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+              ? "text-white shadow-lg"
               : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
+          style={activeTab === "upcoming" ? {
+            background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)',
+            boxShadow: '0 10px 25px rgba(132, 84, 124, 0.25)'
+          } : {}}
           onClick={() => setActiveTab("upcoming")}
         >
           <div className="flex items-center justify-center gap-2">
@@ -302,9 +306,13 @@ export default function TeacherObservationsPage() {
         <button
           className={`flex-1 py-3 px-6 font-medium text-sm rounded-xl transition-all duration-300 ${
             activeTab === "past"
-              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+              ? "text-white shadow-lg"
               : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
           }`}
+          style={activeTab === "past" ? {
+            background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)',
+            boxShadow: '0 10px 25px rgba(132, 84, 124, 0.25)'
+          } : {}}
           onClick={() => setActiveTab("past")}
         >
           <div className="flex items-center justify-center gap-2">
@@ -320,19 +328,19 @@ export default function TeacherObservationsPage() {
           <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
             <div className="p-8 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <RefreshCw className="h-6 w-6 text-blue-500 animate-spin" />
+                <RefreshCw className="h-6 w-6 animate-spin" style={{color: '#84547c'}} />
                 <p className="text-gray-500 text-lg">Loading observations...</p>
               </div>
             </div>
           </Card>
         ) : (activeTab === "upcoming" ? upcomingObservations : pastObservations).length === 0 ? (
-          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
+          <Card className="border-0 shadow-xl rounded-3xl overflow-hidden" style={{background: 'linear-gradient(135deg, rgba(132, 84, 124, 0.1) 0%, rgba(228, 164, 20, 0.1) 100%)'}}>
             <div className="p-8 text-center">
-              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4" style={{background: 'linear-gradient(135deg, rgba(132, 84, 124, 0.2) 0%, rgba(228, 164, 20, 0.2) 100%)'}}>
                 {activeTab === "upcoming" ? (
-                  <Clock className="h-12 w-12 text-blue-600" />
+                  <Clock className="h-12 w-12" style={{color: '#84547c'}} />
                 ) : (
-                  <CheckCircle className="h-12 w-12 text-green-600" />
+                  <CheckCircle className="h-12 w-12" style={{color: '#e4a414'}} />
                 )}
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -349,18 +357,21 @@ export default function TeacherObservationsPage() {
         ) : (
           (activeTab === "upcoming" ? upcomingObservations : pastObservations).map((observation) => (
             <Card key={observation.id} className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white hover:shadow-2xl transition-all duration-300">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-100 p-6 border-b">
+              <div className="p-6 border-b" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2 rounded-xl">
-                      <BookOpen className="h-5 w-5 text-blue-600" />
+                    <div className="p-2 rounded-xl" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)'}}>
+                      <BookOpen className="h-5 w-5" style={{color: '#84547c'}} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-xl text-gray-800">{teacherData?.subject || 'Subject'}</h3>
                       <p className="text-gray-600 text-sm">Grade {teacherData?.grade || 'N/A'}</p>
                     </div>
                   </div>
-                  <span className={`px-4 py-2 text-sm font-medium rounded-2xl ${getStatusColor(observation.status)}`}>
+                  <span 
+                    className={`px-4 py-2 text-sm font-medium rounded-2xl ${getStatusColor(observation.status)}`}
+                    style={{backgroundColor: observation.status.toLowerCase() === 'scheduled' ? '#84547c' : observation.status.toLowerCase() === 'completed' ? '#e4a414' : undefined}}
+                  >
                     {observation.status}
                   </span>
                 </div>
@@ -400,7 +411,8 @@ export default function TeacherObservationsPage() {
                   {observation.status === "Scheduled" && (
                     <>
                       <Button 
-                        className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105"
+                        className="rounded-2xl text-white transition-all duration-300 hover:scale-105"
+                        style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}
                         onClick={() => {
                           setUploadingFor(observation.id);
                           setSelectedObservation(null);
@@ -411,7 +423,10 @@ export default function TeacherObservationsPage() {
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="rounded-2xl border-blue-200 text-blue-600 hover:bg-blue-50"
+                        className="rounded-2xl"
+                        style={{borderColor: '#84547c', color: '#84547c'}}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(132, 84, 124, 0.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         onClick={() => {
                           setSelectedObservation(observation.id === selectedObservation ? null : observation.id);
                           setUploadingFor(null);
@@ -426,7 +441,10 @@ export default function TeacherObservationsPage() {
                   {observation.status === "Completed" && (
                     <Button 
                       variant="outline" 
-                      className="rounded-2xl border-green-200 text-green-600 hover:bg-green-50"
+                      className="rounded-2xl"
+                      style={{borderColor: '#e4a414', color: '#e4a414'}}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(228, 164, 20, 0.05)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       onClick={() => {
                         setSelectedObservation(observation.id === selectedObservation ? null : observation.id);
                       }}
@@ -439,10 +457,10 @@ export default function TeacherObservationsPage() {
               
                 {/* Modern Supporting Materials Upload Section */}
                 {uploadingFor === observation.id && (
-                  <div className="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl border">
+                  <div className="mt-6 p-6 rounded-2xl border" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="bg-blue-100 p-2 rounded-xl">
-                        <FileText className="h-5 w-5 text-blue-600" />
+                      <div className="p-2 rounded-xl" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)'}}>
+                        <FileText className="h-5 w-5" style={{color: '#84547c'}} />
                       </div>
                       <h4 className="font-semibold text-lg text-gray-800">Submit Supporting Materials</h4>
                     </div>
@@ -472,7 +490,10 @@ export default function TeacherObservationsPage() {
                         <Button
                           disabled={isUploading}
                           onClick={() => handleSupportingMaterialsSubmit(observation.id)}
-                          className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300"
+                          className="rounded-2xl text-white transition-all duration-300"
+                          style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}
+                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         >
                           {isUploading ? (
                             <>
@@ -536,9 +557,9 @@ export default function TeacherObservationsPage() {
                   <h4 className="font-medium mb-3">Observation Summary</h4>
                   
                   <div className="space-y-3">
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <div className="font-medium text-blue-700 mb-1">Observation Completed</div>
-                      <div className="text-sm text-blue-600">
+                    <div className="p-3 rounded-lg" style={{backgroundColor: 'rgba(132, 84, 124, 0.05)'}}>
+                      <div className="font-medium mb-1" style={{color: '#84547c'}}>Observation Completed</div>
+                      <div className="text-sm" style={{color: '#84547c'}}>
                         This {observation.observation_type.replace('-', ' ')} observation was completed on {formatDate(observation.date)}.
                         {observation.notes && ` Notes: ${observation.notes}`}
                       </div>

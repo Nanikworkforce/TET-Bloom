@@ -137,7 +137,7 @@ export default function AdministratorDashboard() {
   return (
     <div className="space-y-8">
       {/* Modern Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -201,7 +201,7 @@ export default function AdministratorDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Teacher Observations Card */}
         <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 to-cyan-100">
-          <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white p-6">
+          <CardHeader className="text-white p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
             <div className="flex items-center gap-3">
               <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
                 <Eye className="h-6 w-6" />
@@ -227,7 +227,7 @@ export default function AdministratorDashboard() {
                 </div>
                 <div className="text-center p-3 bg-green-100 rounded-2xl">
                   <div className="text-xl font-bold text-green-600">{dashboardStats.observations.thisWeek}</div>
-                  <div className="text-xs text-green-700">This Week</div>
+                  <div className="text-xs text-green-700">Observed</div>
                 </div>
               </div>
               
@@ -249,7 +249,7 @@ export default function AdministratorDashboard() {
               </div>
               
               <Link href="/administrator/observations">
-                <Button className="w-full rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 transition-all duration-300 hover:scale-105">
+                <Button className="w-full rounded-2xl text-white transition-all duration-300 hover:scale-105" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
                   <Eye className="mr-2 h-4 w-4" />
                   View All Observations
                 </Button>
@@ -260,7 +260,7 @@ export default function AdministratorDashboard() {
         
         {/* Lesson Plans Card */}
         <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-100">
-          <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6">
+          <CardHeader className="text-white p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
             <div className="flex items-center gap-3">
               <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
                 <FileText className="h-6 w-6" />
@@ -308,7 +308,7 @@ export default function AdministratorDashboard() {
               </div>
               
               <Link href="/administrator/lesson-plans">
-                <Button className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 hover:scale-105">
+                <Button className="w-full rounded-2xl text-white transition-all duration-300 hover:scale-105" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
                   <FileText className="mr-2 h-4 w-4" />
                   Manage Lesson Plans
                 </Button>

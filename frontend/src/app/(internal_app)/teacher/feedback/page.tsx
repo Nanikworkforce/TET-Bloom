@@ -18,7 +18,8 @@ const feedbackEntries = [
     grade: "7th Grade",
     topic: "Fractions and Decimals",
     overallRating: "Excellent",
-    ratingColor: "text-green-600",
+    ratingColor: "text-white",
+    ratingBg: "#e4a414",
     categories: {
       "Classroom Management": 5,
       "Content Knowledge": 5,
@@ -47,7 +48,8 @@ const feedbackEntries = [
     grade: "7th Grade",
     topic: "Percentages",
     overallRating: "Good",
-    ratingColor: "text-blue-600",
+    ratingColor: "text-white",
+    ratingBg: "#84547c",
     categories: {
       "Classroom Management": 4,
       "Content Knowledge": 5,
@@ -76,7 +78,8 @@ const feedbackEntries = [
     grade: "7th Grade",
     topic: "Equations and Variables",
     overallRating: "Good",
-    ratingColor: "text-blue-600",
+    ratingColor: "text-white",
+    ratingBg: "#84547c",
     categories: {
       "Classroom Management": 4,
       "Content Knowledge": 5,
@@ -180,7 +183,7 @@ export default function TeacherFeedbackPage() {
           <Button className="rounded-full shadow-sm" variant="outline">
             <span className="mr-2">📊</span> View Trends
           </Button>
-          <Button className="rounded-full shadow-sm bg-primary/90 hover:bg-primary">
+          <Button className="rounded-full shadow-sm text-white" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
             <span className="mr-2">🎯</span> Set Development Goals
           </Button>
         </div>
@@ -249,8 +252,8 @@ export default function TeacherFeedbackPage() {
           <p className="text-sm font-medium text-gray-500 mb-3">Rating Breakdown</p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { label: "Classroom Management", value: 4.3, color: "bg-blue-500" },
-              { label: "Content Knowledge", value: 5.0, color: "bg-green-500" },
+              { label: "Classroom Management", value: 4.3, color: "#84547c" },
+              { label: "Content Knowledge", value: 5.0, color: "#e4a414" },
               { label: "Student Engagement", value: 3.7, color: "bg-yellow-500" },
               { label: "Teaching Methods", value: 4.0, color: "bg-purple-500" },
               { label: "Assessment", value: 4.0, color: "bg-pink-500" }
@@ -277,11 +280,14 @@ export default function TeacherFeedbackPage() {
         {dynamicFeedbackEntries.map((feedback) => (
           <Card key={feedback.id} className="bg-white border overflow-hidden">
             {/* Header */}
-            <div className="flex flex-wrap justify-between items-center p-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5">
+            <div className="flex flex-wrap justify-between items-center p-4 border-b" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
               <div>
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   {feedback.class}
-                  <span className={`text-sm font-medium ${feedback.ratingColor}`}>
+                  <span 
+                    className={`text-sm font-medium px-2 py-1 rounded-full ${feedback.ratingColor}`}
+                    style={{backgroundColor: feedback.ratingBg}}
+                  >
                     ({feedback.overallRating})
                   </span>
                 </h3>
@@ -304,19 +310,19 @@ export default function TeacherFeedbackPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Strengths */}
                 <div className="space-y-2">
-                  <h4 className="text-green-700 font-medium flex items-center gap-2">
+                  <h4 className="font-medium flex items-center gap-2" style={{color: '#e4a414'}}>
                     <span className="text-lg">✨</span> Strengths
                   </h4>
-                  <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="p-3 rounded-lg" style={{backgroundColor: 'rgba(228, 164, 20, 0.1)'}}>
                     <ul className="space-y-2">
                       {feedback.strengths.slice(0, 3).map((strength, index) => (
                         <li key={index} className="flex items-start gap-2">
-                          <span className="text-green-500 mt-1">•</span>
+                          <span className="mt-1" style={{color: '#e4a414'}}>•</span>
                           <span className="text-sm">{strength}</span>
                         </li>
                       ))}
                       {feedback.strengths.length > 3 && (
-                        <li className="text-xs text-green-600 font-medium">
+                        <li className="text-xs font-medium" style={{color: '#e4a414'}}>
                           +{feedback.strengths.length - 3} more strengths
                         </li>
                       )}
@@ -368,8 +374,11 @@ export default function TeacherFeedbackPage() {
                     <div className="flex items-center">
                       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-primary"
-                          style={{ width: `${(rating / 5) * 100}%` }}
+                          className="h-full"
+                          style={{
+                            backgroundColor: '#84547c',
+                            width: `${(rating / 5) * 100}%`
+                          }}
                         ></div>
                       </div>
                       <span className="text-xs font-medium ml-2">{rating}/5</span>

@@ -32,6 +32,7 @@ export interface ObservationRecord {
   type: ObservationType;
   status: ObservationStatus;
   statusColor: string;
+  statusBg?: string;
   feedback?: boolean;
   notes?: string;
   observerId: string;

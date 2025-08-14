@@ -114,7 +114,7 @@ export default function ObservationGroupsPage() {
               </div>
               <div className="text-white">
                 <h1 className="text-3xl lg:text-4xl font-bold">Observation Groups</h1>
-                <p className="text-purple-100 text-lg mt-1">Manage teacher observation groups</p>
+                <p className="text-white/90 text-lg mt-1">Manage teacher observation groups</p>
               </div>
             </div>
           </div>
@@ -122,8 +122,8 @@ export default function ObservationGroupsPage() {
         
         <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="bg-indigo-100 p-4 rounded-2xl mb-4">
-              <RefreshCw className="h-8 w-8 text-indigo-600 animate-spin" />
+            <div className="p-4 rounded-2xl mb-4" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)'}}>
+              <RefreshCw className="h-8 w-8 animate-spin" style={{color: '#84547c'}} />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Loading Observation Groups</h3>
             <p className="text-gray-500">Please wait while we fetch the group data...</p>
@@ -136,7 +136,7 @@ export default function ObservationGroupsPage() {
   return (
     <div className="space-y-8">
       {/* Modern Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-600 rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32"></div>
@@ -150,7 +150,7 @@ export default function ObservationGroupsPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl lg:text-4xl font-bold">Observation Groups</h1>
-                  <p className="text-purple-100 text-lg mt-1">Manage teacher observation groups</p>
+                  <p className="text-white/90 text-lg mt-1">Manage teacher observation groups</p>
                 </div>
               </div>
               
@@ -158,19 +158,19 @@ export default function ObservationGroupsPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{groups.length}</div>
-                  <div className="text-purple-100 text-sm">Total Groups</div>
+                  <div className="text-white/90 text-sm">Total Groups</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{groups.filter(g => g.status === 'Scheduled').length}</div>
-                  <div className="text-purple-100 text-sm">Scheduled</div>
+                  <div className="text-white/90 text-sm">Scheduled</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{groups.filter(g => g.status === 'Completed').length}</div>
-                  <div className="text-purple-100 text-sm">Completed</div>
+                  <div className="text-white/90 text-sm">Completed</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{groups.reduce((sum, g) => sum + g.teachers.length, 0)}</div>
-                  <div className="text-purple-100 text-sm">Total Teachers</div>
+                  <div className="text-white/90 text-sm">Total Teachers</div>
                 </div>
               </div>
             </div>
@@ -205,10 +205,10 @@ export default function ObservationGroupsPage() {
 
       {/* Modern Filters and Search */}
       <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
-        <CardHeader className="bg-gradient-to-r from-slate-50 to-indigo-50 border-b border-gray-100 p-6">
+        <CardHeader className="border-b border-gray-100 p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-100 p-2 rounded-xl">
-              <Filter className="h-5 w-5 text-indigo-600" />
+            <div className="p-2 rounded-xl" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)'}}>
+              <Filter className="h-5 w-5" style={{color: '#84547c'}} />
             </div>
             <CardTitle className="text-xl font-semibold text-gray-800">Search & Filters</CardTitle>
           </div>
@@ -265,8 +265,8 @@ export default function ObservationGroupsPage() {
           </div>
           
           {/* Filter Results Summary */}
-          <div className="mt-4 p-3 bg-indigo-50 rounded-2xl">
-            <p className="text-sm text-indigo-700">
+          <div className="mt-4 p-3 rounded-2xl" style={{backgroundColor: 'rgba(132, 84, 124, 0.05)'}}>
+            <p className="text-sm" style={{color: '#84547c'}}>
               Showing <span className="font-semibold">{filteredGroups.length}</span> of <span className="font-semibold">{groups.length}</span> groups
               {searchTerm && <span> matching "{searchTerm}"</span>}
               {observerFilter !== "All" && <span> by "{observerFilter}"</span>}
@@ -280,7 +280,7 @@ export default function ObservationGroupsPage() {
       <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-indigo-50 border-b border-gray-200">
+            <thead className="border-b border-gray-200" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Group Details</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Observer</th>
@@ -303,7 +303,7 @@ export default function ObservationGroupsPage() {
 
                 const getStatusColor = (status: string) => {
                   switch (status) {
-                    case 'Scheduled': return 'bg-blue-100 text-blue-800';
+                    case 'Scheduled': return 'text-white';
                     case 'Completed': return 'bg-emerald-100 text-emerald-800';
                     case 'Cancelled': return 'bg-red-100 text-red-800';
                     default: return 'bg-gray-100 text-gray-800';
@@ -313,17 +313,23 @@ export default function ObservationGroupsPage() {
                 const getRoleIcon = (role: string) => {
                   switch (role) {
                     case 'Administrator': return <Shield className="h-3 w-3 text-green-600" />;
-                    case 'Super User': return <Shield className="h-3 w-3 text-purple-600" />;
+                    case 'Super User': return <Shield className="h-3 w-3" style={{color: '#84547c'}} />;
                     default: return <User className="h-3 w-3 text-gray-600" />;
                   }
                 };
 
                 return (
-                  <tr key={group.id} className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200">
+                  <tr key={group.id} className="transition-all duration-200" 
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-br from-indigo-100 to-purple-100 p-2 rounded-xl">
-                          <UsersRound className="h-4 w-4 text-indigo-600" />
+                        <div className="p-2 rounded-xl" style={{background: 'linear-gradient(135deg, rgba(132, 84, 124, 0.2) 0%, rgba(228, 164, 20, 0.2) 100%)'}}>
+                          <UsersRound className="h-4 w-4" style={{color: '#84547c'}} />
                         </div>
                         <div>
                           <div className="font-semibold text-gray-900">{group.name}</div>
@@ -335,7 +341,7 @@ export default function ObservationGroupsPage() {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-2">
-                        <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-1.5 rounded-lg">
+                        <div className="p-1.5 rounded-lg" style={{backgroundColor: 'rgba(228, 164, 20, 0.2)'}}>
                           {getRoleIcon(group.created_by.role)}
                         </div>
                         <div>
@@ -346,8 +352,8 @@ export default function ObservationGroupsPage() {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-2">
-                        <div className="bg-gradient-to-br from-blue-100 to-cyan-100 p-1.5 rounded-lg">
-                          <Users className="h-3 w-3 text-blue-600" />
+                        <div className="p-1.5 rounded-lg" style={{backgroundColor: 'rgba(132, 84, 124, 0.2)'}}>
+                          <Users className="h-3 w-3" style={{color: '#84547c'}} />
                         </div>
                         <span className="font-medium text-gray-700">
                           {group.teachers.length} teacher{group.teachers.length !== 1 ? 's' : ''}
@@ -361,7 +367,10 @@ export default function ObservationGroupsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(group.status)}`}>
+                      <span 
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(group.status)}`}
+                        style={group.status === 'Scheduled' ? {backgroundColor: '#84547c'} : {}}
+                      >
                         {getStatusIcon(group.status)}
                         {group.status}
                       </span>
@@ -372,7 +381,15 @@ export default function ObservationGroupsPage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-105"
+                            className="rounded-xl transition-all duration-200 hover:scale-105"
+                            style={{color: '#84547c'}}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#84547c';
+                              e.currentTarget.style.backgroundColor = 'rgba(132, 84, 124, 0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
                           >
                             <Eye className="mr-1 h-3 w-3" />
                             View
@@ -382,7 +399,15 @@ export default function ObservationGroupsPage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-xl transition-all duration-200 hover:scale-105"
+                            className="rounded-xl transition-all duration-200 hover:scale-105"
+                            style={{color: '#e4a414'}}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#e4a414';
+                              e.currentTarget.style.backgroundColor = 'rgba(228, 164, 20, 0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
                           >
                             <Edit className="mr-1 h-3 w-3" />
                             Edit
@@ -398,8 +423,8 @@ export default function ObservationGroupsPage() {
         </div>
         {filteredGroups.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="bg-indigo-100 p-4 rounded-2xl mb-4">
-              <UsersRound className="h-8 w-8 text-indigo-600" />
+            <div className="p-4 rounded-2xl mb-4" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)'}}>
+              <UsersRound className="h-8 w-8" style={{color: '#84547c'}} />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               {groups.length === 0 ? "No Observation Groups" : "No Groups Found"}
