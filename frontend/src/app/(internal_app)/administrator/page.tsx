@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { baseUrl } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { 
   Eye, 
@@ -78,7 +79,7 @@ export default function AdministratorDashboard() {
 
       try {
         // First, get all administrators to find the admin record that matches the user
-        const allAdminsResponse = await fetch('http://127.0.0.1:8000/api/administrators/');
+        const allAdminsResponse = await fetch(`${baseUrl}/administrators/`);
         if (allAdminsResponse.ok) {
           const allAdmins = await allAdminsResponse.json();
           console.log('All administrators:', allAdmins);
@@ -92,7 +93,7 @@ export default function AdministratorDashboard() {
             console.log('Found administrator record:', adminRecord);
             
             // Now fetch individual administrator details using the specific endpoint
-            const individualResponse = await fetch(`http://127.0.0.1:8000/api/administrators/${adminRecord.id}/`);
+            const individualResponse = await fetch(`${baseUrl}/administrators/${adminRecord.id}/`);
             if (individualResponse.ok) {
               const adminDetails = await individualResponse.json();
               console.log('Individual administrator details:', adminDetails);

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { baseUrl } from "@/lib/api";
 import { 
   Eye, 
   Calendar, 
@@ -89,7 +90,7 @@ export default function TeacherObservationsPage() {
       if (!user?.id) return;
 
       try {
-        const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+        const allTeachersResponse = await fetch(`${baseUrl}/teachers/`);
         if (allTeachersResponse.ok) {
           const allTeachers = await allTeachersResponse.json();
           
@@ -98,7 +99,7 @@ export default function TeacherObservationsPage() {
           );
           
           if (teacherRecord) {
-            const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+            const individualResponse = await fetch(`${baseUrl}/teachers/${teacherRecord.id}/`);
             if (individualResponse.ok) {
               const teacherDetails = await individualResponse.json();
               setTeacherData(teacherDetails);
@@ -122,7 +123,7 @@ export default function TeacherObservationsPage() {
 
       try {
         setLoading(true);
-        const response = await fetch('http://127.0.0.1:8000/api/schedules/');
+        const response = await fetch(`${baseUrl}/schedules/`);
         
         if (response.ok) {
           const allSchedules = await response.json();

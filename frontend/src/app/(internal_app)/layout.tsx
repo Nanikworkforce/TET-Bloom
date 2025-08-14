@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import React from "react";
 import { useAuth } from "@/lib/auth-context";
+import { baseUrl } from "@/lib/api";
 import { 
   LayoutDashboard, 
   Users, 
@@ -185,7 +186,7 @@ export default function DashboardLayout({
       try {
         if (isTeacher) {
           // Fetch teacher data
-          const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+          const allTeachersResponse = await fetch(`${baseUrl}/teachers/`);
           if (allTeachersResponse.ok) {
             const allTeachers = await allTeachersResponse.json();
             
@@ -194,7 +195,7 @@ export default function DashboardLayout({
             );
             
             if (teacherRecord) {
-              const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+              const individualResponse = await fetch(`${baseUrl}/teachers/${teacherRecord.id}/`);
               if (individualResponse.ok) {
                 const teacherDetails = await individualResponse.json();
                 setTeacherData(teacherDetails);
@@ -205,7 +206,7 @@ export default function DashboardLayout({
           }
         } else if (isAdministrator) {
           // Fetch administrator data
-          const allAdminsResponse = await fetch('http://127.0.0.1:8000/api/administrators/');
+          const allAdminsResponse = await fetch(`${baseUrl}/administrators/`);
           if (allAdminsResponse.ok) {
             const allAdministrators = await allAdminsResponse.json();
             
@@ -214,7 +215,7 @@ export default function DashboardLayout({
             );
             
             if (adminRecord) {
-              const individualResponse = await fetch(`http://127.0.0.1:8000/api/administrators/${adminRecord.id}/`);
+              const individualResponse = await fetch(`${baseUrl}/administrators/${adminRecord.id}/`);
               if (individualResponse.ok) {
                 const adminDetails = await individualResponse.json();
                 setAdministratorData(adminDetails);

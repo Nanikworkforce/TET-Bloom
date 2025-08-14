@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+export const baseUrl = 'https://tet-bloom.onrender.com/api';
+const API_BASE_URL = baseUrl;
 
 export interface ApiResponse<T = any> {
   data?: T;

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from './supabase';
 import { AuthState, UserProfile, UserRole } from './types';
+import { baseUrl } from './api';
 
 // Toggle authentication enforcement via environment variable.
 // When NEXT_PUBLIC_ENFORCE_AUTH is set to the string "true" authentication
@@ -288,7 +289,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Supabase auth failed, trying Django backend fallback...');
         try {
           const response = await retryWithBackoff(async () => {
-            return await fetch('http://127.0.0.1:8000/api/auth/login/', {
+            return await fetch(`${baseUrl}/auth/login/`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -455,7 +456,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       try {
         const response = await retryWithBackoff(async () => {
-          return await fetch('http://127.0.0.1:8000/api/auth/login/', {
+          return await fetch(`${baseUrl}/auth/login/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

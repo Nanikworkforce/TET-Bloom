@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { baseUrl } from '@/lib/api';
 
 export async function GET(request: NextRequest) {
   try {
     // Proxy the request to the Django backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/total-stats/`, {
+    const response = await fetch(`${baseUrl}/total-stats/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

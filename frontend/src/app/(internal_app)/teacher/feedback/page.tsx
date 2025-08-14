@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
+import { baseUrl } from "@/lib/api";
 import { useState, useEffect } from "react";
 
 // Mock data
@@ -122,7 +123,7 @@ export default function TeacherFeedbackPage() {
       if (!user?.id) return;
 
       try {
-        const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+        const allTeachersResponse = await fetch(`${baseUrl}/teachers/`);
         if (allTeachersResponse.ok) {
           const allTeachers = await allTeachersResponse.json();
           
@@ -131,7 +132,7 @@ export default function TeacherFeedbackPage() {
           );
           
           if (teacherRecord) {
-            const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+            const individualResponse = await fetch(`${baseUrl}/teachers/${teacherRecord.id}/`);
             if (individualResponse.ok) {
               const teacherDetails = await individualResponse.json();
               setTeacherData(teacherDetails);

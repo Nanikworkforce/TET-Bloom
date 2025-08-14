@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { baseUrl } from "@/lib/api";
 import { useState, useEffect } from "react";
 
 // Note: Observation data is now fetched from the backend API
@@ -121,7 +122,7 @@ export default function TeacherDashboard() {
 
       try {
         // First, get all teachers to find the teacher record that matches the user
-        const allTeachersResponse = await fetch('http://127.0.0.1:8000/api/teachers/');
+        const allTeachersResponse = await fetch(`${baseUrl}/teachers/`);
         if (allTeachersResponse.ok) {
           const allTeachers = await allTeachersResponse.json();
           console.log('All teachers:', allTeachers);
@@ -135,7 +136,7 @@ export default function TeacherDashboard() {
             console.log('Found teacher record:', teacherRecord);
             
             // Now fetch individual teacher details using the specific endpoint
-            const individualResponse = await fetch(`http://127.0.0.1:8000/api/teachers/${teacherRecord.id}/`);
+            const individualResponse = await fetch(`${baseUrl}/teachers/${teacherRecord.id}/`);
             if (individualResponse.ok) {
               const teacherDetails = await individualResponse.json();
               console.log('Individual teacher details:', teacherDetails);
@@ -168,7 +169,7 @@ export default function TeacherDashboard() {
 
       try {
         setObservationsLoading(true);
-        const response = await fetch('http://127.0.0.1:8000/api/schedules/');
+        const response = await fetch(`${baseUrl}/schedules/`);
         
         if (response.ok) {
           const allSchedules = await response.json();
