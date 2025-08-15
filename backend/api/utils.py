@@ -6,16 +6,26 @@ import string
 import httpx
 
 def send_email(user: Users, password: str):
-    subject = 'Welcome to the System'
+    subject = 'Welcome to TET Bloom - Your Account is Ready'
+    login_url = f"{settings.SITE_URL}/login"
     message = f"""
     Hello {user.name},
 
-    Your account has been created.
+    Welcome to TET Bloom! Your account has been created successfully.
 
+    Login Details:
     Email: {user.email}
     Temporary Password: {password}
 
-    Please log in and change your password immediately.
+    Please click the link below to access the system and change your password:
+    {login_url}
+
+    Important: Please log in and change your password immediately for security.
+
+    If you have any questions, please contact your administrator.
+
+    Best regards,
+    TET Bloom Team
     """
     send_mail(
         subject,
@@ -96,7 +106,7 @@ def create_supabase_user(email: str, password: str, name: str, role: str):
 
 
 def generate_reset_link(user_email: str):
-    """Generate password reset link (placeholder)"""
-    return f"https://yourapp.com/reset-password?email={user_email}"
+    """Generate password reset link"""
+    return f"{settings.SITE_URL}/set-password?email={user_email}"
 
 

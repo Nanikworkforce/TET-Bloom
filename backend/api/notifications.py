@@ -49,7 +49,7 @@ class NotificationService:
                 'subject': observation_data.get('subject', ''),
                 'grade': observation_data.get('grade', ''),
                 'notes': observation_data.get('notes', ''),
-                'site_url': getattr(settings, 'SITE_URL', 'https://tet-bloom.onrender.com'),
+                'site_url': getattr(settings, 'SITE_URL', 'https://tet-bloom-git-main-nanikworkforces-projects.vercel.app'),
             }
             
             # Create email content
@@ -235,7 +235,7 @@ If you have any questions, please contact your administrator.
                 'subject': observation_data.get('subject', ''),
                 'grade': observation_data.get('grade', ''),
                 'days_until': days_until_observation,
-                'site_url': getattr(settings, 'SITE_URL', 'https://tet-bloom.onrender.com'),
+                'site_url': getattr(settings, 'SITE_URL', 'https://tet-bloom-git-main-nanikworkforces-projects.vercel.app'),
             }
             
             # Create subject based on timing
