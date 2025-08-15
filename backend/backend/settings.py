@@ -158,7 +158,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://tet-bloom-jyvcrcrkg-nanikworkforces-projects.vercel.app",
     "https://tet-bloom.onrender.com",
-    "https://tet-bloom-git-main-nanikworkforces-projects.vercel.app/"
+    "https://tet-bloom-git-main-nanikworkforces-projects.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -184,10 +184,24 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+
+# Notification Settings
+NOTIFICATION_SETTINGS = {
+    'OBSERVATION_SCHEDULED': {
+        'enabled': True,
+        'subject': 'New Observation Scheduled - T-TESS Bloom',
+        'template': 'observation_scheduled.html'
+    },
+    'OBSERVATION_REMINDER': {
+        'enabled': True,
+        'subject': 'Observation Reminder - T-TESS Bloom',
+        'template': 'observation_reminder.html'
+    }
+}

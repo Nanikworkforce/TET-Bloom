@@ -12,9 +12,15 @@ from .models.schedule import Schedule
 from .models.administrators import Administrator
 from .serializers import UserSerializer, TeacherSerializer, ObservationGroupSerializer, ScheduleSerializer, AdministratorSerializer
 from .utils import send_email, generate_password, create_supabase_user
+from .notifications import NotificationService
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.utils import timezone
+from rest_framework.decorators import action
+import logging
+
+logger = logging.getLogger(__name__)
 # Create your views here.
 def index(request):
     return HttpResponse('Hello world')
@@ -189,6 +195,145 @@ class ObservationGroupViewSet(viewsets.ModelViewSet):
 class ScheduleViewSet(viewsets.ModelViewSet):
     queryset = Schedule.objects.select_related('teacher__user', 'observation_group__created_by').all()
     serializer_class = ScheduleSerializer
+    
+    def perform_create(self, serializer):
+        """Override create to send notification emails when schedules are created"""
+        schedule = serializer.save()
+        
+        # Send notification to teacher(s)
+        try:
+            if schedule.teacher:
+                # Single teacher notification
+                self._send_teacher_notification(schedule)
+            elif schedule.observation_group:
+                # Group observation - notify all teachers in the group
+                self._send_group_notifications(schedule)
+                
+        except Exception as e:
+            # Log error but don't fail the schedule creation
+            logger.error(f"Failed to send notification for schedule {schedule.id}: {str(e)}")
+    
+    def _send_teacher_notification(self, schedule):
+        """Send notification to a single teacher"""
+        teacher = schedule.teacher
+        if not teacher or not teacher.user or not teacher.user.email:
+            return
+            
+        # Get observer information
+        observer_name = "Administrator"
+        if schedule.observation_group and schedule.observation_group.created_by:
+            observer_name = schedule.observation_group.created_by.name
+        
+        # Prepare observation data
+        observation_data = {
+            'date': schedule.date.strftime('%B %d, %Y'),
+            'time': schedule.time.strftime('%I:%M %p'),
+            'observation_type': schedule.observation_type,
+            'subject': teacher.subject or 'Not specified',
+            'grade': teacher.grade or 'Not specified',
+            'notes': schedule.notes or '',
+        }
+        
+        # Send notification
+        notification_sent = NotificationService.send_observation_scheduled_notification(
+            teacher_email=teacher.user.email,
+            teacher_name=teacher.user.name,
+            observation_data=observation_data,
+            observer_name=observer_name
+        )
+        
+        # Update notification tracking
+        if notification_sent:
+            schedule.notification_sent = True
+            schedule.notification_sent_at = timezone.now()
+            schedule.save(update_fields=['notification_sent', 'notification_sent_at'])
+    
+    def _send_group_notifications(self, schedule):
+        """Send notifications to all teachers in an observation group"""
+        if not schedule.observation_group:
+            return
+            
+        group = schedule.observation_group
+        observer_name = group.created_by.name if group.created_by else "Administrator"
+        
+        # Get all teachers in the group
+        teachers = group.teachers.all()
+        
+        for teacher in teachers:
+            if not teacher.user or not teacher.user.email:
+                continue
+                
+            # Prepare observation data for this teacher
+            observation_data = {
+                'date': schedule.date.strftime('%B %d, %Y'),
+                'time': schedule.time.strftime('%I:%M %p'),
+                'observation_type': schedule.observation_type,
+                'subject': teacher.subject or 'Not specified',
+                'grade': teacher.grade or 'Not specified',
+                'notes': schedule.notes or '',
+                'group_name': group.name,
+            }
+            
+            # Send notification
+            NotificationService.send_observation_scheduled_notification(
+                teacher_email=teacher.user.email,
+                teacher_name=teacher.user.name,
+                observation_data=observation_data,
+                observer_name=observer_name
+            )
+        
+        # Update notification tracking for the schedule
+        schedule.notification_sent = True
+        schedule.notification_sent_at = timezone.now()
+        schedule.save(update_fields=['notification_sent', 'notification_sent_at'])
+    
+    @action(detail=True, methods=['post'])
+    def send_reminder(self, request, pk=None):
+        """Manual endpoint to send reminder notifications"""
+        try:
+            schedule = self.get_object()
+            
+            if schedule.teacher:
+                # Send reminder to single teacher
+                teacher = schedule.teacher
+                if teacher.user and teacher.user.email:
+                    observer_name = "Administrator"
+                    if schedule.observation_group and schedule.observation_group.created_by:
+                        observer_name = schedule.observation_group.created_by.name
+                    
+                    observation_data = {
+                        'date': schedule.date.strftime('%B %d, %Y'),
+                        'time': schedule.time.strftime('%I:%M %p'),
+                        'observation_type': schedule.observation_type,
+                        'subject': teacher.subject or 'Not specified',
+                        'grade': teacher.grade or 'Not specified',
+                        'notes': schedule.notes or '',
+                    }
+                    
+                    # Calculate days until observation
+                    days_until = (schedule.date - timezone.now().date()).days
+                    
+                    reminder_sent = NotificationService.send_observation_reminder_notification(
+                        teacher_email=teacher.user.email,
+                        teacher_name=teacher.user.name,
+                        observation_data=observation_data,
+                        observer_name=observer_name,
+                        days_until_observation=max(0, days_until)
+                    )
+                    
+                    if reminder_sent:
+                        schedule.reminder_sent = True
+                        schedule.reminder_sent_at = timezone.now()
+                        schedule.save(update_fields=['reminder_sent', 'reminder_sent_at'])
+                        
+                        return Response({'message': 'Reminder sent successfully'})
+                    else:
+                        return Response({'error': 'Failed to send reminder'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            return Response({'error': 'No teacher associated with this schedule'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AdministratorViewSet(viewsets.ModelViewSet):
     queryset = Administrator.objects.all()

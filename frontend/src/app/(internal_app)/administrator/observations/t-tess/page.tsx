@@ -39,13 +39,13 @@ const tTessDomains = [
     name: "Planning",
     description: "Standards and Alignment, Data and Assessment, Knowledge of Students, Activities",
     icon: BookOpen,
-    color: "from-blue-500 to-cyan-600",
-    bgColor: "from-blue-50 to-cyan-100",
+    color: "linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)",
+    bgColor: "linear-gradient(90deg, rgba(132, 84, 124, 0.1) 0%, rgba(228, 164, 20, 0.1) 100%)",
     dimensions: [
-      { id: "1.1", name: "Standards and Alignment", description: "The teacher designs clear, well-organized, sequential lessons that reflect best practice, align with standards and are appropriate for diverse learners." },
-      { id: "1.2", name: "Data and Assessment", description: "The teacher uses formal and informal methods to measure student progress, then manages and analyzes student data to inform instruction." },
-      { id: "1.3", name: "Knowledge of Students", description: "Through knowledge of students and proven practices, the teacher ensures high levels of learning, social-emotional development and achievement for all students." },
-      { id: "1.4", name: "Activities", description: "The teacher plans engaging, flexible lessons that encourage higher-order thinking, persistence and achievement." }
+      { id: "1.1", name: "Standards and Alignment", description: "The teacher designs clear, well-organized, sequential lessons that reflect best practice, align with standards and are appropriate for diverse learners.", standardsBasis: ["1A", "1B", "3A", "3B", "3C"] },
+      { id: "1.2", name: "Data and Assessment", description: "The teacher uses formal and informal methods to measure student progress, then manages and analyzes student data to inform instruction.", standardsBasis: ["1B", "1F", "2B", "2C", "5A", "5B", "5C", "5D"] },
+      { id: "1.3", name: "Knowledge of Students", description: "Through knowledge of students and proven practices, the teacher ensures high levels of learning, social-emotional development and achievement for all students.", standardsBasis: ["1A", "1B", "1C", "2A", "2B", "2C"] },
+      { id: "1.4", name: "Activities", description: "The teacher plans engaging, flexible lessons that encourage higher-order thinking, persistence and achievement.", standardsBasis: ["1B", "1C", "1D", "1E"] }
     ]
   },
   {
@@ -53,14 +53,14 @@ const tTessDomains = [
     name: "Instruction",
     description: "Achieving Expectations, Content Knowledge and Expertise, Communication, Differentiation, Monitor and Adjust",
     icon: Brain,
-    color: "from-emerald-500 to-teal-600",
-    bgColor: "from-emerald-50 to-teal-100",
+    color: "linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)",
+    bgColor: "linear-gradient(90deg, rgba(132, 84, 124, 0.1) 0%, rgba(228, 164, 20, 0.1) 100%)",
     dimensions: [
-      { id: "2.1", name: "Achieving Expectations", description: "The teacher supports all learners in their pursuit of high levels of academic and social-emotional success." },
-      { id: "2.2", name: "Content Knowledge and Expertise", description: "The teacher uses content and pedagogical expertise to design and execute lessons aligned with state standards, related content and student needs." },
-      { id: "2.3", name: "Communication", description: "The teacher clearly and accurately communicates to support persistence, deeper learning and effective effort." },
-      { id: "2.4", name: "Differentiation", description: "The teacher differentiates instruction, aligning methods and techniques to diverse student needs." },
-      { id: "2.5", name: "Monitor and Adjust", description: "The teacher formally and informally collects, analyzes and uses student progress data and makes needed lesson adjustments." }
+      { id: "2.1", name: "Achieving Expectations", description: "The teacher supports all learners in their pursuit of high levels of academic and social-emotional success.", standardsBasis: ["1B", "1D", "1E", "2A", "2C", "3B", "4A", "4D", "5B"] },
+      { id: "2.2", name: "Content Knowledge and Expertise", description: "The teacher uses content and pedagogical expertise to design and execute lessons aligned with state standards, related content and student needs.", standardsBasis: ["1A", "1C", "1E", "1F", "2C", "3A", "3B", "3C"] },
+      { id: "2.3", name: "Communication", description: "The teacher clearly and accurately communicates to support persistence, deeper learning and effective effort.", standardsBasis: ["1D", "1E", "2A", "3A", "4D"] },
+      { id: "2.4", name: "Differentiation", description: "The teacher differentiates instruction, aligning methods and techniques to diverse student needs.", standardsBasis: ["1C", "1F", "2A", "2B", "2C", "3C", "4A", "5A", "5C", "5D"] },
+      { id: "2.5", name: "Monitor and Adjust", description: "The teacher formally and informally collects, analyzes and uses student progress data and makes needed lesson adjustments.", standardsBasis: ["1D", "1F", "2B", "2C", "3B", "4D", "5C", "5D"] }
     ]
   },
   {
@@ -68,12 +68,12 @@ const tTessDomains = [
     name: "Learning Environment",
     description: "Classroom Environment, Managing Student Behavior, Classroom Culture",
     icon: Heart,
-    color: "from-purple-500 to-pink-600",
-    bgColor: "from-purple-50 to-pink-100",
+    color: "linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)",
+    bgColor: "linear-gradient(90deg, rgba(132, 84, 124, 0.1) 0%, rgba(228, 164, 20, 0.1) 100%)",
     dimensions: [
-      { id: "3.1", name: "Classroom Environment, Routines and Procedures", description: "The teacher organizes a safe, accessible and efficient classroom environment." },
-      { id: "3.2", name: "Managing Student Behavior", description: "The teacher establishes, communicates and maintains clear expectations for student behavior." },
-      { id: "3.3", name: "Classroom Culture", description: "The teacher leads a mutually respectful and collaborative class of actively engaged learners." }
+      { id: "3.1", name: "Classroom Environment, Routines and Procedures", description: "The teacher organizes a safe, accessible and efficient classroom environment.", standardsBasis: ["1D", "4A", "4B", "4C", "4D"] },
+      { id: "3.2", name: "Managing Student Behavior", description: "The teacher establishes, communicates and maintains clear expectations for student behavior.", standardsBasis: ["4A", "4B", "4C", "4D"] },
+      { id: "3.3", name: "Classroom Culture", description: "The teacher leads a mutually respectful and collaborative class of actively engaged learners.", standardsBasis: ["1E", "1F", "3B", "4C", "4D", "5A", "5B", "5D"] }
     ]
   },
   {
@@ -81,13 +81,13 @@ const tTessDomains = [
     name: "Professional Practices and Responsibilities",
     description: "Professional Demeanor and Ethics, Goal Setting, Professional Development, School Community Involvement",
     icon: Shield,
-    color: "from-orange-500 to-red-600",
-    bgColor: "from-orange-50 to-red-100",
+    color: "linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)",
+    bgColor: "linear-gradient(90deg, rgba(132, 84, 124, 0.1) 0%, rgba(228, 164, 20, 0.1) 100%)",
     dimensions: [
-      { id: "4.1", name: "Professional Demeanor and Ethics", description: "The teacher meets district expectations for attendance, professional appearance, decorum, procedural, ethical, legal and statutory responsibilities." },
-      { id: "4.2", name: "Goal Setting", description: "The teacher reflects on his/her practice." },
-      { id: "4.3", name: "Professional Development", description: "The teacher enhances the professional community." },
-      { id: "4.4", name: "School Community Involvement", description: "The teacher demonstrates leadership with students, colleagues, and community members in the school, district and community through effective communication and outreach." }
+      { id: "4.1", name: "Professional Demeanor and Ethics", description: "The teacher meets district expectations for attendance, professional appearance, decorum, procedural, ethical, legal and statutory responsibilities.", standardsBasis: ["6B", "6C", "6D"] },
+      { id: "4.2", name: "Goal Setting", description: "The teacher reflects on his/her practice.", standardsBasis: ["5D", "6A", "6B"] },
+      { id: "4.3", name: "Professional Development", description: "The teacher enhances the professional community.", standardsBasis: ["3A", "6A", "6B", "6C"] },
+      { id: "4.4", name: "School Community Involvement", description: "The teacher demonstrates leadership with students, colleagues, and community members in the school, district and community through effective communication and outreach.", standardsBasis: ["2A", "2B", "4A", "4D", "5B", "6B", "6C", "6D"] }
     ]
   }
 ];
@@ -353,7 +353,7 @@ export default function TTessEvaluationPage() {
             
             <div className="flex flex-wrap gap-3">
               <Link href="/administrator/observations">
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                <Button className="bg-transparent border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
                   <ArrowLeft className="mr-2 h-5 w-5" />
                   Back to Observations
                 </Button>
@@ -400,7 +400,7 @@ export default function TTessEvaluationPage() {
                   onValueChange={handleObservationGroupChange}
                   disabled={loading}
                 >
-                  <SelectTrigger className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectTrigger className="rounded-2xl border-gray-200" style={{}} onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}} onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}>
                     <SelectValue placeholder={loading ? "Loading groups..." : "Select an observation group"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -428,7 +428,7 @@ export default function TTessEvaluationPage() {
                   onValueChange={handleTeacherChange}
                   disabled={!evaluationData.observationGroupId || availableTeachers.length === 0}
                 >
-                  <SelectTrigger className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectTrigger className="rounded-2xl border-gray-200" style={{}} onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}} onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}>
                     <SelectValue placeholder={
                       !evaluationData.observationGroupId 
                         ? "Select observation group first" 
@@ -493,7 +493,7 @@ export default function TTessEvaluationPage() {
                   type="date"
                   value={evaluationData.date}
                   onChange={(e) => setEvaluationData(prev => ({ ...prev, date: e.target.value }))}
-                  className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  className="rounded-2xl border-gray-200" style={{}} onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}} onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}
                 />
               </div>
               <div className="space-y-2">
@@ -503,7 +503,7 @@ export default function TTessEvaluationPage() {
                   value={evaluationData.observerName}
                   onChange={(e) => setEvaluationData(prev => ({ ...prev, observerName: e.target.value }))}
                   placeholder="Enter observer name"
-                  className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  className="rounded-2xl border-gray-200" style={{}} onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}} onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}
                 />
               </div>
             </div>
@@ -537,8 +537,8 @@ export default function TTessEvaluationPage() {
           {tTessDomains.map((domain) => {
             const IconComponent = domain.icon;
             return (
-              <Card key={domain.id} className={`border-0 shadow-xl rounded-3xl overflow-hidden bg-gradient-to-br ${domain.bgColor}`}>
-                <CardHeader className={`bg-gradient-to-r ${domain.color} text-white p-6`}>
+              <Card key={domain.id} className="border-0 shadow-xl rounded-3xl overflow-hidden" style={{background: domain.bgColor}}>
+                <CardHeader className="text-white p-6" style={{background: domain.color}}>
                   <CardTitle className="flex items-center gap-3">
                     <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
                       <IconComponent className="h-6 w-6" />
@@ -557,6 +557,20 @@ export default function TTessEvaluationPage() {
                         <div>
                           <h4 className="font-semibold text-lg text-gray-800">{dimension.id}: {dimension.name}</h4>
                           <p className="text-gray-600 text-sm mt-1">{dimension.description}</p>
+                          {dimension.standardsBasis && (
+                            <div className="mt-3 p-3 rounded-xl border" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)', borderColor: 'rgba(132, 84, 124, 0.3)'}}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-semibold" style={{color: '#84547c'}}>Standards Basis:</span>
+                                <div className="flex gap-1">
+                                  {dimension.standardsBasis.map((standard, index) => (
+                                    <span key={standard} className="px-2 py-1 rounded-md text-xs font-medium text-white" style={{backgroundColor: '#84547c'}}>
+                                      {standard}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -566,7 +580,7 @@ export default function TTessEvaluationPage() {
                               value={dimensionData.rating}
                               onValueChange={(value) => handleDimensionChange(dimension.id, 'rating', value)}
                             >
-                              <SelectTrigger className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                              <SelectTrigger className="rounded-2xl border-gray-200" style={{}} onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}} onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}>
                                 <SelectValue placeholder="Select performance level" />
                               </SelectTrigger>
                               <SelectContent>
@@ -591,7 +605,10 @@ export default function TTessEvaluationPage() {
                             onChange={(e) => handleDimensionChange(dimension.id, 'evidence', e.target.value)}
                             placeholder="Provide specific evidence and examples that support your rating..."
                             rows={3}
-                            className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                            className="rounded-2xl border-gray-200"
+                            style={{}}
+                            onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}}
+                            onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}
                           />
                         </div>
                         
@@ -602,7 +619,10 @@ export default function TTessEvaluationPage() {
                             onChange={(e) => handleDimensionChange(dimension.id, 'goals', e.target.value)}
                             placeholder="Identify specific goals and areas for growth..."
                             rows={2}
-                            className="rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                            className="rounded-2xl border-gray-200"
+                            style={{}}
+                            onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}}
+                            onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}
                           />
                         </div>
                       </div>
@@ -624,7 +644,8 @@ export default function TTessEvaluationPage() {
             </Button>
             <Button 
               onClick={() => setCurrentStep(3)}
-              className="rounded-2xl px-8 py-3 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105"
+              className="rounded-2xl px-8 py-3 text-white transition-all duration-300 hover:scale-105"
+              style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}
             >
               Next Step
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -636,12 +657,12 @@ export default function TTessEvaluationPage() {
       {/* Step 3: Summary and Goals */}
       {currentStep === 3 && (
         <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
-          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-100 border-b border-gray-100 p-6">
+          <CardHeader className="text-white border-b border-gray-100 p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
             <div className="flex items-center gap-3">
-              <div className="bg-green-100 p-2 rounded-xl">
-                <Award className="h-5 w-5 text-green-600" />
+              <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                <Award className="h-5 w-5" />
               </div>
-              <CardTitle className="text-xl font-semibold text-gray-800">Step 3: Summary and Goals</CardTitle>
+              <CardTitle className="text-xl font-semibold text-white">Step 3: Summary and Goals</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="p-6 space-y-8">
@@ -675,7 +696,10 @@ export default function TTessEvaluationPage() {
                 onChange={(e) => setEvaluationData(prev => ({ ...prev, summary: e.target.value }))}
                 placeholder="Provide an overall summary of the teacher's performance, highlighting strengths and areas for improvement..."
                 rows={4}
-                className="rounded-2xl border-gray-200 focus:border-green-500 focus:ring-green-500"
+                className="rounded-2xl border-gray-200"
+                style={{}}
+                onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}}
+                onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}
               />
             </div>
 
@@ -687,7 +711,10 @@ export default function TTessEvaluationPage() {
                 onChange={(e) => setEvaluationData(prev => ({ ...prev, goals: e.target.value }))}
                 placeholder="Outline specific professional development goals and recommendations for the upcoming year..."
                 rows={4}
-                className="rounded-2xl border-gray-200 focus:border-green-500 focus:ring-green-500"
+                className="rounded-2xl border-gray-200"
+                style={{}}
+                onFocus={(e) => {e.target.style.borderColor = '#84547c'; e.target.style.boxShadow = `0 0 0 1px #84547c`}}
+                onBlur={(e) => {e.target.style.borderColor = ''; e.target.style.boxShadow = ''}}
               />
             </div>
 
@@ -702,7 +729,8 @@ export default function TTessEvaluationPage() {
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                className="rounded-2xl px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                className="rounded-2xl px-8 py-3 text-white transition-all duration-300 hover:scale-105 shadow-lg"
+                style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}
               >
                 <CheckCircle className="mr-2 h-5 w-5" />
                 Submit Evaluation

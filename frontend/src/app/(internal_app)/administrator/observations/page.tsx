@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ObservationType, ObservationRecord } from "@/lib/types";
-import { scheduleApi } from "@/lib/api";
+import { scheduleApi, baseUrl } from "@/lib/api";
 import { 
   Eye, 
   Calendar, 
@@ -23,8 +23,12 @@ import {
   RefreshCw,
   FileText,
   Star,
-  Users
+  Users,
+  Mail,
+  MailCheck,
+  Send
 } from "lucide-react";
+import NotificationStatus from "@/components/notifications/NotificationStatus";
 
 // Mock data as fallback
 const mockObservations: ObservationRecord[] = [
@@ -41,7 +45,10 @@ const mockObservations: ObservationRecord[] = [
     statusColor: "text-white",
     statusBg: "#84547c",
     observerId: "admin1",
-    observerName: "Administrator Johnson"
+    observerName: "Administrator Johnson",
+    notificationSent: true,
+    notificationSentAt: "2024-02-20T10:30:00Z",
+    reminderSent: false
   },
   {
     id: "2",
@@ -56,7 +63,10 @@ const mockObservations: ObservationRecord[] = [
     statusColor: "text-white",
     statusBg: "#84547c",
     observerId: "admin1",
-    observerName: "Administrator Johnson"
+    observerName: "Administrator Johnson",
+    notificationSent: true,
+    notificationSentAt: "2024-02-20T10:30:00Z",
+    reminderSent: false
   },
   {
     id: "3",
@@ -71,7 +81,10 @@ const mockObservations: ObservationRecord[] = [
     statusColor: "text-white",
     statusBg: "#84547c",
     observerId: "admin1",
-    observerName: "Administrator Johnson"
+    observerName: "Administrator Johnson",
+    notificationSent: true,
+    notificationSentAt: "2024-02-20T10:30:00Z",
+    reminderSent: false
   },
   {
     id: "4",
@@ -107,8 +120,44 @@ const mockObservations: ObservationRecord[] = [
   },
   {
     id: "6",
-    teacher: "Robert Thompson",
+    teacher: "Lisa Thompson",
     teacherId: "6",
+    subject: "Physics",
+    grade: "11th Grade",
+    date: "Mar 5, 2023",
+    time: "2:30 PM",
+    type: "formal",
+    status: "in_progress",
+    statusColor: "text-white",
+    statusBg: "#84547c",
+    observerId: "admin1",
+    observerName: "Administrator Johnson",
+    notificationSent: true,
+    notificationSentAt: "2024-02-20T10:30:00Z",
+    reminderSent: false
+  },
+  {
+    id: "7",
+    teacher: "Robert Kim",
+    teacherId: "7",
+    subject: "Chemistry",
+    grade: "10th Grade",
+    date: "Mar 6, 2023",
+    time: "10:00 AM",
+    type: "walk-through",
+    status: "in_progress",
+    statusColor: "text-white",
+    statusBg: "#84547c",
+    observerId: "admin1",
+    observerName: "Administrator Johnson",
+    notificationSent: true,
+    notificationSentAt: "2024-02-20T10:30:00Z",
+    reminderSent: false
+  },
+  {
+    id: "8",
+    teacher: "Robert Thompson",
+    teacherId: "8",
     subject: "Physical Education",
     grade: "Multiple",
     date: "Feb 15, 2023",
@@ -164,11 +213,29 @@ const getStatusColor = (status: string) => {
       return 'text-white';
     case 'completed':
       return 'text-white';
+    case 'in_progress':
+      return 'text-white';
     case 'cancelled':
     case 'canceled':
       return 'bg-red-100 text-red-800';
     default:
       return 'bg-gray-100 text-gray-800';
+  }
+};
+
+const getStatusBadgeColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'scheduled':
+      return '#84547c';
+    case 'completed': 
+      return '#e4a414';
+    case 'in_progress':
+      return '#84547c';
+    case 'cancelled':
+    case 'canceled':
+      return '#dc2626';
+    default:
+      return '#6b7280';
   }
 };
 
@@ -192,6 +259,7 @@ const formatTime = (timeString: string) => {
 export default function ObservationsPage() {
   const [observations, setObservations] = useState<ObservationRecord[]>(mockObservations);
   const [loading, setLoading] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
 
   // Fetch real schedule data from backend
   useEffect(() => {
@@ -238,6 +306,7 @@ export default function ObservationsPage() {
             type: schedule.observation_type as ObservationType,
             status: schedule.status.toLowerCase(),
             statusColor: getStatusColor(schedule.status),
+            statusBg: getStatusBadgeColor(schedule.status),
             observerId: schedule.observation_group?.created_by?.id || "admin1",
             observerName: observerName,
             feedback: schedule.status.toLowerCase() === 'completed' ? Math.random() > 0.5 : undefined
@@ -256,6 +325,37 @@ export default function ObservationsPage() {
 
     fetchSchedules();
   }, []);
+
+  const handleSendReminder = async (observationId: string) => {
+    try {
+      setSendingReminder(observationId);
+      
+      // Make API call to send reminder
+      const response = await fetch(`${baseUrl}/schedules/${observationId}/send_reminder/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add auth headers if needed
+        },
+      });
+
+      if (response.ok) {
+        // Update the observation to show reminder was sent
+        setObservations(prev => prev.map(obs => 
+          obs.id === observationId 
+            ? { ...obs, reminderSent: true, reminderSentAt: new Date().toISOString() }
+            : obs
+        ));
+        console.log('Reminder sent successfully');
+      } else {
+        console.error('Failed to send reminder');
+      }
+    } catch (error) {
+      console.error('Error sending reminder:', error);
+    } finally {
+      setSendingReminder(null);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -278,23 +378,27 @@ export default function ObservationsPage() {
                 </div>
               </div>
               
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+              {/* Quick Stats - Refined Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{observations.length}</div>
-                  <div className="text-blue-100 text-sm">Total</div>
+                  <div className="text-white/90 text-sm">Total Active</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{observations.filter(o => o.status === 'scheduled').length}</div>
-                  <div className="text-blue-100 text-sm">Scheduled</div>
+                  <div className="text-white/90 text-sm">Scheduled</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{observations.filter(o => o.status === 'completed').length}</div>
-                  <div className="text-blue-100 text-sm">Completed</div>
+                  <div className="text-white/90 text-sm">Completed</div>
+                </div>
+                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{observations.filter(o => o.status === 'in_progress').length}</div>
+                  <div className="text-white/90 text-sm">In Progress</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{observations.filter(o => o.status === 'completed' && !o.feedback).length}</div>
-                  <div className="text-blue-100 text-sm">Pending Feedback</div>
+                  <div className="text-white/90 text-sm">Pending Feedback</div>
                 </div>
               </div>
             </div>
@@ -307,7 +411,7 @@ export default function ObservationsPage() {
                 </Button>
               </Link>
               <Link href="/administrator/observations/t-tess">
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                <Button className="bg-transparent border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
                   <BarChart3 className="mr-2 h-5 w-5" />
                   T-TESS Evaluation
                 </Button>
@@ -402,10 +506,10 @@ export default function ObservationsPage() {
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="font-semibold text-lg">{observation.teacher}</h3>
                       <span 
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${observation.statusColor}`}
-                        style={{backgroundColor: observation.statusBg}}
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(observation.status)}`}
+                        style={{backgroundColor: getStatusBadgeColor(observation.status)}}
                       >
-                        {observation.status}
+                        {observation.status.charAt(0).toUpperCase() + observation.status.slice(1).replace('_', ' ')}
                       </span>
                       <Badge 
                         className={getTypeColor(observation.type)}
@@ -471,6 +575,18 @@ export default function ObservationsPage() {
                     </Button>
                   )}
                 </div>
+              </div>
+              
+              {/* Notification Status */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <NotificationStatus
+                  notificationSent={observation.notificationSent}
+                  notificationSentAt={observation.notificationSentAt}
+                  reminderSent={observation.reminderSent}
+                  reminderSentAt={observation.reminderSentAt}
+                  onSendReminder={() => handleSendReminder(observation.id)}
+                  isLoading={sendingReminder === observation.id}
+                />
               </div>
             </Card>
           ))

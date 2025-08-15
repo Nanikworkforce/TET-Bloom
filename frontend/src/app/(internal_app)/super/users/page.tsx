@@ -256,7 +256,7 @@ export default function UserManagementPage() {
                 </Button>
               </Link>
               <Link href="/super/users/import">
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
+                <Button className="bg-transparent border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 transition-all duration-300 hover:scale-105">
                   <Upload className="mr-2 h-5 w-5" />
                   Import Users
                 </Button>

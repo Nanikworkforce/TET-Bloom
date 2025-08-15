@@ -24,6 +24,12 @@ class Schedule(TimeBaseModel):
     observation_type = models.CharField(max_length=20, choices=OBSERVATION_TYPE_CHOICES, default='formal')
     notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Scheduled')
+    
+    # Notification tracking
+    notification_sent = models.BooleanField(default=False, help_text="Whether initial scheduling notification was sent")
+    reminder_sent = models.BooleanField(default=False, help_text="Whether reminder notification was sent")
+    notification_sent_at = models.DateTimeField(null=True, blank=True, help_text="When notification was sent")
+    reminder_sent_at = models.DateTimeField(null=True, blank=True, help_text="When reminder was sent")
 
     def __str__(self):
         if self.observation_group:

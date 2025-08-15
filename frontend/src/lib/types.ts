@@ -19,7 +19,7 @@ export interface AuthState {
 
 export type ObservationType = 'formal' | 'walk-through';
 
-export type ObservationStatus = 'scheduled' | 'completed' | 'canceled';
+export type ObservationStatus = 'scheduled' | 'completed' | 'canceled' | 'in_progress';
 
 export interface ObservationRecord {
   id: string;
@@ -37,4 +37,9 @@ export interface ObservationRecord {
   notes?: string;
   observerId: string;
   observerName: string;
+  // Notification fields
+  notificationSent?: boolean;
+  notificationSentAt?: string;
+  reminderSent?: boolean;
+  reminderSentAt?: string;
 } 
