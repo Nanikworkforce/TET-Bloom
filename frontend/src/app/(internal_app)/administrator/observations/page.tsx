@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ObservationType, ObservationRecord } from "@/lib/types";
-import { scheduleApi, baseUrl } from "@/lib/api";
+import { scheduleApi, baseUrl, ApiError } from "@/lib/api";
 import { 
   Eye, 
   Calendar, 
@@ -29,162 +29,6 @@ import {
   Send
 } from "lucide-react";
 import NotificationStatus from "@/components/notifications/NotificationStatus";
-
-// Mock data as fallback
-const mockObservations: ObservationRecord[] = [
-  {
-    id: "1",
-    teacher: "Sarah Johnson",
-    teacherId: "1",
-    subject: "Mathematics",
-    grade: "5th Grade",
-    date: "Feb 28, 2023",
-    time: "10:30 AM",
-    type: "formal",
-    status: "scheduled",
-    statusColor: "text-white",
-    statusBg: "#84547c",
-    observerId: "admin1",
-    observerName: "Administrator Johnson",
-    notificationSent: true,
-    notificationSentAt: "2024-02-20T10:30:00Z",
-    reminderSent: false
-  },
-  {
-    id: "2",
-    teacher: "Michael Chen",
-    teacherId: "2",
-    subject: "Science",
-    grade: "7th Grade",
-    date: "Mar 1, 2023",
-    time: "9:15 AM",
-    type: "walk-through",
-    status: "scheduled",
-    statusColor: "text-white",
-    statusBg: "#84547c",
-    observerId: "admin1",
-    observerName: "Administrator Johnson",
-    notificationSent: true,
-    notificationSentAt: "2024-02-20T10:30:00Z",
-    reminderSent: false
-  },
-  {
-    id: "3",
-    teacher: "Emily Rodriguez",
-    teacherId: "3",
-    subject: "English Literature",
-    grade: "10th Grade",
-    date: "Mar 3, 2023",
-    time: "1:00 PM",
-    type: "formal",
-    status: "scheduled",
-    statusColor: "text-white",
-    statusBg: "#84547c",
-    observerId: "admin1",
-    observerName: "Administrator Johnson",
-    notificationSent: true,
-    notificationSentAt: "2024-02-20T10:30:00Z",
-    reminderSent: false
-  },
-  {
-    id: "4",
-    teacher: "David Wilson",
-    teacherId: "4",
-    subject: "History",
-    grade: "9th Grade",
-    date: "Feb 24, 2023",
-    time: "11:00 AM",
-    type: "formal",
-    status: "completed",
-    statusColor: "text-white",
-    statusBg: "#e4a414",
-    feedback: true,
-    observerId: "admin1",
-    observerName: "Administrator Johnson"
-  },
-  {
-    id: "5",
-    teacher: "Jessica Martinez",
-    teacherId: "5",
-    subject: "Art",
-    grade: "Multiple",
-    date: "Feb 22, 2023",
-    time: "2:30 PM",
-    type: "walk-through",
-    status: "completed",
-    statusColor: "text-white",
-    statusBg: "#e4a414",
-    feedback: true,
-    observerId: "admin1",
-    observerName: "Administrator Johnson"
-  },
-  {
-    id: "6",
-    teacher: "Lisa Thompson",
-    teacherId: "6",
-    subject: "Physics",
-    grade: "11th Grade",
-    date: "Mar 5, 2023",
-    time: "2:30 PM",
-    type: "formal",
-    status: "in_progress",
-    statusColor: "text-white",
-    statusBg: "#84547c",
-    observerId: "admin1",
-    observerName: "Administrator Johnson",
-    notificationSent: true,
-    notificationSentAt: "2024-02-20T10:30:00Z",
-    reminderSent: false
-  },
-  {
-    id: "7",
-    teacher: "Robert Kim",
-    teacherId: "7",
-    subject: "Chemistry",
-    grade: "10th Grade",
-    date: "Mar 6, 2023",
-    time: "10:00 AM",
-    type: "walk-through",
-    status: "in_progress",
-    statusColor: "text-white",
-    statusBg: "#84547c",
-    observerId: "admin1",
-    observerName: "Administrator Johnson",
-    notificationSent: true,
-    notificationSentAt: "2024-02-20T10:30:00Z",
-    reminderSent: false
-  },
-  {
-    id: "8",
-    teacher: "Robert Thompson",
-    teacherId: "8",
-    subject: "Physical Education",
-    grade: "Multiple",
-    date: "Feb 15, 2023",
-    time: "9:45 AM",
-    type: "walk-through",
-    status: "completed",
-    statusColor: "text-white",
-    statusBg: "#e4a414",
-    feedback: false,
-    observerId: "admin1",
-    observerName: "Administrator Johnson"
-  },
-  {
-    id: "7",
-    teacher: "Lisa Brown",
-    teacherId: "7",
-    subject: "Mathematics",
-    grade: "8th Grade",
-    date: "Feb 10, 2023",
-    time: "1:15 PM",
-    type: "formal",
-    status: "canceled",
-    statusColor: "bg-red-100 text-red-800",
-    observerId: "admin1",
-    observerName: "Administrator Johnson"
-  }
-];
 
 // Filter options
 const subjects = ["All Subjects", "Mathematics", "Science", "English Literature", "History", "Art", "Physical Education"];
@@ -257,8 +101,9 @@ const formatTime = (timeString: string) => {
 };
 
 export default function ObservationsPage() {
-  const [observations, setObservations] = useState<ObservationRecord[]>(mockObservations);
-  const [loading, setLoading] = useState(false);
+  const [observations, setObservations] = useState<ObservationRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
 
   // Fetch real schedule data from backend
@@ -266,6 +111,7 @@ export default function ObservationsPage() {
     const fetchSchedules = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await scheduleApi.getAll();
         const schedules = Array.isArray(response.data) ? response.data : [];
         
@@ -309,15 +155,22 @@ export default function ObservationsPage() {
             statusBg: getStatusBadgeColor(schedule.status),
             observerId: schedule.observation_group?.created_by?.id || "admin1",
             observerName: observerName,
-            feedback: schedule.status.toLowerCase() === 'completed' ? Math.random() > 0.5 : undefined
+            feedback: schedule.status.toLowerCase() === 'completed' ? Math.random() > 0.5 : undefined,
+            notificationSent: schedule.notification_sent || false,
+            notificationSentAt: schedule.notification_sent_at || null,
+            reminderSent: schedule.reminder_sent || false,
+            reminderSentAt: schedule.reminder_sent_at || null
           };
         });
         
-        setObservations(convertedObservations.length > 0 ? convertedObservations : mockObservations);
+        setObservations(convertedObservations);
       } catch (err) {
         console.error("Error fetching schedules:", err);
-        // Keep using mock data if API fails
-        setObservations(mockObservations);
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError("Failed to load observations. Please try again.");
+        }
       } finally {
         setLoading(false);
       }
@@ -494,7 +347,44 @@ export default function ObservationsPage() {
       <div className="space-y-4">
         {loading ? (
           <Card className="border p-8 text-center bg-white">
-            <div className="text-gray-500">Loading observations...</div>
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mr-4"></div>
+              <div className="text-gray-500">Loading observations...</div>
+            </div>
+          </Card>
+        ) : error ? (
+          <Card className="border p-8 text-center bg-white">
+            <div className="flex flex-col items-center">
+              <div className="bg-red-100 p-4 rounded-2xl mb-4">
+                <AlertCircle className="h-8 w-8 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Observations</h3>
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button 
+                variant="outline" 
+                className="rounded-2xl"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+            </div>
+          </Card>
+        ) : observations.length === 0 ? (
+          <Card className="border p-8 text-center bg-white">
+            <div className="flex flex-col items-center">
+              <div className="bg-gray-100 p-4 rounded-2xl mb-4">
+                <Eye className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Observations Found</h3>
+              <p className="text-gray-600 mb-4">There are currently no observations scheduled.</p>
+              <Link href="/administrator/observations/schedule">
+                <Button className="rounded-2xl text-white" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Schedule First Observation
+                </Button>
+              </Link>
+            </div>
           </Card>
         ) : (
           observations.map((observation) => (

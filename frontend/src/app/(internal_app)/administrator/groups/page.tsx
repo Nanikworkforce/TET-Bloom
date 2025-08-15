@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
+import { observationGroupApi, ApiError } from "@/lib/api";
 import { 
   UsersRound, 
   Plus, 
@@ -17,102 +18,36 @@ import {
   Calendar,
   Shield,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
 
-// Mock data for observation groups
-const mockGroups = [
-  {
-    id: "1",
-    name: "Math Department",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 8,
-    lastObservation: "Feb 24, 2023",
-    status: "Active"
-  },
-  {
-    id: "2",
-    name: "Science Department",
-    observer: "Jessica Martinez",
-    observerRole: "Vice Administrator",
-    teacherCount: 6,
-    lastObservation: "Feb 22, 2023",
-    status: "Active"
-  },
-  {
-    id: "3",
-    name: "English Department",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 7,
-    lastObservation: "Feb 18, 2023",
-    status: "Active"
-  },
-  {
-    id: "4",
-    name: "New Teachers",
-    observer: "Jessica Martinez",
-    observerRole: "Vice Administrator",
-    teacherCount: 5,
-    lastObservation: "Feb 15, 2023",
-    status: "Active"
-  },
-  {
-    id: "5",
-    name: "Special Education",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 4,
-    lastObservation: "Feb 10, 2023",
-    status: "Inactive"
-  },
-  {
-    id: "6",
-    name: "Elementary Math",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 12,
-    lastObservation: "Mar 1, 2023",
-    status: "Active"
-  },
-  {
-    id: "7",
-    name: "High School Science",
-    observer: "Michael Johnson",
-    observerRole: "Senior Administrator",
-    teacherCount: 9,
-    lastObservation: "Feb 28, 2023",
-    status: "Active"
-  },
-  {
-    id: "8",
-    name: "Reading Intervention",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 6,
-    lastObservation: "Mar 3, 2023",
-    status: "Active"
-  },
-  {
-    id: "9",
-    name: "Art & Music",
-    observer: "Sarah Thompson",
-    observerRole: "Department Head",
-    teacherCount: 4,
-    lastObservation: "Feb 20, 2023",
-    status: "Active"
-  },
-  {
-    id: "10",
-    name: "Physical Education",
-    observer: "David Wilson",
-    observerRole: "Administrator",
-    teacherCount: 3,
-    lastObservation: "Feb 25, 2023",
-    status: "Active"
-  },
-];
+// Interface for observation group data from backend
+interface ObservationGroup {
+  id: string;
+  name: string;
+  note?: string;
+  created_by: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  teachers: {
+    id: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    subject: string;
+    grade: string;
+    years_of_experience: number;
+  }[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function AdministratorObservationGroupsPage() {
   const { user, isLoading } = useAuth();
@@ -120,10 +55,35 @@ export default function AdministratorObservationGroupsPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [observerFilter, setObserverFilter] = useState("All");
   const [viewMode, setViewMode] = useState<"assigned" | "all">("assigned");
+  const [groups, setGroups] = useState<ObservationGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // For demo purposes, use a consistent demo user name
-  // In a real app, this would come from the user profile or database
-  const currentUserName = "David Wilson"; // Consistent for demo
+  // Get current user name from auth context
+  const currentUserName = user?.fullName || user?.email || "";
+  
+  // Fetch observation groups from backend
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await observationGroupApi.getAll();
+        setGroups((response.data as ObservationGroup[]) || []);
+      } catch (err) {
+        console.error("Error fetching observation groups:", err);
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError("Failed to load observation groups. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
   
   // Show loading state while auth is loading to prevent UI jumping
   if (isLoading) {
@@ -138,26 +98,61 @@ export default function AdministratorObservationGroupsPage() {
   }
   
   // Get unique observers for filter
-  const observers = Array.from(new Set(mockGroups.map(group => group.observer)));
+  const observers = Array.from(new Set(groups.map(group => group.created_by.name)));
   
   // Filter groups based on view mode, search term, and filters
-  const filteredGroups = mockGroups.filter(group => {
+  const filteredGroups = groups.filter(group => {
     // Filter by view mode (assigned vs all groups)
-    const matchesViewMode = viewMode === "all" || group.observer === currentUserName;
+    const matchesViewMode = viewMode === "all" || group.created_by.name === currentUserName || group.created_by.email === user?.email;
     
     const matchesSearch = 
       group.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      group.observer.toLowerCase().includes(searchTerm.toLowerCase());
+      group.created_by.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "All" || group.status === statusFilter;
-    const matchesObserver = observerFilter === "All" || group.observer === observerFilter;
+    const matchesObserver = observerFilter === "All" || group.created_by.name === observerFilter;
     
     return matchesViewMode && matchesSearch && matchesStatus && matchesObserver;
   });
 
   // Count groups for the current user
-  const assignedGroupsCount = mockGroups.filter(group => group.observer === currentUserName).length;
-  const totalGroupsCount = mockGroups.length;
+  const assignedGroupsCount = groups.filter(group => group.created_by.name === currentUserName || group.created_by.email === user?.email).length;
+  const totalGroupsCount = groups.length;
+
+  // Show loading state for data fetching
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading observation groups...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="bg-red-100 p-4 rounded-2xl mb-4 inline-block">
+            <AlertCircle className="h-8 w-8 text-red-600 mx-auto" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Groups</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button 
+            variant="outline" 
+            className="rounded-2xl"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -239,8 +234,9 @@ export default function AdministratorObservationGroupsPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option value="All">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Active">Scheduled</option>
+                <option value="Inactive">Completed</option>
+                <option value="Inactive">Canceled</option>
               </select>
             </div>
             <div>
@@ -269,69 +265,78 @@ export default function AdministratorObservationGroupsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observer</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teachers</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Observation</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredGroups.map((group) => (
-                <tr key={group.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <div className="flex items-center gap-2">
-                      {group.name}
-                      {group.observer === currentUserName && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{backgroundColor: '#84547c'}}>
-                          Assigned to me
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {group.observer}
-                    <div className="text-xs text-gray-400">{group.observerRole}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{group.teacherCount}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{group.lastObservation}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      group.status === "Active" 
-                        ? "text-white" 
-                        : "bg-red-100 text-red-800"
-                    }"
-                    style={group.status === "Active" ? {backgroundColor: '#e4a414'} : {}}
-                    }`}>
-                      {group.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <Link href={`/administrator/groups/${group.id}`}>
-                        <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                          View
-                        </Button>
-                      </Link>
-                      {group.observer === currentUserName ? (
-                        <Link href={`/administrator/groups/edit/${group.id}`}>
-                          <Button variant="ghost" size="sm" style={{color: '#84547c'}}>
-                            Edit
+              {filteredGroups.map((group) => {
+                const isAssignedToUser = group.created_by.name === currentUserName || group.created_by.email === user?.email;
+                const formattedDate = new Date(group.created_at).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                });
+                
+                return (
+                  <tr key={group.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <div className="flex items-center gap-2">
+                        {group.name}
+                        {isAssignedToUser && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{backgroundColor: '#84547c'}}>
+                            Assigned to me
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {group.created_by.name}
+                      <div className="text-xs text-gray-400">Administrator</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{group.teachers?.length || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formattedDate}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        group.status === "Active" 
+                          ? "text-white" 
+                          : "bg-red-100 text-red-800"
+                      }"
+                      style={group.status === "Active" ? {backgroundColor: '#e4a414'} : {}}
+                      }`}>
+                        {group.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <Link href={`/administrator/groups/${group.id}`}>
+                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                            View
                           </Button>
                         </Link>
-                      ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-gray-400 cursor-not-allowed" 
-                          disabled
-                          title="You can only edit groups assigned to you"
-                        >
-                          Edit
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {isAssignedToUser ? (
+                          <Link href={`/administrator/groups/edit/${group.id}`}>
+                            <Button variant="ghost" size="sm" style={{color: '#84547c'}}>
+                              Edit
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-gray-400 cursor-not-allowed" 
+                            disabled
+                            title="You can only edit groups assigned to you"
+                          >
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
