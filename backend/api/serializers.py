@@ -158,7 +158,7 @@ class AdministratorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Administrator
-        fields = ['id', 'user']
+        fields = ['id', 'user', 'department', 'phone_number', 'office_location', 'bio', 'join_date']
 
     def create(self, validated_data):
         # Get the user instance from the user_id

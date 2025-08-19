@@ -35,9 +35,9 @@ interface AdministratorProfile {
     role: string;
   };
   department?: string;
-  phoneNumber?: string;
-  officeLocation?: string;
-  joinDate?: string;
+  phone_number?: string;
+  office_location?: string;
+  join_date?: string;
   bio?: string;
 }
 
@@ -86,22 +86,34 @@ export default function AdministratorProfilePage() {
         if (allAdminsResponse.ok) {
           const allAdmins = await allAdminsResponse.json();
           
+          console.log('Looking for admin with user email:', user.email, 'and user id:', user.id);
+          console.log('Available administrators:', allAdmins.map((admin: AdministratorProfile) => ({ 
+            id: admin.id, 
+            userName: admin.user.name, 
+            userEmail: admin.user.email, 
+            userId: admin.user.id 
+          })));
+          
           const adminRecord = allAdmins.find((admin: AdministratorProfile) => 
-            admin.user.email === user.email || admin.user.id === user.id
+            admin.user.email === user.email || admin.user.id.toString() === user.id.toString()
           );
           
           if (adminRecord) {
+            console.log('Found admin record:', adminRecord);
             // Try to fetch detailed profile
             const detailResponse = await fetch(`${baseUrl}/administrators/${adminRecord.id}/`);
             if (detailResponse.ok) {
               const detailData = await detailResponse.json();
+              console.log('Detailed admin data:', detailData);
               setProfileData(detailData);
               setEditedProfile(detailData);
             } else {
+              console.log('Detail fetch failed, using admin record');
               setProfileData(adminRecord);
               setEditedProfile(adminRecord);
             }
           } else {
+            console.log('No administrator record found for user:', { email: user.email, id: user.id });
             setError("Administrator profile not found");
           }
         } else {
@@ -286,10 +298,10 @@ export default function AdministratorProfilePage() {
                 <Mail className="h-4 w-4 text-gray-500" />
                 <span className="text-gray-600">{profileData?.user?.email || user?.email}</span>
               </div>
-              {profileData?.joinDate && (
+              {profileData?.join_date && (
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600">Joined {new Date(profileData.joinDate).toLocaleDateString()}</span>
+                  <span className="text-gray-600">Joined {new Date(profileData.join_date).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
@@ -371,15 +383,15 @@ export default function AdministratorProfilePage() {
                 {isEditing ? (
                   <Input
                     id="phone"
-                    value={editedProfile.phoneNumber || ""}
+                    value={editedProfile.phone_number || ""}
                     onChange={(e) => setEditedProfile(prev => ({
                       ...prev,
-                      phoneNumber: e.target.value
+                      phone_number: e.target.value
                     }))}
                     placeholder="e.g., (555) 123-4567"
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium mt-1">{profileData?.phoneNumber || "Not set"}</p>
+                  <p className="text-gray-900 font-medium mt-1">{profileData?.phone_number || "Not set"}</p>
                 )}
               </div>
 
@@ -388,15 +400,15 @@ export default function AdministratorProfilePage() {
                 {isEditing ? (
                   <Input
                     id="office"
-                    value={editedProfile.officeLocation || ""}
+                    value={editedProfile.office_location || ""}
                     onChange={(e) => setEditedProfile(prev => ({
                       ...prev,
-                      officeLocation: e.target.value
+                      office_location: e.target.value
                     }))}
                     placeholder="e.g., Building A, Room 205"
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium mt-1">{profileData?.officeLocation || "Not set"}</p>
+                  <p className="text-gray-900 font-medium mt-1">{profileData?.office_location || "Not set"}</p>
                 )}
               </div>
 

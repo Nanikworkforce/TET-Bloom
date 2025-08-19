@@ -14,5 +14,6 @@ router.register(r'feedback-revisions', FeedbackRevisionViewSet)
 urlpatterns = [
     # path('', index, name='index'),
     path('total-stats/', TotalStats, name='total-stats'),
+    path('auth/login/', django_auth_login, name='django-auth-login'),
     path('', include(router.urls)),
 ]
