@@ -24,6 +24,7 @@ export const Sidebar = () => {
     'users': Icons.Users,
     'folder': Icons.Folder,
     'clipboard-list': Icons.ClipboardList,
+    'star': Icons.Star,
     'bar-chart': Icons.BarChart,
     'settings': Icons.Settings,
     'user': Icons.User,

@@ -134,8 +134,8 @@ class RegisterAPIView(APIView):
                 password=password,
                 first_name=first_name,
                 last_name=last_name,
-                is_active=False,
-                is_verified=False,
+                is_active=True if settings.DEBUG else False,
+                is_verified=True if settings.DEBUG else False,
             )
 
             user_email(request, user)
@@ -194,10 +194,24 @@ class LoginAPIView(APIView):
 
             print("Login successful. Returning tokens.")
 
+            # Try to get role from the Users model in api app
+            user_role = 'teacher'  # default role
+            try:
+                from api.models.user import Users
+                app_user = Users.objects.get(email=user.email)
+                user_role = app_user.role
+                user_name = app_user.name
+            except:
+                user_name = f"{user.first_name} {user.last_name}".strip() or "User"
+            
             return Response({
-                    "message": "Login successful",
-                        "access": str(refresh.access_token),
-                        "refresh": str(refresh),
+                "message": "Login successful",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "id": str(user.id),
+                "name": user_name,
+                "email": user.email,
+                "role": user_role,
                 "user": {
                     "email": user.email,
                     "first_name": user.first_name,
@@ -356,3 +370,60 @@ class VerifyPasswordReset(generics.GenericAPIView):
         reset_code.delete()
 
         return Response({'message': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
+
+
+class ChangePasswordView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            # Handle password validation errors with user-friendly messages
+            errors = serializer.errors
+            if 'new_password' in errors:
+                password_errors = errors['new_password']
+                user_friendly_errors = []
+                
+                for error in password_errors:
+                    if 'too short' in str(error).lower():
+                        user_friendly_errors.append('This password is too short. It must contain at least 8 characters.')
+                    elif 'too common' in str(error).lower():
+                        user_friendly_errors.append('This password is too common.')
+                    elif 'numeric' in str(error).lower():
+                        user_friendly_errors.append('This password is entirely numeric.')
+                    elif 'similar' in str(error).lower():
+                        user_friendly_errors.append('This password is too similar to your personal information.')
+                    else:
+                        user_friendly_errors.append(str(error))
+                
+                return Response({'error': user_friendly_errors[0] if user_friendly_errors else 'Invalid password.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        validated_data = serializer.validated_data
+        new_password = validated_data['new_password']
+        
+        user = request.user
+        print(f"Changing password for user: {user.email}")
+        print(f"User ID: {user.id}")
+        print(f"User is authenticated: {user.is_authenticated}")
+        
+        user.set_password(new_password)
+        user.save()
+        
+        print(f"Password changed successfully for user: {user.email}")
+
+        return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+
+
+class TestAuthView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        return Response({
+            'message': 'Authentication successful',
+            'user_id': request.user.id,
+            'user_email': request.user.email,
+            'is_authenticated': request.user.is_authenticated
+        }, status=status.HTTP_200_OK)

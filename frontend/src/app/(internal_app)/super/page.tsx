@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import Calendar from "@/components/ui/calendar";
+import { scheduleApi, ApiError } from "@/lib/api";
+import { ObservationRecord } from "@/lib/types";
 import { 
   Users, 
   GraduationCap, 
@@ -15,7 +17,12 @@ import {
   Clock,
   AlertCircle,
   Calendar as CalendarIcon,
-  Sparkles
+  Sparkles,
+  ClipboardList,
+  ArrowRight,
+  FileText,
+  CheckCircle,
+  Eye
 } from "lucide-react";
 
 interface StatsData {
@@ -23,6 +30,13 @@ interface StatsData {
   total_teachers: number;
   total_administrators: number;
   total_observation_groups: number;
+}
+
+interface ObservationStats {
+  total: number;
+  scheduled: number;
+  completed: number;
+  pendingFeedback: number;
 }
 
 // Mock data for recent activity
@@ -92,6 +106,8 @@ export default function SuperUserDashboard() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [observationStats, setObservationStats] = useState<ObservationStats | null>(null);
+  const [observationsLoading, setObservationsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -110,6 +126,36 @@ export default function SuperUserDashboard() {
     };
 
     fetchStats();
+  }, []);
+
+  // Fetch observation statistics
+  useEffect(() => {
+    const fetchObservationStats = async () => {
+      try {
+        setObservationsLoading(true);
+        const response = await scheduleApi.getAll();
+        const schedules = Array.isArray(response.data) ? response.data : [];
+        
+        // Calculate stats
+        const total = schedules.length;
+        const scheduled = schedules.filter((s: any) => s.status.toLowerCase() === 'scheduled').length;
+        const completed = schedules.filter((s: any) => s.status.toLowerCase() === 'completed').length;
+        const pendingFeedback = completed; // For now, assume all completed need feedback
+        
+        setObservationStats({
+          total,
+          scheduled,
+          completed,
+          pendingFeedback
+        });
+      } catch (err) {
+        console.error("Error fetching observation stats:", err);
+      } finally {
+        setObservationsLoading(false);
+      }
+    };
+
+    fetchObservationStats();
   }, []);
 
   const statsConfig = [
@@ -262,6 +308,82 @@ export default function SuperUserDashboard() {
         )}
       </div>
 
+      {/* Observations Overview Section */}
+      <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
+        <CardHeader className="text-white p-6" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 1) 0%, rgba(228, 164, 20, 1) 100%)'}}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                <ClipboardList className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-semibold">Observations Overview</CardTitle>
+                <p className="text-white/80 text-sm mt-1">System-wide observation activity</p>
+              </div>
+            </div>
+            <Link href="/super/observations" className="flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors">
+              View All
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          {observationsLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded w-16 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-12 mb-1"></div>
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-100">
+                <ClipboardList className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-purple-800">{observationStats?.total || 0}</div>
+                <div className="text-sm text-purple-600">Total Observations</div>
+              </div>
+              
+              <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <CalendarIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-blue-800">{observationStats?.scheduled || 0}</div>
+                <div className="text-sm text-blue-600">Scheduled</div>
+              </div>
+              
+              <div className="text-center p-4 bg-green-50 rounded-xl border border-green-100">
+                <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-green-800">{observationStats?.completed || 0}</div>
+                <div className="text-sm text-green-600">Completed</div>
+              </div>
+              
+              <div className="text-center p-4 bg-orange-50 rounded-xl border border-orange-100">
+                <FileText className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-orange-800">{observationStats?.pendingFeedback || 0}</div>
+                <div className="text-sm text-orange-600">Pending Feedback</div>
+              </div>
+            </div>
+          )}
+          
+          {/* Quick action buttons */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/super/observations">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                View All Observations
+              </Button>
+            </Link>
+            <Link href="/super/feedback">
+              <Button variant="outline" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Manage Feedback
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Calendar Section */}
@@ -360,6 +482,21 @@ export default function SuperUserDashboard() {
                   <p className="text-sm text-gray-600 mb-3">Organize teachers into observation groups</p>
                   <div className="text-sm font-medium" style={{color: '#e4a414'}}>
                     Manage Groups →
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/super/observations" className="block">
+                <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 rounded-xl transition-colors" style={{backgroundColor: 'rgba(132, 84, 124, 0.2)'}}>
+                      <ClipboardList className="h-5 w-5" style={{color: '#84547c'}} />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">All Observations</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">View and manage all observations system-wide</p>
+                  <div className="text-sm font-medium" style={{color: '#84547c'}}>
+                    View Observations →
                   </div>
                 </div>
               </Link>

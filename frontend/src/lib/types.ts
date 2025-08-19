@@ -15,6 +15,8 @@ export interface AuthState {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export type ObservationType = 'formal' | 'walk-through';

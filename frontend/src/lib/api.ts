@@ -21,9 +21,15 @@ async function apiRequest<T>(
 ): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  const defaultHeaders = {
+  const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
+
+  // Add authentication header if token is available
+  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  if (token && token !== 'null' && token !== 'undefined') {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
 
   const config: RequestInit = {
     ...options,
@@ -216,5 +222,120 @@ export const scheduleApi = {
     return apiRequest(`/schedules/${id}/`, {
       method: 'DELETE',
     });
+  },
+
+  // Send reminder for a schedule
+  sendReminder: async (id: string) => {
+    return apiRequest(`/schedules/${id}/send_reminder/`, {
+      method: 'POST',
+    });
+  },
+};
+
+// Auth API functions
+export const authApi = {
+  // Change password for authenticated user
+  changePassword: async (passwordData: {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+  }) => {
+    return apiRequest('/auth/change-password/', {
+      method: 'POST',
+      body: JSON.stringify(passwordData),
+    });
+  },
+};
+
+// Feedback API functions
+export const feedbackApi = {
+  create: async (feedbackData: any) => {
+    return apiRequest('/feedback/', {
+      method: 'POST',
+      body: JSON.stringify(feedbackData),
+    });
+  },
+
+  getAll: async (filters?: { teacher?: string; observer?: string; status?: string; schedule?: string }) => {
+    let url = '/feedback/';
+    if (filters) {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+    }
+    return apiRequest(url);
+  },
+
+  getById: async (id: string) => {
+    return apiRequest(`/feedback/${id}/`);
+  },
+
+  update: async (id: string, feedbackData: any) => {
+    return apiRequest(`/feedback/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(feedbackData),
+    });
+  },
+
+  patch: async (id: string, feedbackData: any) => {
+    return apiRequest(`/feedback/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(feedbackData),
+    });
+  },
+
+  delete: async (id: string) => {
+    return apiRequest(`/feedback/${id}/`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Submit feedback for review
+  submit: async (id: string) => {
+    return apiRequest(`/feedback/${id}/submit/`, {
+      method: 'POST',
+    });
+  },
+
+  // Teacher requests review of feedback
+  requestReview: async (id: string, responseComments: string) => {
+    return apiRequest(`/feedback/${id}/request_review/`, {
+      method: 'POST',
+      body: JSON.stringify({ response_comments: responseComments }),
+    });
+  },
+
+  // Teacher approves feedback
+  approve: async (id: string) => {
+    return apiRequest(`/feedback/${id}/approve/`, {
+      method: 'POST',
+    });
+  },
+
+  // Observer revises feedback
+  revise: async (id: string, revisionData: any) => {
+    return apiRequest(`/feedback/${id}/revise/`, {
+      method: 'POST',
+      body: JSON.stringify(revisionData),
+    });
+  },
+
+  // Get feedback by schedule ID
+  getBySchedule: async (scheduleId: string) => {
+    return apiRequest(`/feedback/?schedule=${scheduleId}`);
+  },
+
+  // Get feedback for a specific teacher
+  getByTeacher: async (teacherId: string) => {
+    return apiRequest(`/feedback/?teacher=${teacherId}`);
+  },
+
+  // Get feedback by observer
+  getByObserver: async (observerId: string) => {
+    return apiRequest(`/feedback/?observer=${observerId}`);
   },
 }; 

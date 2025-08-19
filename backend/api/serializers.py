@@ -4,6 +4,7 @@ from .models.observation_groups import ObservationGroup
 from .models.schedule import Schedule
 from .models.administrators import Administrator
 from .models.user import Users
+from .models.feedback import Feedback, FeedbackRevision
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -175,5 +176,107 @@ class AdministratorSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
+class FeedbackRevisionSerializer(serializers.ModelSerializer):
+    revised_by = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = FeedbackRevision
+        fields = ['id', 'revised_by', 'revision_reason', 'previous_data', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    schedule = ScheduleSerializer(read_only=True)
+    teacher = TeacherSerializer(read_only=True) 
+    observer = UserSerializer(read_only=True)
+    revisions = FeedbackRevisionSerializer(many=True, read_only=True)
+    average_score = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Feedback
+        fields = [
+            'id', 'schedule', 'teacher', 'observer', 'status',
+            'score_classroom_management', 'score_content_knowledge', 
+            'score_student_engagement', 'score_teaching_methods',
+            'score_assessment', 'score_professionalism',
+            'strengths', 'areas_for_improvement', 'overall_comments',
+            'lesson_objectives', 'observation_notes', 'action_step_category',
+            'action_step', 'overall_rating', 'teacher_response_date',
+            'teacher_response_comments', 'revision_history', 'revisions',
+            'average_score', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'overall_rating', 'average_score', 'created_at', 'updated_at']
+    
+    def create(self, validated_data):
+        # Get IDs from request data
+        schedule_id = self.context['request'].data.get('schedule')
+        teacher_id = self.context['request'].data.get('teacher')
+        observer_id = self.context['request'].data.get('observer')
+        
+        # Set the schedule field
+        if schedule_id:
+            try:
+                schedule = Schedule.objects.get(id=schedule_id)
+                validated_data['schedule'] = schedule
+            except Schedule.DoesNotExist:
+                raise serializers.ValidationError(f"Schedule with id {schedule_id} does not exist")
+        
+        # Set the teacher field  
+        if teacher_id:
+            try:
+                teacher = Teacher.objects.get(id=teacher_id)
+                validated_data['teacher'] = teacher
+            except Teacher.DoesNotExist:
+                raise serializers.ValidationError(f"Teacher with id {teacher_id} does not exist")
+        
+        # Set the observer field
+        if observer_id:
+            try:
+                observer = Users.objects.get(id=observer_id)
+                validated_data['observer'] = observer
+            except Users.DoesNotExist:
+                raise serializers.ValidationError(f"Observer with id {observer_id} does not exist")
+        
+        feedback = Feedback.objects.create(**validated_data)
+        return feedback
+    
+    def update(self, instance, validated_data):
+        # Store previous data for revision tracking if this is a significant change
+        if instance.status == 'submitted' and any(key in validated_data for key in [
+            'strengths', 'areas_for_improvement', 'overall_comments', 
+            'action_step', 'action_step_category'
+        ]):
+            previous_data = {
+                'strengths': instance.strengths,
+                'areas_for_improvement': instance.areas_for_improvement,
+                'overall_comments': instance.overall_comments,
+                'action_step': instance.action_step,
+                'action_step_category': instance.action_step_category,
+                'scores': {
+                    'classroom_management': instance.score_classroom_management,
+                    'content_knowledge': instance.score_content_knowledge,
+                    'student_engagement': instance.score_student_engagement,
+                    'teaching_methods': instance.score_teaching_methods,
+                    'assessment': instance.score_assessment,
+                    'professionalism': instance.score_professionalism,
+                }
+            }
+            
+            # Add to revision history
+            if not instance.revision_history:
+                instance.revision_history = []
+            instance.revision_history.append({
+                'date': instance.updated_at.isoformat() if instance.updated_at else None,
+                'data': previous_data
+            })
+        
+        # Update the feedback
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
         instance.save()
         return instance

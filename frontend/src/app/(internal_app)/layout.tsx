@@ -18,7 +18,9 @@ import {
   Menu,
   X,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Star,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -127,6 +129,11 @@ const adminNav = [
     icon: Eye,
   },
   {
+    label: "Feedback",
+    href: "/administrator/feedback",
+    icon: Star,
+  },
+  {
     label: "Settings",
     href: "/administrator/settings",
     icon: Settings,
@@ -135,6 +142,11 @@ const adminNav = [
     label: "Help & Docs",
     href: "/administrator/help",
     icon: HelpCircle,
+  },
+  {
+    label: "Profile",
+    href: "/administrator/profile",
+    icon: User,
   },
 ];
 
@@ -155,6 +167,16 @@ const superUserNav = [
     icon: UsersRound,
   },
   {
+    label: "Observations",
+    href: "/super/observations",
+    icon: Eye,
+  },
+  {
+    label: "Feedback",
+    href: "/super/feedback",
+    icon: Star,
+  },
+  {
     label: "System Settings",
     href: "/super/settings",
     icon: Settings,
@@ -163,6 +185,11 @@ const superUserNav = [
     label: "Help & Docs",
     href: "/super/help",
     icon: HelpCircle,
+  },
+  {
+    label: "Profile",
+    href: "/super/profile",
+    icon: User,
   },
 ];
 
@@ -288,6 +315,11 @@ export default function DashboardLayout({
       label: "Observations",
     },
     {
+      href: "/administrator/feedback",
+      icon: Star,
+      label: "Feedback",
+    },
+    {
       href: "/administrator/lesson-plans",
       icon: FileText,
       label: "Lesson Plans",
@@ -332,6 +364,11 @@ export default function DashboardLayout({
       icon: HelpCircle,
       label: "Help & Docs",
     },
+    {
+      href: "/teacher/profile",
+      icon: User,
+      label: "Profile",
+    },
   ];
   
   const navItems = userRole === "teacher" 
@@ -365,7 +402,7 @@ export default function DashboardLayout({
             {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </Button>
           
-          {/* User menu */}
+                      {/* User menu */}
           <div className="hidden md:flex items-center gap-6">
             {/* Role switcher */}
             <div className="relative">
@@ -383,7 +420,10 @@ export default function DashboardLayout({
               </select>
             </div> 
             
-            <div className="flex items-center gap-3 bg-white/60 backdrop-blur-sm rounded-2xl px-4 py-2 border border-gray-200">
+            <Link 
+              href={`/${userRole}/profile`}
+              className="flex items-center gap-3 bg-white/60 backdrop-blur-sm rounded-2xl px-4 py-2 border border-gray-200 hover:bg-white/80 transition-all duration-200 hover:shadow-md cursor-pointer"
+            >
               <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-white ${
                 userRole === "administrator" 
                   ? "bg-gradient-to-r from-green-500 to-emerald-600" 
@@ -405,7 +445,7 @@ export default function DashboardLayout({
                       : "Super User"}
                 </div>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </header>

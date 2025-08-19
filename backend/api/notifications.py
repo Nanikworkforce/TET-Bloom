@@ -167,7 +167,7 @@ Observer: {context['observer_name']}
             
             plain_message += f"""
 
-View your observations: {context['site_url']}/teacher/observations
+View your observations: {context['site_url']}api/teacher/observations
 
 PREPARATION REMINDERS:
 - Review your lesson plan and ensure it aligns with learning objectives
