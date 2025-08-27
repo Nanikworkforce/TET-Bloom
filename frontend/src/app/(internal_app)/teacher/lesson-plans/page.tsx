@@ -86,7 +86,7 @@ export default function TeacherLessonPlansPage() {
       try {
         const response = await teacherApi.getAll();
         if (response.data) {
-          const teacherRecord = response.data.find((teacher: TeacherData) => 
+          const teacherRecord = (response.data as TeacherData[]).find((teacher: TeacherData) => 
             teacher.user.email === user.email || teacher.user.id === user.id
           );
           
@@ -112,7 +112,7 @@ export default function TeacherLessonPlansPage() {
         setLoading(true);
         const response = await lessonPlanApi.getByTeacher(teacherData.id);
         if (response.data) {
-          setLessonPlans(response.data);
+          setLessonPlans(response.data as LessonPlan[]);
         }
       } catch (error) {
         console.error('Error fetching lesson plans:', error);
@@ -159,7 +159,7 @@ export default function TeacherLessonPlansPage() {
         // Refresh lesson plans
         const updatedResponse = await lessonPlanApi.getByTeacher(teacherData.id);
         if (updatedResponse.data) {
-          setLessonPlans(updatedResponse.data);
+          setLessonPlans(updatedResponse.data as LessonPlan[]);
         }
       }
     } catch (error) {
