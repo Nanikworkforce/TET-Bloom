@@ -188,7 +188,14 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'cache-control',
+    'pragma',
+    'expires',
 ]
+
+# Additional CORS settings for production
+CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_ALLOW_ALL_ORIGINS = False  # We specify origins explicitly
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -199,7 +206,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 # Site URL for links in emails
-SITE_URL = os.environ.get('SITE_URL', 'https://tet-bloom-git-main-nanikworkforces-projects.vercel.app')
+SITE_URL = os.environ.get('SITE_URL', 'https://tet-bloom-gamma.vercel.app')
 
 # Notification Settings
 NOTIFICATION_SETTINGS = {
