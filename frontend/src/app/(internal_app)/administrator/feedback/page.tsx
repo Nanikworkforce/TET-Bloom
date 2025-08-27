@@ -36,7 +36,7 @@ interface FeedbackOpportunity {
   observationDate: string;
   observationTime: string;
   observationType: string;
-  status: 'pending' | 'completed' | 'in_progress';
+  status: 'pending' | 'draft' | 'submitted' | 'approved' | 'review_requested' | 'revised';
   feedbackDueDate: string;
   priority: 'high' | 'medium' | 'low';
   feedbackId?: string | null;
@@ -45,7 +45,7 @@ interface FeedbackOpportunity {
 // Filter options
 const subjects = ["All Subjects", "Mathematics", "Science", "English Literature", "History", "Art", "Physical Education"];
 const grades = ["All Grades", "Elementary (K-5)", "Middle School (6-8)", "High School (9-12)"];
-const statuses = ["All Status", "Pending", "In Progress", "Completed"];
+const statuses = ["All Status", "Draft", "Submitted", "Approved", "Review Requested", "Revised"];
 const priorities = ["All Priorities", "High", "Medium", "Low"];
 
 const getPriorityColor = (priority: string) => {
@@ -63,12 +63,17 @@ const getPriorityColor = (priority: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'completed':
+    case 'approved':
+    case 'revised':
       return 'bg-green-100 text-green-800';
-    case 'in_progress':
+    case 'submitted':
       return 'bg-blue-100 text-blue-800';
-    case 'pending':
+    case 'draft':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'review_requested':
       return 'bg-orange-100 text-orange-800';
+    case 'pending':
+      return 'bg-gray-100 text-gray-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -176,25 +181,11 @@ export default function AdministratorFeedbackPage() {
           
           // Check if feedback exists for this schedule
           const existingFeedbackForSchedule = feedbackMap.get(schedule.id);
-          let feedbackStatus: 'pending' | 'completed' | 'in_progress';
+          let feedbackStatus: 'pending' | 'draft' | 'submitted' | 'approved' | 'review_requested' | 'revised';
           
           if (existingFeedbackForSchedule) {
-            // Map backend feedback status to frontend status
-            switch (existingFeedbackForSchedule.status) {
-              case 'draft':
-                feedbackStatus = 'in_progress';
-                break;
-              case 'submitted':
-              case 'approved':
-              case 'revised':
-                feedbackStatus = 'completed';
-                break;
-              case 'review_requested':
-                feedbackStatus = 'in_progress';
-                break;
-              default:
-                feedbackStatus = 'pending';
-            }
+            // Use the actual backend feedback status
+            feedbackStatus = existingFeedbackForSchedule.status as 'pending' | 'draft' | 'submitted' | 'approved' | 'review_requested' | 'revised';
           } else {
             // No feedback exists yet
             feedbackStatus = 'pending';
@@ -255,19 +246,17 @@ export default function AdministratorFeedbackPage() {
   const stats = {
     total: feedbackOpportunities.length,
     pending: feedbackOpportunities.filter(opp => opp.status === 'pending').length,
-    inProgress: feedbackOpportunities.filter(opp => opp.status === 'in_progress').length,
-    overdue: feedbackOpportunities.filter(opp => {
-      const dueDate = new Date(opp.feedbackDueDate);
-      return opp.status !== 'completed' && dueDate < new Date();
-    }).length,
+    submitted: feedbackOpportunities.filter(opp => opp.status === 'submitted').length,
+    approved: feedbackOpportunities.filter(opp => opp.status === 'approved').length,
+    reviewRequested: feedbackOpportunities.filter(opp => opp.status === 'review_requested').length,
   };
 
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-64"></div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="h-24 bg-gray-200 rounded"></div>
           ))}
         </div>
@@ -311,7 +300,7 @@ export default function AdministratorFeedbackPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -340,8 +329,8 @@ export default function AdministratorFeedbackPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.inProgress}</p>
+                <p className="text-sm text-gray-600">Submitted</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.submitted}</p>
               </div>
               <Edit className="h-8 w-8 text-blue-500" />
             </div>
@@ -352,10 +341,22 @@ export default function AdministratorFeedbackPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Overdue</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.overdue}</p>
+                <p className="text-sm text-gray-600">Approved</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Review Requested</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.reviewRequested}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
@@ -424,7 +425,7 @@ export default function AdministratorFeedbackPage() {
           </Card>
         ) : (
           filteredOpportunities.map((opportunity) => {
-            const isOverdue = new Date(opportunity.feedbackDueDate) < new Date() && opportunity.status !== 'completed';
+            const isOverdue = new Date(opportunity.feedbackDueDate) < new Date() && opportunity.status !== 'approved' && opportunity.status !== 'revised';
             
             return (
               <Card key={opportunity.id} className={`border transition-all bg-white ${
@@ -486,7 +487,7 @@ export default function AdministratorFeedbackPage() {
 
                     {/* Right section: Actions */}
                     <div className="flex items-center justify-end gap-2 lg:min-w-64">
-                      {opportunity.status === 'completed' ? (
+                      {opportunity.status === 'approved' || opportunity.status === 'revised' ? (
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -530,7 +531,7 @@ export default function AdministratorFeedbackPage() {
                           >
                             <Link href={`/administrator/feedback/${opportunity.observationId}/create`}>
                               <Star className="h-4 w-4 mr-2" />
-                              {opportunity.status === 'in_progress' ? 'Continue' : 'Start'} Feedback
+                              {opportunity.status === 'draft' || opportunity.status === 'submitted' || opportunity.status === 'review_requested' ? 'Continue' : 'Start'} Feedback
                             </Link>
                           </Button>
                         </div>

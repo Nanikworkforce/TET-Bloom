@@ -10,10 +10,10 @@ router.register(r'schedules', ScheduleViewSet)
 router.register(r'administrators', AdministratorViewSet)
 router.register(r'feedback', FeedbackViewSet)
 router.register(r'feedback-revisions', FeedbackRevisionViewSet)
+router.register(r'lesson-plans', LessonPlanViewSet)
+router.register(r'lesson-plan-feedback', LessonPlanFeedbackViewSet)
 
 urlpatterns = [
-    # path('', index, name='index'),
     path('total-stats/', TotalStats, name='total-stats'),
-    path('auth/login/', django_auth_login, name='django-auth-login'),
     path('', include(router.urls)),
 ]

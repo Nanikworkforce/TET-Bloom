@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ObservationRecord } from "@/lib/types";
-import { scheduleApi, baseUrl, ApiError } from "@/lib/api";
+import { scheduleApi, feedbackApi, baseUrl, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { 
   Search, 
@@ -38,15 +38,16 @@ interface FeedbackOpportunity {
   observationTime: string;
   observationType: string;
   observerName: string;
-  status: 'pending' | 'completed' | 'in_progress';
+  status: 'pending' | 'draft' | 'submitted' | 'approved' | 'review_requested' | 'revised';
   feedbackDueDate: string;
   priority: 'high' | 'medium' | 'low';
+  feedbackId?: string | null;
 }
 
 // Filter options
 const subjects = ["All Subjects", "Mathematics", "Science", "English Literature", "History", "Art", "Physical Education"];
 const grades = ["All Grades", "Elementary (K-5)", "Middle School (6-8)", "High School (9-12)"];
-const statuses = ["All Status", "Pending", "In Progress", "Completed"];
+const statuses = ["All Status", "Draft", "Submitted", "Approved", "Review Requested", "Revised"];
 const priorities = ["All Priorities", "High", "Medium", "Low"];
 
 const getPriorityColor = (priority: string) => {
@@ -64,12 +65,17 @@ const getPriorityColor = (priority: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'completed':
+    case 'approved':
+    case 'revised':
       return 'bg-green-100 text-green-800';
-    case 'in_progress':
+    case 'submitted':
       return 'bg-blue-100 text-blue-800';
-    case 'pending':
+    case 'draft':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'review_requested':
       return 'bg-orange-100 text-orange-800';
+    case 'pending':
+      return 'bg-gray-100 text-gray-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -125,22 +131,38 @@ export default function SuperUserFeedbackPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await scheduleApi.getAll();
-        const schedules = Array.isArray(response.data) ? response.data : [];
+        
+        // Fetch both schedules and existing feedback
+        const [schedulesResponse, feedbackResponse] = await Promise.all([
+          scheduleApi.getAll(),
+          feedbackApi.getAll()
+        ]);
+        
+        const schedules = Array.isArray(schedulesResponse.data) ? schedulesResponse.data : [];
+        const existingFeedback = Array.isArray(feedbackResponse.data) ? feedbackResponse.data : [];
+        
+        // Create a map of schedule ID to feedback
+        const feedbackMap = new Map();
+        existingFeedback.forEach((feedback: any) => {
+          if (feedback.schedule && feedback.schedule.id) {
+            feedbackMap.set(feedback.schedule.id, feedback);
+          }
+        });
         
         // Debug: Log what we're getting from backend
         console.log("Backend schedules (superuser):", schedules);
         console.log("Total schedules:", schedules.length);
+        console.log("Existing feedback:", existingFeedback);
         
         // Show all observations for feedback opportunities (not just completed)
-        // Superusers can provide feedback for any observation
+        // Superusers can see all feedback across the entire system
         const allObservations = schedules.filter((schedule: any) => 
-          schedule.status && schedule.status.toLowerCase() !== 'canceled'
+          schedule.status && schedule.status.toLowerCase() !== 'cancelled'
         );
         
-        console.log("Filtered observations (non-canceled):", allObservations.length);
+        console.log("Filtered observations (non-cancelled):", allObservations.length);
         
-        // Convert to feedback opportunities
+        // Convert to feedback opportunities - show ALL feedback data
         const opportunities: FeedbackOpportunity[] = allObservations.map((schedule: any) => {
           let teacherName = "Unknown";
           let subject = "Unknown Subject";
@@ -164,15 +186,15 @@ export default function SuperUserFeedbackPage() {
           const priority = calculatePriority(schedule.date);
           const dueDate = calculateDueDate(schedule.date);
           
-          // Determine feedback status based on observation status
-          let feedbackStatus: 'pending' | 'completed' | 'in_progress';
-          if (schedule.status.toLowerCase() === 'completed') {
-            // For completed observations, check if feedback exists
-            feedbackStatus = schedule.feedback_provided ? 'completed' : 'pending';
-          } else if (schedule.status.toLowerCase() === 'scheduled') {
-            // Scheduled observations are pending feedback
-            feedbackStatus = 'pending';
+          // Check if feedback exists for this schedule
+          const existingFeedbackForSchedule = feedbackMap.get(schedule.id);
+          let feedbackStatus: 'pending' | 'draft' | 'submitted' | 'approved' | 'review_requested' | 'revised';
+          
+          if (existingFeedbackForSchedule) {
+            // Use the actual backend feedback status
+            feedbackStatus = existingFeedbackForSchedule.status as 'pending' | 'draft' | 'submitted' | 'approved' | 'review_requested' | 'revised';
           } else {
+            // No feedback exists yet
             feedbackStatus = 'pending';
           }
           
@@ -189,7 +211,8 @@ export default function SuperUserFeedbackPage() {
             observerName: observerName,
             status: feedbackStatus,
             feedbackDueDate: dueDate,
-            priority: priority
+            priority: priority,
+            feedbackId: existingFeedbackForSchedule?.id || null
           };
         });
         
@@ -232,19 +255,17 @@ export default function SuperUserFeedbackPage() {
   const stats = {
     total: feedbackOpportunities.length,
     pending: feedbackOpportunities.filter(opp => opp.status === 'pending').length,
-    inProgress: feedbackOpportunities.filter(opp => opp.status === 'in_progress').length,
-    overdue: feedbackOpportunities.filter(opp => {
-      const dueDate = new Date(opp.feedbackDueDate);
-      return opp.status !== 'completed' && dueDate < new Date();
-    }).length,
+    submitted: feedbackOpportunities.filter(opp => opp.status === 'submitted').length,
+    approved: feedbackOpportunities.filter(opp => opp.status === 'approved').length,
+    reviewRequested: feedbackOpportunities.filter(opp => opp.status === 'review_requested').length,
   };
 
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-64"></div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="h-24 bg-gray-200 rounded"></div>
           ))}
         </div>
@@ -276,8 +297,8 @@ export default function SuperUserFeedbackPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">System-wide Feedback Management</h1>
-          <p className="text-gray-600 mt-1">Oversee and manage all observation feedback across the organization</p>
+          <h1 className="text-3xl font-bold text-gray-900">System-wide Feedback Overview</h1>
+          <p className="text-gray-600 mt-1">Complete view of all feedback data across the entire organization</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline">
@@ -288,7 +309,7 @@ export default function SuperUserFeedbackPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -317,8 +338,8 @@ export default function SuperUserFeedbackPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.inProgress}</p>
+                <p className="text-sm text-gray-600">Submitted</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.submitted}</p>
               </div>
               <Edit className="h-8 w-8 text-blue-500" />
             </div>
@@ -329,10 +350,22 @@ export default function SuperUserFeedbackPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Overdue</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.overdue}</p>
+                <p className="text-sm text-gray-600">Approved</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Review Requested</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.reviewRequested}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
@@ -346,7 +379,7 @@ export default function SuperUserFeedbackPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search by teacher, subject, or observer..."
+                  placeholder="Search all feedback by teacher, subject, or observer..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -395,13 +428,13 @@ export default function SuperUserFeedbackPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <ClipboardCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No feedback opportunities found</h3>
-              <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No feedback data found</h3>
+              <p className="text-gray-600">Try adjusting your search or filter criteria to view feedback across the system.</p>
             </CardContent>
           </Card>
         ) : (
           filteredOpportunities.map((opportunity) => {
-            const isOverdue = new Date(opportunity.feedbackDueDate) < new Date() && opportunity.status !== 'completed';
+            const isOverdue = new Date(opportunity.feedbackDueDate) < new Date() && opportunity.status !== 'approved' && opportunity.status !== 'revised';
             
             return (
               <Card key={opportunity.id} className={`border transition-all bg-white ${
@@ -467,7 +500,7 @@ export default function SuperUserFeedbackPage() {
 
                     {/* Right section: Actions */}
                     <div className="flex items-center justify-end gap-2 lg:min-w-64">
-                      {opportunity.status === 'completed' ? (
+                      {opportunity.status === 'approved' || opportunity.status === 'revised' ? (
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -509,7 +542,7 @@ export default function SuperUserFeedbackPage() {
                           >
                             <Link href={`/super/feedback/${opportunity.observationId}/create`}>
                               <Star className="h-4 w-4 mr-2" />
-                              {opportunity.status === 'in_progress' ? 'Continue' : 'Start'} Feedback
+                              {opportunity.status === 'draft' || opportunity.status === 'submitted' || opportunity.status === 'review_requested' ? 'Continue' : 'Start'} Feedback
                             </Link>
                           </Button>
                         </div>
@@ -526,7 +559,7 @@ export default function SuperUserFeedbackPage() {
       {/* Results count */}
       {filteredOpportunities.length > 0 && (
         <div className="text-center text-gray-600">
-          Showing {filteredOpportunities.length} of {feedbackOpportunities.length} feedback opportunities
+          Showing {filteredOpportunities.length} of {feedbackOpportunities.length} feedback records across the system
         </div>
       )}
     </div>

@@ -121,9 +121,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!ENFORCE_AUTH) {
         try {
           const stored = typeof window !== 'undefined' ? localStorage.getItem(LS_MOCK_USER_KEY) : null;
+          const storedToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+          
           if (stored) {
             const parsed = JSON.parse(stored) as UserProfile;
-            setState({ user: parsed, isAuthenticated: true, isLoading: false });
+            setState({ 
+              user: parsed, 
+              isAuthenticated: true, 
+              isLoading: false,
+              accessToken: storedToken || undefined,
+              refreshToken: typeof window !== 'undefined' ? localStorage.getItem('refreshToken') || undefined : undefined
+            });
           } else {
             setState({ ...initialState, isLoading: false });
           }
@@ -455,6 +463,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Error context:', errorMessage);
       
       try {
+        console.log('Calling Django login endpoint:', `${baseUrl}/auth/login/`);
+        console.log('With credentials:', { email, password: '***' });
+        
         const response = await retryWithBackoff(async () => {
           return await fetch(`${baseUrl}/auth/login/`, {
             method: 'POST',
@@ -465,9 +476,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
         }, 2, 1000); // 2 retries, starting with 1 second delay
         
+        console.log('Django response status:', response.status);
+        console.log('Django response headers:', Object.fromEntries(response.headers.entries()));
+        
         if (response.ok) {
           const userData = await response.json();
           console.log('Django user data received:', userData);
+          console.log('FULL Django response object:', JSON.stringify(userData, null, 2));
+          console.log('Django response contains tokens?', {
+            hasAccess: !!userData.access,
+            hasRefresh: !!userData.refresh,
+            allKeys: Object.keys(userData),
+            accessPreview: userData.access ? `${userData.access.substring(0, 20)}...` : 'missing',
+            refreshPreview: userData.refresh ? `${userData.refresh.substring(0, 20)}...` : 'missing'
+          });
+          
+          // Store authentication tokens
+          if (userData.access && typeof window !== 'undefined') {
+            localStorage.setItem('accessToken', userData.access);
+            if (userData.refresh) {
+              localStorage.setItem('refreshToken', userData.refresh);
+            }
+            console.log('Stored authentication tokens');
+          } else {
+            console.warn('No JWT tokens in Django response! Cannot authenticate for JWT-protected endpoints.');
+          }
           
           // Map Django roles to frontend routes
           const mapDjangoRole = (role: string) => {
@@ -501,10 +534,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           console.log('Final profile:', profile);
           
+          // Store user profile for persistence (similar to mock user)
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(LS_MOCK_USER_KEY, JSON.stringify(profile));
+          }
+          
           setState({
             user: profile,
             isAuthenticated: true,
             isLoading: false,
+            accessToken: userData.access,
+            refreshToken: userData.refresh,
           });
           
           // Redirect based on role
@@ -553,10 +593,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Sign out
   const signOut = async () => {
+    // Clear authentication tokens
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem(LS_MOCK_USER_KEY);
+    }
+
     if (!ENFORCE_AUTH) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(LS_MOCK_USER_KEY);
-      }
       setState({
         user: null,
         isAuthenticated: false,

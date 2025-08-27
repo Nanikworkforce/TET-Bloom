@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ObservationRecord } from "@/lib/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ObservationRecord, ObservationStatus } from "@/lib/types";
 import { scheduleApi, baseUrl, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { 
@@ -23,7 +24,9 @@ import {
   Edit,
   Star,
   Eye,
-  ClipboardCheck
+  ClipboardCheck,
+  Save,
+  X
 } from "lucide-react";
 
 // Helper functions for observation type display
@@ -93,6 +96,12 @@ export default function AdministratorObservationDetailsPage() {
   const [observation, setObservation] = useState<ObservationRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedStatus, setEditedStatus] = useState<string>("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchObservationDetails = async () => {
@@ -155,6 +164,7 @@ export default function AdministratorObservationDetailsPage() {
         };
         
         setObservation(observationRecord);
+        setEditedStatus(schedule.status);
       } catch (err) {
         console.error("Error fetching observation details:", err);
         if (err instanceof ApiError) {
@@ -169,6 +179,73 @@ export default function AdministratorObservationDetailsPage() {
 
     fetchObservationDetails();
   }, [observationId]);
+
+  // Function to handle status update
+  const handleStatusUpdate = async () => {
+    if (!observation || !editedStatus) return;
+
+    setSaving(true);
+    setError(null);
+    
+    try {
+      // First, get the current schedule data to include all required fields
+      const currentScheduleResponse = await scheduleApi.getById(observation.id);
+      const currentSchedule: any = currentScheduleResponse.data;
+      
+      // Update the schedule via API with all required fields
+      await scheduleApi.update(observation.id, {
+        date: currentSchedule.date,
+        time: currentSchedule.time,
+        observation_type: currentSchedule.observation_type,
+        notes: currentSchedule.notes || "",
+        status: editedStatus,
+        // Include teacher and observation_group IDs if they exist
+        ...(currentSchedule.teacher && { teacher: currentSchedule.teacher.id }),
+        ...(currentSchedule.observation_group && { observation_group: currentSchedule.observation_group.id })
+      });
+      
+      // Update local state
+      const normalizedStatus = editedStatus.toLowerCase() === 'cancelled' ? 'canceled' : editedStatus.toLowerCase();
+      const updatedObservation: ObservationRecord = {
+        ...observation,
+        status: normalizedStatus as ObservationStatus,
+        statusColor: getStatusColor(editedStatus),
+        statusBg: getStatusBadgeColor(editedStatus)
+      };
+      
+      setObservation(updatedObservation);
+      setIsEditing(false);
+      setSuccessMessage("Observation status updated successfully!");
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error("Error updating observation status:", err);
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError("Failed to update observation status. Please try again.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Function to cancel editing
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditedStatus(observation?.status || "");
+    setError(null);
+  };
+
+  // Get available status options
+  const getStatusOptions = () => {
+    return [
+      { value: "Scheduled", label: "Scheduled" },
+      { value: "Completed", label: "Completed" },
+      { value: "Cancelled", label: "Cancelled" }
+    ];
+  };
 
   if (loading) {
     return (
@@ -209,20 +286,75 @@ export default function AdministratorObservationDetailsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Observation Details</h1>
-          <p className="text-gray-600 mt-1">Complete information about this observation</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Observation Details</h1>
+            <p className="text-gray-600 mt-1">Complete information about this observation</p>
+          </div>
         </div>
+        
+        {/* Edit Status Button */}
+        {!isEditing ? (
+          <Button
+            variant="outline"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Status
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={cancelEditing}
+              disabled={saving}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusUpdate}
+              disabled={saving || editedStatus === observation?.status}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+          <CheckCircle className="h-5 w-5 mr-2" />
+          <span>{successMessage}</span>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+          <AlertCircle className="h-5 w-5 mr-2" />
+          <span>{error}</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="ml-auto" 
+            onClick={() => setError(null)}
+          >
+            ×
+          </Button>
+        </div>
+      )}
 
       {/* Main Info Card */}
       <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white">
@@ -235,12 +367,29 @@ export default function AdministratorObservationDetailsPage() {
               <div>
                 <CardTitle className="text-xl font-bold">{observation.teacher}</CardTitle>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge 
-                    style={{ backgroundColor: observation.statusBg }}
-                    className={`${observation.statusColor} font-medium`}
-                  >
-                    {observation.status}
-                  </Badge>
+                  {isEditing ? (
+                    <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                      <Select value={editedStatus} onValueChange={setEditedStatus}>
+                        <SelectTrigger className="w-40 bg-white/90 text-gray-900 border-white/30">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getStatusOptions().map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <Badge 
+                      style={{ backgroundColor: observation.statusBg }}
+                      className={`${observation.statusColor} font-medium`}
+                    >
+                      {observation.status}
+                    </Badge>
+                  )}
                   <span className="text-white/80">•</span>
                   <span className="text-white/80">{getTypeLabel(observation.type)}</span>
                 </div>

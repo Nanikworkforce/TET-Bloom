@@ -11,7 +11,12 @@ from .models.observation_groups import ObservationGroup
 from .models.schedule import Schedule
 from .models.administrators import Administrator
 from .models.feedback import Feedback, FeedbackRevision
-from .serializers import FeedbackRevisionSerializer,FeedbackSerializer,UserSerializer, TeacherSerializer, ObservationGroupSerializer, ScheduleSerializer, AdministratorSerializer
+from .models.lesson_plans import LessonPlan, LessonPlanFeedback
+from .serializers import (
+    FeedbackRevisionSerializer, FeedbackSerializer, UserSerializer, 
+    TeacherSerializer, ObservationGroupSerializer, ScheduleSerializer, 
+    AdministratorSerializer, LessonPlanSerializer, LessonPlanFeedbackSerializer
+)
 from .utils import send_email, generate_password, create_supabase_user
 from .notifications import NotificationService
 from rest_framework import status
@@ -139,13 +144,14 @@ class UserViewSet(viewsets.ModelViewSet):
                 raw_password = generate_password()
                 
                 # Create Django User (custom User model uses email as USERNAME_FIELD)
+                # For invited users, activate them immediately since they receive credentials
                 django_user = User.objects.create(
                     email=email,
                     first_name=users_instance.name.split()[0] if users_instance.name else "",
                     last_name=" ".join(users_instance.name.split()[1:]) if len(users_instance.name.split()) > 1 else "",
                     password=make_password(raw_password),
-                    is_active=False,
-                )
+                    is_active=True,  
+                    is_verified=True,)
                 
                 # Create user in Supabase as well
                 supabase_success = create_supabase_user(
@@ -369,7 +375,31 @@ class FeedbackViewSet(viewsets.ModelViewSet):
             feedback.status = 'submitted'
             feedback.save()
             
-            # TODO: Send notification to teacher
+            # Send notification to teacher when feedback is submitted
+            try:
+                # Prepare feedback data for notification
+                feedback_data = {
+                    'observation_date': feedback.schedule.date.strftime('%B %d, %Y') if feedback.schedule.date else '',
+                    'observation_time': feedback.schedule.time.strftime('%I:%M %p') if feedback.schedule.time else '',
+                    'observation_type': feedback.schedule.observation_type or '',
+                    'subject': feedback.teacher.subject or '',
+                    'grade': feedback.teacher.grade or '',
+                    'overall_rating': feedback.overall_rating or '',
+                    'average_score': feedback.average_score or 0,
+                }
+                
+                # Send notification
+                NotificationService.send_feedback_created_notification(
+                    teacher_email=feedback.teacher.user.email,
+                    teacher_name=feedback.teacher.user.name,
+                    feedback_data=feedback_data,
+                    observer_name=feedback.observer.name if feedback.observer else None
+                )
+            except Exception as e:
+                # Log the error but don't fail the feedback submission
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send feedback submission notification: {str(e)}")
             
             serializer = self.get_serializer(feedback)
             return Response(serializer.data)
@@ -396,7 +426,30 @@ class FeedbackViewSet(viewsets.ModelViewSet):
             feedback.teacher_response_date = timezone.now()
             feedback.save()
             
-            # TODO: Send notification to observer
+            # Send notification to observer when teacher requests review
+            try:
+                # Prepare feedback data for notification
+                feedback_data = {
+                    'observation_date': feedback.schedule.date.strftime('%B %d, %Y') if feedback.schedule.date else '',
+                    'observation_time': feedback.schedule.time.strftime('%I:%M %p') if feedback.schedule.time else '',
+                    'observation_type': feedback.schedule.observation_type or '',
+                    'subject': feedback.teacher.subject or '',
+                    'grade': feedback.teacher.grade or '',
+                }
+                
+                # Send notification
+                NotificationService.send_feedback_review_requested_notification(
+                    observer_email=feedback.observer.email,
+                    observer_name=feedback.observer.name,
+                    teacher_name=feedback.teacher.user.name,
+                    feedback_data=feedback_data,
+                    review_comments=response_comments
+                )
+            except Exception as e:
+                # Log the error but don't fail the review request
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send feedback review notification: {str(e)}")
             
             serializer = self.get_serializer(feedback)
             return Response(serializer.data)
@@ -416,6 +469,32 @@ class FeedbackViewSet(viewsets.ModelViewSet):
             feedback.status = 'approved'
             feedback.teacher_response_date = timezone.now()
             feedback.save()
+            
+            # Send notification to administrator when teacher approves feedback
+            try:
+                # Prepare feedback data for notification
+                feedback_data = {
+                    'observation_date': feedback.schedule.date.strftime('%B %d, %Y') if feedback.schedule.date else '',
+                    'observation_time': feedback.schedule.time.strftime('%I:%M %p') if feedback.schedule.time else '',
+                    'observation_type': feedback.schedule.observation_type or '',
+                    'subject': feedback.teacher.subject or '',
+                    'grade': feedback.teacher.grade or '',
+                    'overall_rating': feedback.overall_rating or '',
+                    'average_score': feedback.average_score or 0,
+                }
+                
+                # Send notification to administrator
+                NotificationService.send_feedback_approved_notification(
+                    admin_email=feedback.observer.email,
+                    admin_name=feedback.observer.name,
+                    teacher_name=feedback.teacher.user.name,
+                    feedback_data=feedback_data
+                )
+            except Exception as e:
+                # Log the error but don't fail the approval
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send feedback approval notification: {str(e)}")
             
             serializer = self.get_serializer(feedback)
             return Response(serializer.data)
@@ -471,4 +550,209 @@ class FeedbackRevisionViewSet(viewsets.ReadOnlyModelViewSet):
         if feedback_id:
             queryset = queryset.filter(feedback_id=feedback_id)
         return queryset.order_by('-created_at')
+
+
+class LessonPlanViewSet(viewsets.ModelViewSet):
+    queryset = LessonPlan.objects.select_related('teacher__user', 'reviewer').all()
+    serializer_class = LessonPlanSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filter by teacher
+        teacher_id = self.request.query_params.get('teacher')
+        if teacher_id:
+            queryset = queryset.filter(teacher_id=teacher_id)
+        
+        # Filter by status
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+        
+        # Filter by feedback status
+        feedback_status = self.request.query_params.get('feedback_status')
+        if feedback_status:
+            queryset = queryset.filter(feedback_status=feedback_status)
+        
+        # Filter by due date range
+        due_date_from = self.request.query_params.get('due_date_from')
+        due_date_to = self.request.query_params.get('due_date_to')
+        if due_date_from:
+            queryset = queryset.filter(due_date__gte=due_date_from)
+        if due_date_to:
+            queryset = queryset.filter(due_date__lte=due_date_to)
+        
+        return queryset.order_by('-due_date', '-created_at')
+    
+    @action(detail=True, methods=['post'])
+    def submit(self, request, pk=None):
+        """Submit a lesson plan"""
+        try:
+            lesson_plan = self.get_object()
+            
+            if lesson_plan.status != 'pending':
+                return Response({'error': 'Only pending lesson plans can be submitted'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if document is uploaded
+            if not lesson_plan.document:
+                return Response({'error': 'Document must be uploaded before submission'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            lesson_plan.status = 'submitted'
+            lesson_plan.submit_date = timezone.now()
+            lesson_plan.feedback_status = 'pending'
+            lesson_plan.save()
+            
+            # TODO: Send notification to administrators/reviewers
+            
+            serializer = self.get_serializer(lesson_plan)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=True, methods=['post'])
+    def provide_feedback(self, request, pk=None):
+        """Provide feedback on a lesson plan (for administrators)"""
+        try:
+            lesson_plan = self.get_object()
+            
+            if lesson_plan.status != 'submitted':
+                return Response({'error': 'Only submitted lesson plans can receive feedback'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            feedback_status = request.data.get('feedback_status')
+            feedback_comment = request.data.get('feedback_comment', '')
+            reviewer_id = request.data.get('reviewer')
+            
+            if not feedback_status:
+                return Response({'error': 'Feedback status is required'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            if feedback_status not in ['approved', 'needs_revision', 'pending']:
+                return Response({'error': 'Invalid feedback status'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Set reviewer
+            if reviewer_id:
+                try:
+                    reviewer = Users.objects.get(id=reviewer_id)
+                    lesson_plan.reviewer = reviewer
+                except Users.DoesNotExist:
+                    return Response({'error': f'Reviewer with id {reviewer_id} does not exist'}, 
+                                  status=status.HTTP_400_BAD_REQUEST)
+            
+            lesson_plan.feedback_status = feedback_status
+            lesson_plan.feedback_comment = feedback_comment
+            lesson_plan.feedback_date = timezone.now()
+            lesson_plan.save()
+            
+            # TODO: Send notification to teacher about feedback
+            
+            serializer = self.get_serializer(lesson_plan)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=True, methods=['post'])
+    def resubmit(self, request, pk=None):
+        """Resubmit a lesson plan that needs revision"""
+        try:
+            lesson_plan = self.get_object()
+            
+            if lesson_plan.feedback_status != 'needs_revision':
+                return Response({'error': 'Only lesson plans that need revision can be resubmitted'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Update document if provided
+            document = request.FILES.get('document')
+            if document:
+                lesson_plan.document = document
+            
+            # Update title and description if provided
+            title = request.data.get('title')
+            if title:
+                lesson_plan.title = title
+            
+            description = request.data.get('description')
+            if description is not None:  # Allow empty string
+                lesson_plan.description = description
+            
+            lesson_plan.status = 'submitted'
+            lesson_plan.submit_date = timezone.now()
+            lesson_plan.feedback_status = 'pending'
+            lesson_plan.feedback_comment = ''  # Clear previous feedback
+            lesson_plan.feedback_date = None
+            lesson_plan.save()
+            
+            # TODO: Send notification to administrators about resubmission
+            
+            serializer = self.get_serializer(lesson_plan)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LessonPlanFeedbackViewSet(viewsets.ModelViewSet):
+    queryset = LessonPlanFeedback.objects.select_related('lesson_plan__teacher__user', 'reviewer').all()
+    serializer_class = LessonPlanFeedbackSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filter by lesson plan
+        lesson_plan_id = self.request.query_params.get('lesson_plan')
+        if lesson_plan_id:
+            queryset = queryset.filter(lesson_plan_id=lesson_plan_id)
+        
+        # Filter by reviewer
+        reviewer_id = self.request.query_params.get('reviewer')
+        if reviewer_id:
+            queryset = queryset.filter(reviewer_id=reviewer_id)
+        
+        return queryset.order_by('-created_at')
+    
+    def create(self, request, *args, **kwargs):
+        """Create detailed feedback for a lesson plan"""
+        try:
+            lesson_plan_id = request.data.get('lesson_plan')
+            reviewer_id = request.data.get('reviewer')
+            
+            if not lesson_plan_id:
+                return Response({'error': 'Lesson plan ID is required'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            if not reviewer_id:
+                return Response({'error': 'Reviewer ID is required'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if lesson plan exists and is submitted
+            try:
+                lesson_plan = LessonPlan.objects.get(id=lesson_plan_id)
+                if lesson_plan.status != 'submitted':
+                    return Response({'error': 'Only submitted lesson plans can receive detailed feedback'}, 
+                                  status=status.HTTP_400_BAD_REQUEST)
+            except LessonPlan.DoesNotExist:
+                return Response({'error': f'Lesson plan with id {lesson_plan_id} does not exist'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if reviewer exists
+            try:
+                reviewer = Users.objects.get(id=reviewer_id)
+            except Users.DoesNotExist:
+                return Response({'error': f'Reviewer with id {reviewer_id} does not exist'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if detailed feedback already exists
+            if hasattr(lesson_plan, 'detailed_feedback'):
+                return Response({'error': 'Detailed feedback already exists for this lesson plan'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            return super().create(request, *args, **kwargs)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

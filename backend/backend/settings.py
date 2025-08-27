@@ -211,6 +211,21 @@ NOTIFICATION_SETTINGS = {
         'enabled': True,
         'subject': 'Observation Reminder - T-TESS Bloom',
         'template': 'observation_reminder.html'
+    },
+    'FEEDBACK_CREATED': {
+        'enabled': True,
+        'subject': 'New Feedback Available - T-TESS Bloom',
+        'template': 'feedback_created.html'
+    },
+    'FEEDBACK_REVIEW_REQUESTED': {
+        'enabled': True,
+        'subject': 'Feedback Review Requested - T-TESS Bloom',
+        'template': 'feedback_review_requested.html'
+    },
+    'FEEDBACK_APPROVED': {
+        'enabled': True,
+        'subject': 'Feedback Approved - T-TESS Bloom',
+        'template': 'feedback_approved.html'
     }
 }
 

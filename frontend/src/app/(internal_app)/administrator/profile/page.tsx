@@ -72,6 +72,26 @@ export default function AdministratorProfilePage() {
     confirm: false
   });
 
+  // Debug authentication state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('accessToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+      const mockUser = localStorage.getItem('tet-bloom:mockUser');
+      console.log('Authentication Debug:', {
+        user: user,
+        hasAccessToken: !!token,
+        hasRefreshToken: !!refreshToken,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'None',
+        tokenActualValue: token,
+        hasMockUser: !!mockUser,
+        isTokenStringNull: token === 'null',
+        isTokenStringUndefined: token === 'undefined',
+        enforceAuth: process.env.NEXT_PUBLIC_ENFORCE_AUTH
+      });
+    }
+  }, [user]);
+
   // Fetch administrator profile data
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -172,6 +192,58 @@ export default function AdministratorProfilePage() {
 
     setSaving(true);
     try {
+      // Test authentication first
+      console.log('Testing authentication before password change...');
+      try {
+        const authTest = await authApi.testAuth();
+        console.log('Auth test successful:', authTest);
+      } catch (authError) {
+        console.error('Auth test failed:', authError);
+        
+        // Try to get a fresh JWT token by calling Django login directly
+        console.log('Attempting to get fresh JWT token...');
+        try {
+          const freshTokenResponse = await fetch(`${baseUrl}/auth/login/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              email: user?.email, 
+              password: passwordForm.currentPassword 
+            }),
+          });
+
+          if (freshTokenResponse.ok) {
+            const tokenData = await freshTokenResponse.json();
+            console.log('Fresh token response:', tokenData);
+            
+            if (tokenData.access) {
+              // Store the fresh token and retry
+              localStorage.setItem('accessToken', tokenData.access);
+              if (tokenData.refresh) {
+                localStorage.setItem('refreshToken', tokenData.refresh);
+              }
+              console.log('Stored fresh tokens, retrying password change...');
+            } else {
+              setError("Unable to get authentication tokens. The Django login endpoint may not be configured properly.");
+              setSaving(false);
+              return;
+            }
+          } else {
+            setError("Authentication failed. Please verify your current password is correct.");
+            setSaving(false);
+            return;
+          }
+        } catch (tokenError) {
+          console.error('Failed to get fresh token:', tokenError);
+          setError("Authentication failed. Please log out and log back in.");
+          setSaving(false);
+          return;
+        }
+      }
+
+      console.log('Attempting password change...');
       const response = await authApi.changePassword({
         current_password: passwordForm.currentPassword,
         new_password: passwordForm.newPassword,
@@ -231,6 +303,35 @@ export default function AdministratorProfilePage() {
           <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
         </div>
         <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            onClick={async () => {
+              try {
+                const result = await authApi.testAuth();
+                setSuccessMessage("Authentication test successful!");
+                console.log('Auth test result:', result);
+              } catch (error) {
+                setError("Authentication test failed. Please log out and log back in.");
+                console.error('Auth test error:', error);
+              }
+            }}
+          >
+            Test Auth
+          </Button>
+          <Button 
+            variant="destructive" 
+            onClick={() => {
+              // Clear tokens and force re-login
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('tet-bloom:mockUser');
+              }
+              signOut();
+            }}
+          >
+            Force Re-login
+          </Button>
           {!isChangingPassword && (
             <Button variant="outline" onClick={() => setIsChangingPassword(true)}>
               <Key className="h-4 w-4 mr-2" />

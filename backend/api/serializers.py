@@ -5,6 +5,10 @@ from .models.schedule import Schedule
 from .models.administrators import Administrator
 from .models.user import Users
 from .models.feedback import Feedback, FeedbackRevision
+from .models.lesson_plans import LessonPlan, LessonPlanFeedback
+from .notifications import NotificationService
+from django.utils import timezone
+import logging
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -242,6 +246,32 @@ class FeedbackSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"Observer with id {observer_id} does not exist")
         
         feedback = Feedback.objects.create(**validated_data)
+        
+        # Send notification to teacher when feedback is created
+        try:
+            # Prepare feedback data for notification
+            feedback_data = {
+                'observation_date': feedback.schedule.date.strftime('%B %d, %Y') if feedback.schedule.date else '',
+                'observation_time': feedback.schedule.time.strftime('%I:%M %p') if feedback.schedule.time else '',
+                'observation_type': feedback.schedule.observation_type or '',
+                'subject': feedback.teacher.subject or '',
+                'grade': feedback.teacher.grade or '',
+                'overall_rating': feedback.overall_rating or '',
+                'average_score': feedback.average_score or 0,
+            }
+            
+            # Send notification
+            NotificationService.send_feedback_created_notification(
+                teacher_email=feedback.teacher.user.email,
+                teacher_name=feedback.teacher.user.name,
+                feedback_data=feedback_data,
+                observer_name=feedback.observer.name if feedback.observer else None
+            )
+        except Exception as e:
+            # Log the error but don't fail the feedback creation
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send feedback notification: {str(e)}")
+        
         return feedback
     
     def update(self, instance, validated_data):
@@ -277,6 +307,114 @@ class FeedbackSerializer(serializers.ModelSerializer):
         # Update the feedback
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
+
+
+class LessonPlanFeedbackSerializer(serializers.ModelSerializer):
+    reviewer = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = LessonPlanFeedback
+        fields = [
+            'id', 'reviewer', 'clarity_rating', 'alignment_rating', 
+            'engagement_rating', 'assessment_rating', 'differentiation_rating',
+            'strengths', 'areas_for_improvement', 'specific_suggestions',
+            'overall_comments', 'average_rating', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'average_rating', 'created_at', 'updated_at']
+
+
+class LessonPlanSerializer(serializers.ModelSerializer):
+    teacher = TeacherSerializer(read_only=True)
+    reviewer = UserSerializer(read_only=True)
+    detailed_feedback = LessonPlanFeedbackSerializer(read_only=True)
+    
+    # Additional computed fields
+    subject = serializers.ReadOnlyField()
+    grade = serializers.ReadOnlyField()
+    teacher_name = serializers.ReadOnlyField()
+    reviewer_name = serializers.ReadOnlyField()
+    document_url = serializers.SerializerMethodField()
+    document_size = serializers.SerializerMethodField()
+    document_extension = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = LessonPlan
+        fields = [
+            'id', 'teacher', 'reviewer', 'title', 'description',
+            'due_date', 'submit_date', 'status', 'document',
+            'feedback_status', 'feedback_comment', 'feedback_date',
+            'subject', 'grade', 'teacher_name', 'reviewer_name',
+            'document_url', 'document_size', 'document_extension',
+            'detailed_feedback', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'submit_date', 'feedback_date', 'created_at', 'updated_at']
+    
+    def get_document_url(self, obj):
+        return obj.get_document_url()
+    
+    def get_document_size(self, obj):
+        return obj.get_document_size()
+    
+    def get_document_extension(self, obj):
+        return obj.get_document_extension()
+    
+    def create(self, validated_data):
+        # Get teacher_id and reviewer_id from the request
+        teacher_id = self.context['request'].data.get('teacher')
+        reviewer_id = self.context['request'].data.get('reviewer')
+        
+        # Set the teacher field
+        if teacher_id:
+            try:
+                teacher = Teacher.objects.get(id=teacher_id)
+                validated_data['teacher'] = teacher
+            except Teacher.DoesNotExist:
+                raise serializers.ValidationError(f"Teacher with id {teacher_id} does not exist")
+        
+        # Set the reviewer field (optional)
+        if reviewer_id:
+            try:
+                reviewer = Users.objects.get(id=reviewer_id)
+                validated_data['reviewer'] = reviewer
+            except Users.DoesNotExist:
+                raise serializers.ValidationError(f"Reviewer with id {reviewer_id} does not exist")
+        
+        # Set submit_date if status is submitted
+        if validated_data.get('status') == 'submitted':
+            validated_data['submit_date'] = timezone.now()
+        
+        lesson_plan = LessonPlan.objects.create(**validated_data)
+        return lesson_plan
+    
+    def update(self, instance, validated_data):
+        # Get reviewer_id from the request
+        reviewer_id = self.context['request'].data.get('reviewer')
+        
+        # Update the lesson plan
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        # Update reviewer if provided
+        if reviewer_id is not None:
+            if reviewer_id:
+                try:
+                    reviewer = Users.objects.get(id=reviewer_id)
+                    instance.reviewer = reviewer
+                except Users.DoesNotExist:
+                    raise serializers.ValidationError(f"Reviewer with id {reviewer_id} does not exist")
+            else:
+                instance.reviewer = None
+        
+        # Set submit_date if status is changed to submitted and not already set
+        if instance.status == 'submitted' and not instance.submit_date:
+            instance.submit_date = timezone.now()
+        
+        # Set feedback_date if feedback_status or feedback_comment is updated
+        if any(field in validated_data for field in ['feedback_status', 'feedback_comment']):
+            instance.feedback_date = timezone.now()
         
         instance.save()
         return instance

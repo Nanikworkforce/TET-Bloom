@@ -6,23 +6,25 @@ import string
 import httpx
 
 def send_email(user: Users, password: str):
-    subject = 'Welcome to TET Bloom - Your Account is Ready'
+    subject = 'Welcome to TET Bloom - Your Account is Ready!'
     login_url = f"{settings.SITE_URL}/login"
     message = f"""
     Hello {user.name},
 
-    Welcome to TET Bloom! Your account has been created successfully.
+    Welcome to TET Bloom! Your account has been created and is ready to use.
 
-    Login Details:
+    🔐 Login Details:
     Email: {user.email}
     Temporary Password: {password}
 
-    Please click the link below to access the system and change your password:
+    ✅ Your account is fully activated and ready to use! Simply visit the login page and use your credentials:
     {login_url}
 
-    Important: Please log in and change your password immediately for security.
+    🔒 Security Note: Please change your password after your first login for security.
 
-    If you have any questions, please contact your administrator.
+    📝 Role: {user.role}
+
+    If you have any questions or need assistance, please contact your administrator.
 
     Best regards,
     TET Bloom Team
@@ -106,7 +108,6 @@ def create_supabase_user(email: str, password: str, name: str, role: str):
 
 
 def generate_reset_link(user_email: str):
-    """Generate password reset link"""
     return f"{settings.SITE_URL}/set-password?email={user_email}"
 
 

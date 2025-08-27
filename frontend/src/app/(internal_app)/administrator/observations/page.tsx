@@ -105,6 +105,9 @@ export default function ObservationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  
+  // Filter state
+  const [activeFilter, setActiveFilter] = useState<string>('All');
 
   // Fetch real schedule data from backend
   useEffect(() => {
@@ -246,8 +249,8 @@ export default function ObservationsPage() {
                   <div className="text-white/90 text-sm">Completed</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{observations.filter(o => o.status === 'in_progress').length}</div>
-                  <div className="text-white/90 text-sm">In Progress</div>
+                  <div className="text-2xl font-bold">{observations.filter(o => o.status === 'canceled' || o.status === 'cancelled').length}</div>
+                  <div className="text-white/90 text-sm">Canceled</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                   <div className="text-2xl font-bold">{observations.filter(o => o.status === 'completed' && !o.feedback).length}</div>
@@ -337,10 +340,19 @@ export default function ObservationsPage() {
 
       {/* Tabs */}
       <div className="flex border-b">
-        <a href="#" className="px-4 py-2 border-b-2 font-medium" style={{borderColor: '#84547c', color: '#84547c'}}>All</a>
-        <a href="#" className="px-4 py-2 text-gray-600 hover:underline" onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#84547c'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = ''}>Scheduled</a>
-        <a href="#" className="px-4 py-2 text-gray-600 hover:underline" onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#84547c'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = ''}>Completed</a>
-        <a href="#" className="px-4 py-2 text-gray-600 hover:underline" onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#84547c'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = ''}>Canceled</a>
+        {['All', 'Scheduled', 'Completed', 'Canceled'].map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setActiveFilter(filter)}
+            className={`px-4 py-2 border-b-2 font-medium transition-colors ${
+              activeFilter === filter 
+                ? 'border-[#84547c] text-[#84547c]' 
+                : 'border-transparent text-gray-600 hover:text-[#84547c]'
+            }`}
+          >
+            {filter}
+          </button>
+        ))}
       </div>
 
       {/* Observations list */}
@@ -387,7 +399,15 @@ export default function ObservationsPage() {
             </div>
           </Card>
         ) : (
-          observations.map((observation) => (
+          observations
+            .filter((observation) => {
+              if (activeFilter === 'All') return true;
+              if (activeFilter === 'Canceled') {
+                return observation.status === 'canceled' || observation.status === 'cancelled';
+              }
+              return observation.status === activeFilter.toLowerCase();
+            })
+            .map((observation) => (
             <Card key={observation.id} className="border p-4 hover:border-primary/20 transition-all bg-white">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Left section: Teacher info and status */}
@@ -486,7 +506,16 @@ export default function ObservationsPage() {
       {/* Pagination */}
       <div className="flex justify-between items-center mt-6 text-sm">
         <div className="text-gray-600">
-          Showing 1-{observations.length} of {observations.length} observations
+          {(() => {
+            const filteredCount = observations.filter((observation) => {
+              if (activeFilter === 'All') return true;
+              if (activeFilter === 'Canceled') {
+                return observation.status === 'canceled' || observation.status === 'cancelled';
+              }
+              return observation.status === activeFilter.toLowerCase();
+            }).length;
+            return `Showing ${filteredCount} of ${observations.length} observations${activeFilter !== 'All' ? ` (${activeFilter} filter active)` : ''}`;
+          })()}
         </div>
         <div className="flex gap-1">
           <Button variant="outline" size="sm" disabled className="rounded-md">Previous</Button>

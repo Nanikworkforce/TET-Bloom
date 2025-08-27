@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/auth-context";
+import { lessonPlanApi, teacherApi } from "@/lib/api";
 import { 
   BookOpen, 
   Plus, 
@@ -25,49 +27,43 @@ import {
   RefreshCw
 } from "lucide-react";
 
-// Mock data for lesson plans
-const mockLessonPlans = [
-  {
-    id: "1",
-    title: "Week of March 6-10, 2023",
-    subject: "Mathematics",
-    grade: "7th Grade",
-    status: "submitted",
-    submitDate: "2023-03-03",
-    dueDate: "2023-03-06",
-    feedback: {
-      status: "approved",
-      comment: "Great detailed lesson plan with clear objectives.",
-      adminName: "Dr. Smith"
-    }
-  },
-  {
-    id: "2", 
-    title: "Week of March 13-17, 2023",
-    subject: "Mathematics",
-    grade: "7th Grade",
-    status: "submitted",
-    submitDate: "2023-03-10",
-    dueDate: "2023-03-13",
-    feedback: {
-      status: "needs_revision",
-      comment: "Please add more specific learning objectives for day 3 and 4.",
-      adminName: "Dr. Smith"
-    }
-  },
-  {
-    id: "3",
-    title: "Week of March 20-24, 2023",
-    subject: "Mathematics", 
-    grade: "7th Grade",
-    status: "pending",
-    submitDate: null,
-    dueDate: "2023-03-20",
-    feedback: null
-  }
-];
+// Types for lesson plans
+interface LessonPlan {
+  id: string;
+  title: string;
+  description?: string;
+  due_date: string;
+  submit_date?: string;
+  status: "pending" | "submitted" | "overdue";
+  feedback_status?: "approved" | "needs_revision" | "pending";
+  feedback_comment?: string;
+  feedback_date?: string;
+  subject: string;
+  grade: string;
+  teacher_name: string;
+  reviewer_name?: string;
+  document?: string;
+  document_url?: string;
+  document_size?: number;
+  document_extension?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TeacherData {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  subject: string;
+  grade: string;
+  years_of_experience: number;
+}
 
 export default function TeacherLessonPlansPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -76,23 +72,102 @@ export default function TeacherLessonPlansPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPlanDetails, setSelectedPlanDetails] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // State for real data
+  const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [lessonPlans, setLessonPlans] = useState<LessonPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch teacher data
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await teacherApi.getAll();
+        if (response.data) {
+          const teacherRecord = response.data.find((teacher: TeacherData) => 
+            teacher.user.email === user.email || teacher.user.id === user.id
+          );
+          
+          if (teacherRecord) {
+            setTeacherData(teacherRecord);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching teacher data:', error);
+        setError('Failed to fetch teacher data');
+      }
+    };
+
+    fetchTeacherData();
+  }, [user?.id, user?.email]);
+
+  // Fetch lesson plans for the teacher
+  useEffect(() => {
+    const fetchLessonPlans = async () => {
+      if (!teacherData?.id) return;
+
+      try {
+        setLoading(true);
+        const response = await lessonPlanApi.getByTeacher(teacherData.id);
+        if (response.data) {
+          setLessonPlans(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching lesson plans:', error);
+        setError('Failed to fetch lesson plans');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLessonPlans();
+  }, [teacherData?.id]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile || !weekTitle) {
+    if (!selectedFile || !weekTitle || !teacherData) {
       alert("Please provide a title and select a lesson plan file");
       return;
     }
     
     setIsSubmitting(true);
-    // Simulate upload delay
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('title', weekTitle);
+      formData.append('description', description);
+      formData.append('teacher', teacherData.id);
+      formData.append('status', 'pending');
+      formData.append('document', selectedFile);
+      
+      // Set due date (you might want to make this configurable)
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      formData.append('due_date', nextWeek.toISOString().split('T')[0]);
+
+      const response = await lessonPlanApi.createWithFile(formData);
+      
+      if (response.data) {
       alert("Lesson plan submitted successfully!");
       setSelectedFile(null);
       setWeekTitle("");
       setDescription("");
       setActiveTab("overview");
-    }, 1500);
+        
+        // Refresh lesson plans
+        const updatedResponse = await lessonPlanApi.getByTeacher(teacherData.id);
+        if (updatedResponse.data) {
+          setLessonPlans(updatedResponse.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting lesson plan:', error);
+      alert("Failed to submit lesson plan. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +181,19 @@ export default function TeacherLessonPlansPage() {
   };
 
   const getSelectedPlan = (planId: string) => {
-    return mockLessonPlans.find(plan => plan.id === planId);
+    return lessonPlans.find(plan => plan.id === planId);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
   // Handle escape key to close modal
@@ -147,7 +234,7 @@ export default function TeacherLessonPlansPage() {
     }
   };
 
-  const filteredLessonPlans = mockLessonPlans.filter(plan =>
+  const filteredLessonPlans = lessonPlans.filter(plan =>
     plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     plan.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -176,19 +263,19 @@ export default function TeacherLessonPlansPage() {
               {/* Quick Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.status === 'submitted').length}</div>
+                  <div className="text-2xl font-bold">{lessonPlans.filter(p => p.status === 'submitted').length}</div>
                   <div className="text-white/90 text-sm">Submitted</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.status === 'pending').length}</div>
+                  <div className="text-2xl font-bold">{lessonPlans.filter(p => p.status === 'pending').length}</div>
                   <div className="text-white/90 text-sm">Pending</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.feedback?.status === 'approved').length}</div>
+                  <div className="text-2xl font-bold">{lessonPlans.filter(p => p.feedback_status === 'approved').length}</div>
                   <div className="text-white/90 text-sm">Approved</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{mockLessonPlans.filter(p => p.feedback?.status === 'needs_revision').length}</div>
+                  <div className="text-2xl font-bold">{lessonPlans.filter(p => p.feedback_status === 'needs_revision').length}</div>
                   <div className="text-white/90 text-sm">Need Revision</div>
                 </div>
               </div>
@@ -288,7 +375,34 @@ export default function TeacherLessonPlansPage() {
 
           {/* Lesson Plans List */}
           <div className="space-y-4">
-            {filteredLessonPlans.map((plan) => (
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <p className="mt-2 text-gray-600">Loading lesson plans...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-600">{error}</p>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-2"
+                  variant="outline"
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : filteredLessonPlans.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No lesson plans found.</p>
+                <Button 
+                  onClick={() => setActiveTab("submit")}
+                  className="mt-2"
+                >
+                  Create Your First Lesson Plan
+                </Button>
+              </div>
+            ) : (
+              filteredLessonPlans.map((plan) => (
               <Card key={plan.id} className="border bg-white">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -296,20 +410,20 @@ export default function TeacherLessonPlansPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold">{plan.title}</h3>
                         {getStatusBadge(plan.status)}
-                        {plan.feedback && getFeedbackBadge(plan.feedback.status)}
+                          {plan.feedback_status && getFeedbackBadge(plan.feedback_status)}
                       </div>
                       <div className="text-sm text-gray-600 space-y-1">
                         <div className="flex items-center gap-4">
                           <span>📚 {plan.subject} • {plan.grade}</span>
-                          <span>📅 Due: {plan.dueDate}</span>
-                          {plan.submitDate && <span>✅ Submitted: {plan.submitDate}</span>}
+                            <span>📅 Due: {formatDate(plan.due_date)}</span>
+                            {plan.submit_date && <span>✅ Submitted: {formatDate(plan.submit_date)}</span>}
                         </div>
-                        {plan.feedback && (
+                          {plan.feedback_comment && (
                           <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-sm">Feedback from {plan.feedback.adminName}:</span>
+                                <span className="font-medium text-sm">Feedback from {plan.reviewer_name || 'Administrator'}:</span>
                             </div>
-                            <p className="text-sm text-gray-700">{plan.feedback.comment}</p>
+                              <p className="text-sm text-gray-700">{plan.feedback_comment}</p>
                           </div>
                         )}
                       </div>
@@ -323,7 +437,7 @@ export default function TeacherLessonPlansPage() {
                           Submit Plan
                         </Button>
                       )}
-                      {plan.feedback?.status === "needs_revision" && (
+                        {plan.feedback_status === "needs_revision" && (
                         <Button size="sm" className="rounded-lg">
                           Resubmit
                         </Button>
@@ -332,7 +446,8 @@ export default function TeacherLessonPlansPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -361,7 +476,7 @@ export default function TeacherLessonPlansPage() {
                   <Label htmlFor="subject">Subject</Label>
                   <Input
                     id="subject"
-                    value="Mathematics"
+                    value={teacherData?.subject || "Loading..."}
                     disabled
                     className="rounded-lg bg-gray-50"
                   />
@@ -530,11 +645,17 @@ export default function TeacherLessonPlansPage() {
                               <div className="text-2xl" style={{color: '#84547c'}}>📄</div>
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium text-gray-900 truncate">
-                                  Lesson_Plan_{selectedPlan.title.replace(/\s+/g, '_')}.pdf
+                                  {selectedPlan.document ? 
+                                    selectedPlan.document.split('/').pop() || 'Document' :
+                                    `Lesson_Plan_${selectedPlan.title.replace(/\s+/g, '_')}.pdf`
+                                  }
                                 </div>
-                                <div className="text-sm text-gray-500 mt-1">2.3 MB • PDF Document</div>
+                                <div className="text-sm text-gray-500 mt-1">
+                                  {selectedPlan.document_size ? formatFileSize(selectedPlan.document_size) : '0 KB'} • 
+                                  {selectedPlan.document_extension ? selectedPlan.document_extension.toUpperCase() : 'PDF'} Document
+                                </div>
                                 <div className="text-xs text-gray-400 mt-1">
-                                  Uploaded {selectedPlan.submitDate || 'Not submitted'}
+                                  Uploaded {selectedPlan.submit_date ? formatDate(selectedPlan.submit_date) : 'Not submitted'}
                                 </div>
                               </div>
                             </div>
@@ -550,22 +671,22 @@ export default function TeacherLessonPlansPage() {
                     </div>
                     
                     {/* Feedback Section */}
-                    {selectedPlan.feedback && (
+                    {selectedPlan.feedback_status && selectedPlan.feedback_comment && (
                       <div className="border-t pt-6">
                         <h3 className="font-medium text-gray-700 mb-4">Administrator Feedback</h3>
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <span className="font-medium">Status:</span>
-                            {getFeedbackBadge(selectedPlan.feedback.status)}
-                            <span className="text-sm text-gray-500">• by {selectedPlan.feedback.adminName}</span>
+                            {getFeedbackBadge(selectedPlan.feedback_status)}
+                            <span className="text-sm text-gray-500">• by {selectedPlan.reviewer_name || 'Administrator'}</span>
                           </div>
                           
                           <div className="bg-gray-50 rounded-lg p-4">
                             <h4 className="font-medium mb-2">Comments:</h4>
-                            <p className="text-gray-700">{selectedPlan.feedback.comment}</p>
+                            <p className="text-gray-700">{selectedPlan.feedback_comment}</p>
                           </div>
                           
-                          {selectedPlan.feedback.status === "needs_revision" && (
+                          {selectedPlan.feedback_status === "needs_revision" && (
                             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                               <div className="flex items-center gap-2 mb-2">
                                 <span className="text-orange-600 text-lg">⚠️</span>
@@ -582,7 +703,7 @@ export default function TeacherLessonPlansPage() {
                             </div>
                           )}
                           
-                          {selectedPlan.feedback.status === "approved" && (
+                          {selectedPlan.feedback_status === "approved" && (
                             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-green-600 text-lg">✅</span>
@@ -598,7 +719,7 @@ export default function TeacherLessonPlansPage() {
                     )}
                     
                     {/* No Feedback Yet */}
-                    {!selectedPlan.feedback && selectedPlan.status === "submitted" && (
+                    {!selectedPlan.feedback_status && selectedPlan.status === "submitted" && (
                       <div className="border-t pt-6">
                         <div className="rounded-lg p-4 text-center" style={{backgroundColor: 'rgba(132, 84, 124, 0.1)', borderColor: '#84547c'}}>
                           <div className="text-2xl mb-2" style={{color: '#84547c'}}>⏳</div>

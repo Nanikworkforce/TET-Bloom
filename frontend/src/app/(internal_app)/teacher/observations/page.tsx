@@ -153,11 +153,13 @@ export default function TeacherObservationsPage() {
   }, [teacherData?.id]);
   
   // Filter observations by status
+  // Upcoming: All observations with "Scheduled" status regardless of date
+  // Past: Only observations with "Completed" status
   const upcomingObservations = observations.filter(observation => 
-    observation.status === "Scheduled" && new Date(observation.date) >= new Date()
+    observation.status === "Scheduled"
   );
   const pastObservations = observations.filter(observation => 
-    observation.status === "Completed" || (observation.status === "Scheduled" && new Date(observation.date) < new Date())
+    observation.status === "Completed"
   );
   
   const handleSupportingMaterialsSubmit = (observationId: string) => {

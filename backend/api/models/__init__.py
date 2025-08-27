@@ -4,6 +4,7 @@ from .administrators import Administrator
 from .observation_groups import ObservationGroup
 from .schedule import Schedule
 from .feedback import Feedback, FeedbackRevision
+from .lesson_plans import LessonPlan, LessonPlanFeedback
 
 __all__ = [
     'Users',
@@ -12,5 +13,7 @@ __all__ = [
     'ObservationGroup',
     'Schedule',
     'Feedback',
-    'FeedbackRevision'
+    'FeedbackRevision',
+    'LessonPlan',
+    'LessonPlanFeedback'
 ]

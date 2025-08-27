@@ -5,102 +5,98 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
-import { baseUrl } from "@/lib/api";
+import { baseUrl, feedbackApi, ApiError } from "@/lib/api";
 import { useState, useEffect } from "react";
 
-// Mock data
-const feedbackEntries = [
-  {
-    id: "1",
-    observer: "Administrator Johnson",
-    date: "Feb 20, 2023",
-    class: "Mathematics 101",
-    grade: "7th Grade",
-    topic: "Fractions and Decimals",
-    overallRating: "Excellent",
-    ratingColor: "text-white",
-    ratingBg: "#e4a414",
+// Interface for feedback data from backend
+interface FeedbackData {
+  id: string;
+  schedule: {
+    id: string;
+    date: string;
+    time: string;
+    observation_type: string;
+  };
+  teacher: {
+    id: string;
+    user: {
+      name: string;
+      email: string;
+    };
+    subject: string;
+    grade: string;
+  };
+  observer: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  status: string;
+  score_classroom_management: number;
+  score_content_knowledge: number;
+  score_student_engagement: number;
+  score_teaching_methods: number;
+  score_assessment: number;
+  score_professionalism: number;
+  strengths: string[];
+  areas_for_improvement: string[];
+  overall_comments: string;
+  lesson_objectives: string;
+  observation_notes: string;
+  action_step_category: string;
+  action_step: string;
+  overall_rating: string;
+  average_score: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Transform backend data to match UI expectations
+const transformFeedbackData = (feedback: FeedbackData) => {
+  const getRatingBg = (rating: string) => {
+    switch (rating.toLowerCase()) {
+      case 'excellent': return '#e4a414';
+      case 'good': return '#84547c';
+      case 'satisfactory': return '#6b7280';
+      case 'needs_improvement': return '#dc2626';
+      default: return '#84547c';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  return {
+    id: feedback.id,
+    observer: feedback.observer.name,
+    date: formatDate(feedback.schedule.date),
+    class: `${feedback.teacher.subject} - ${feedback.schedule.observation_type}`,
+    grade: feedback.teacher.grade,
+    topic: feedback.lesson_objectives || 'Lesson Observation',
+    overallRating: feedback.overall_rating.charAt(0).toUpperCase() + feedback.overall_rating.slice(1).replace('_', ' '),
+    ratingColor: 'text-white',
+    ratingBg: getRatingBg(feedback.overall_rating),
     categories: {
-      "Classroom Management": 5,
-      "Content Knowledge": 5,
-      "Student Engagement": 4,
-      "Teaching Methods": 5,
-      "Assessment": 4
+      'Classroom Management': feedback.score_classroom_management,
+      'Content Knowledge': feedback.score_content_knowledge,
+      'Student Engagement': feedback.score_student_engagement,
+      'Teaching Methods': feedback.score_teaching_methods,
+      'Assessment': feedback.score_assessment,
+      'Professionalism': feedback.score_professionalism
     },
-    strengths: [
-      "Excellent presentation of complex concepts",
-      "Clear explanations with relevant examples",
-      "Strong classroom management",
-      "Effective use of technology",
-      "Good pacing throughout the lesson"
-    ],
-    improvements: [
-      "Consider more group activities",
-      "Could provide additional support for struggling students"
-    ],
-    comments: "Ms. Chen demonstrates excellent teaching skills. Her ability to break down complex mathematical concepts into understandable parts is impressive. Students were engaged throughout the lesson."
-  },
-  {
-    id: "2",
-    observer: "Vice Administrator Smith",
-    date: "Jan 30, 2023",
-    class: "Mathematics 103",
-    grade: "7th Grade",
-    topic: "Percentages",
-    overallRating: "Good",
-    ratingColor: "text-white",
-    ratingBg: "#84547c",
-    categories: {
-      "Classroom Management": 4,
-      "Content Knowledge": 5,
-      "Student Engagement": 3,
-      "Teaching Methods": 4,
-      "Assessment": 4
-    },
-    strengths: [
-      "Strong content knowledge",
-      "Well-organized lesson plan",
-      "Good classroom management",
-      "Clear instructions"
-    ],
-    improvements: [
-      "Could increase student participation",
-      "Consider more real-world applications",
-      "Vary teaching methods"
-    ],
-    comments: "Ms. Chen has strong knowledge of the subject matter and manages the classroom effectively. The lesson could benefit from more interactive elements to increase student engagement. Overall, a solid performance."
-  },
-  {
-    id: "3",
-    observer: "Department Head Taylor",
-    date: "Jan 15, 2023",
-    class: "Mathematics 102",
-    grade: "7th Grade",
-    topic: "Equations and Variables",
-    overallRating: "Good",
-    ratingColor: "text-white",
-    ratingBg: "#84547c",
-    categories: {
-      "Classroom Management": 4,
-      "Content Knowledge": 5,
-      "Student Engagement": 4,
-      "Teaching Methods": 3,
-      "Assessment": 4
-    },
-    strengths: [
-      "Excellent content knowledge",
-      "Clear explanations",
-      "Good rapport with students",
-      "Effective classroom management"
-    ],
-    improvements: [
-      "Could diversify teaching methods",
-      "Consider incorporating more technology",
-      "Include more formative assessment throughout the lesson"
-    ],
-    comments: "Ms. Chen shows strong command of mathematical concepts and explains them well to students. The lesson was well-structured but could benefit from a wider variety of teaching approaches. Students responded well to her teaching style."
-  }
-];
+    strengths: feedback.strengths || [],
+    improvements: feedback.areas_for_improvement || [],
+    comments: feedback.overall_comments || 'No additional comments provided.',
+    averageScore: feedback.average_score,
+    actionStep: feedback.action_step
+  };
+};
 
 interface TeacherData {
   id: string;
@@ -118,7 +114,10 @@ interface TeacherData {
 export default function TeacherFeedbackPage() {
   const { user } = useAuth();
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [feedbackData, setFeedbackData] = useState<FeedbackData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackLoading, setFeedbackLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch teacher data from backend
   useEffect(() => {
@@ -154,6 +153,39 @@ export default function TeacherFeedbackPage() {
     fetchTeacherData();
   }, [user?.id, user?.email]);
 
+  // Fetch feedback data for the teacher
+  useEffect(() => {
+    const fetchFeedbackData = async () => {
+      if (!teacherData?.id) return;
+
+      try {
+        setFeedbackLoading(true);
+        setError(null);
+        
+        // Get feedback for this teacher
+        const response = await feedbackApi.getAll({ teacher: teacherData.id });
+        
+        if (response.data && Array.isArray(response.data)) {
+          console.log('Raw feedback data:', response.data);
+          setFeedbackData(response.data);
+        } else {
+          setFeedbackData([]);
+        }
+      } catch (err) {
+        console.error('Error fetching feedback data:', err);
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError('Failed to load feedback data. Please try again.');
+        }
+      } finally {
+        setFeedbackLoading(false);
+      }
+    };
+
+    fetchFeedbackData();
+  }, [teacherData?.id]);
+
   // Get teacher's name for dynamic replacement
   const getTeacherName = () => {
     if (teacherData?.user?.name) {
@@ -165,11 +197,50 @@ export default function TeacherFeedbackPage() {
     return "the teacher";
   };
 
-  // Create dynamic feedback entries with real teacher name
-  const dynamicFeedbackEntries = feedbackEntries.map(entry => ({
-    ...entry,
-    comments: entry.comments.replace(/Ms\. Chen/g, getTeacherName())
-  }));
+  // Transform backend feedback data for UI
+  const transformedFeedback = feedbackData.map(transformFeedbackData);
+
+  // Calculate average ratings for stats
+  const calculateAverageRatings = () => {
+    if (feedbackData.length === 0) {
+      return {
+        classroomManagement: 0,
+        contentKnowledge: 0,
+        studentEngagement: 0,
+        teachingMethods: 0,
+        assessment: 0,
+        professionalism: 0
+      };
+    }
+
+    const totals = feedbackData.reduce((acc, feedback) => ({
+      classroomManagement: acc.classroomManagement + feedback.score_classroom_management,
+      contentKnowledge: acc.contentKnowledge + feedback.score_content_knowledge,
+      studentEngagement: acc.studentEngagement + feedback.score_student_engagement,
+      teachingMethods: acc.teachingMethods + feedback.score_teaching_methods,
+      assessment: acc.assessment + feedback.score_assessment,
+      professionalism: acc.professionalism + feedback.score_professionalism
+    }), {
+      classroomManagement: 0,
+      contentKnowledge: 0,
+      studentEngagement: 0,
+      teachingMethods: 0,
+      assessment: 0,
+      professionalism: 0
+    });
+
+    const count = feedbackData.length;
+    return {
+      classroomManagement: Number((totals.classroomManagement / count).toFixed(1)),
+      contentKnowledge: Number((totals.contentKnowledge / count).toFixed(1)),
+      studentEngagement: Number((totals.studentEngagement / count).toFixed(1)),
+      teachingMethods: Number((totals.teachingMethods / count).toFixed(1)),
+      assessment: Number((totals.assessment / count).toFixed(1)),
+      professionalism: Number((totals.professionalism / count).toFixed(1))
+    };
+  };
+
+  const averageRatings = calculateAverageRatings();
 
   return (
     <div className="space-y-6">
@@ -240,33 +311,41 @@ export default function TeacherFeedbackPage() {
       </Card>
 
       {/* Stats overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         <Card className="p-4 border bg-white col-span-1">
           <div className="flex flex-col">
             <p className="text-sm font-medium text-gray-500">Feedback Received</p>
-            <p className="text-2xl font-bold mt-1 text-gray-800">{feedbackEntries.length}</p>
+            <p className="text-2xl font-bold mt-1 text-gray-800">
+              {feedbackLoading ? '...' : feedbackData.length}
+            </p>
           </div>
         </Card>
         
-        <Card className="p-4 border bg-white col-span-4">
-          <p className="text-sm font-medium text-gray-500 mb-3">Rating Breakdown</p>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card className="p-4 border bg-white col-span-5">
+          <p className="text-sm font-medium text-gray-500 mb-3">Average Rating Breakdown</p>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             {[
-              { label: "Classroom Management", value: 4.3, color: "#84547c" },
-              { label: "Content Knowledge", value: 5.0, color: "#e4a414" },
-              { label: "Student Engagement", value: 3.7, color: "bg-yellow-500" },
-              { label: "Teaching Methods", value: 4.0, color: "bg-purple-500" },
-              { label: "Assessment", value: 4.0, color: "bg-pink-500" }
+              { label: "Classroom Management", value: averageRatings.classroomManagement, color: "#84547c" },
+              { label: "Content Knowledge", value: averageRatings.contentKnowledge, color: "#e4a414" },
+              { label: "Student Engagement", value: averageRatings.studentEngagement, color: "#10b981" },
+              { label: "Teaching Methods", value: averageRatings.teachingMethods, color: "#8b5cf6" },
+              { label: "Assessment", value: averageRatings.assessment, color: "#f59e0b" },
+              { label: "Professionalism", value: averageRatings.professionalism, color: "#06b6d4" }
             ].map((category, index) => (
               <div key={index} className="flex flex-col">
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-gray-600">{category.label}</span>
-                  <span className="font-medium">{category.value}/5</span>
+                  <span className="font-medium">
+                    {feedbackLoading ? '...' : `${category.value}/5`}
+                  </span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div 
-                    className={`h-full ${category.color}`} 
-                    style={{ width: `${(category.value / 5) * 100}%` }}
+                    className="h-full transition-all duration-300"
+                    style={{ 
+                      backgroundColor: category.color,
+                      width: feedbackLoading ? '0%' : `${(category.value / 5) * 100}%`
+                    }}
                   ></div>
                 </div>
               </div>
@@ -275,10 +354,49 @@ export default function TeacherFeedbackPage() {
         </Card>
       </div>
 
+      {/* Loading State */}
+      {(loading || feedbackLoading) && (
+        <div className="space-y-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-white border overflow-hidden animate-pulse">
+              <div className="p-6">
+                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="h-20 bg-gray-200 rounded"></div>
+                  </div>
+                  <div>
+                    <div className="h-20 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && !feedbackLoading && (
+        <Card className="p-8 text-center bg-white border-red-200">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h3 className="text-lg font-medium text-red-700">Error Loading Feedback</h3>
+          <p className="text-red-600 mt-1 mb-4">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Retry
+          </Button>
+        </Card>
+      )}
+
       {/* Feedback entries */}
-      <div className="space-y-6">
-        {dynamicFeedbackEntries.map((feedback) => (
-          <Card key={feedback.id} className="bg-white border overflow-hidden">
+      {!loading && !feedbackLoading && !error && (
+        <div className="space-y-6">
+          {transformedFeedback.map((feedback) => (
+            <Card key={feedback.id} className="bg-white border overflow-hidden">
             {/* Header */}
             <div className="flex flex-wrap justify-between items-center p-4 border-b" style={{background: 'linear-gradient(90deg, rgba(132, 84, 124, 0.05) 0%, rgba(228, 164, 20, 0.05) 100%)'}}>
               <div>
@@ -367,24 +485,27 @@ export default function TeacherFeedbackPage() {
             {/* Rating categories */}
             <div className="px-4 pt-2 pb-4 border-t">
               <h4 className="text-gray-700 font-medium text-sm mb-3">Category Ratings</h4>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {Object.entries(feedback.categories).map(([category, rating], index) => (
-                  <div key={index} className="flex flex-col">
-                    <div className="text-xs mb-1 text-gray-600">{category}</div>
-                    <div className="flex items-center">
-                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full"
-                          style={{
-                            backgroundColor: '#84547c',
-                            width: `${(rating / 5) * 100}%`
-                          }}
-                        ></div>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                {Object.entries(feedback.categories).map(([category, rating], index) => {
+                  const colors = ['#84547c', '#e4a414', '#10b981', '#8b5cf6', '#f59e0b', '#06b6d4'];
+                  return (
+                    <div key={index} className="flex flex-col">
+                      <div className="text-xs mb-1 text-gray-600">{category}</div>
+                      <div className="flex items-center">
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full transition-all duration-300"
+                            style={{
+                              backgroundColor: colors[index % colors.length],
+                              width: `${(rating / 5) * 100}%`
+                            }}
+                          ></div>
+                        </div>
+                        <span className="text-xs font-medium ml-2">{rating}/5</span>
                       </div>
-                      <span className="text-xs font-medium ml-2">{rating}/5</span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -402,16 +523,17 @@ export default function TeacherFeedbackPage() {
               </Link>
             </div>
           </Card>
-        ))}
-      </div>
-
-      {/* Empty state */}
-      {feedbackEntries.length === 0 && (
-        <Card className="p-8 text-center bg-white">
-          <div className="text-5xl mb-4">📋</div>
-          <h3 className="text-lg font-medium">No feedback yet</h3>
-          <p className="text-gray-600 mt-1 mb-4">Feedback will appear here after classroom observations</p>
-        </Card>
+          ))}
+          
+          {/* Empty state */}
+          {transformedFeedback.length === 0 && (
+            <Card className="p-8 text-center bg-white">
+              <div className="text-5xl mb-4">📋</div>
+              <h3 className="text-lg font-medium">No feedback yet</h3>
+              <p className="text-gray-600 mt-1 mb-4">Feedback will appear here after classroom observations are completed and submitted</p>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );

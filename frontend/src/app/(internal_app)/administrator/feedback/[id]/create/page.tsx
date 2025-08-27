@@ -88,6 +88,32 @@ const actionCategories = [
   "Professional Development"
 ];
 
+// Mapping from frontend display names to backend database values
+const categoryToApiMapping: { [key: string]: string } = {
+  "Internalization": "internalization",
+  "Year-Long Pacing": "year_long_pacing",
+  "Lesson Pacing": "lesson_pacing", 
+  "Student Engagement": "student_engagement",
+  "Instructional Methods": "instructional_methods",
+  "Assessment": "assessment",
+  "Classroom Management": "classroom_management",
+  "Content Knowledge": "content_knowledge",
+  "Professional Development": "professional_development"
+};
+
+// Reverse mapping for displaying existing data
+const apiToCategoryMapping: { [key: string]: string } = {
+  "internalization": "Internalization",
+  "year_long_pacing": "Year-Long Pacing",
+  "lesson_pacing": "Lesson Pacing",
+  "student_engagement": "Student Engagement", 
+  "instructional_methods": "Instructional Methods",
+  "assessment": "Assessment",
+  "classroom_management": "Classroom Management",
+  "content_knowledge": "Content Knowledge",
+  "professional_development": "Professional Development"
+};
+
 const actionSteps = [
   "Review lesson materials before teaching",
   "Add annotations to lesson plans", 
@@ -113,6 +139,9 @@ export default function CreateFeedbackPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [observerLoading, setObserverLoading] = useState(true);
+  
+  const [observerUserId, setObserverUserId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<TeacherFeedbackForm>({
     observationId: observationId,
@@ -140,6 +169,48 @@ export default function CreateFeedbackPage() {
     observationNotes: "",
     overallRating: ""
   });
+
+  // Fetch corresponding Users record for current authenticated user
+  useEffect(() => {
+    const fetchObserverUserId = async () => {
+      if (!user?.email) {
+        setObserverLoading(false);
+        return;
+      }
+      
+      try {
+        setObserverLoading(true);
+        console.log('Looking up Users record for:', user.email);
+        
+        // Get all Users records to find the one matching current auth user
+        const response = await fetch(`${baseUrl}/users/`);
+        if (response.ok) {
+          const users = await response.json();
+          console.log('All Users records:', users);
+          
+          const matchingUser = users.find((u: any) => u.email === user.email);
+          
+          if (matchingUser) {
+            console.log('Found matching Users record:', matchingUser);
+            setObserverUserId(matchingUser.id);
+          } else {
+            console.error('No Users record found for authenticated user:', user.email);
+            setError(`No Users record found for ${user.email}. Please contact administrator.`);
+          }
+        } else {
+          console.error('Failed to fetch Users records');
+          setError('Failed to load user information. Please refresh the page.');
+        }
+      } catch (err) {
+        console.error('Error fetching observer user ID:', err);
+        setError('Failed to load user information. Please refresh the page.');
+      } finally {
+        setObserverLoading(false);
+      }
+    };
+    
+    fetchObserverUserId();
+  }, [user?.email]);
 
   // Fetch observation details
   useEffect(() => {
@@ -227,7 +298,7 @@ export default function CreateFeedbackPage() {
               strengths: existingFeedback.strengths && existingFeedback.strengths.length > 0 ? existingFeedback.strengths : [""],
               areasForImprovement: existingFeedback.areas_for_improvement && existingFeedback.areas_for_improvement.length > 0 ? existingFeedback.areas_for_improvement : [""],
               overallComments: existingFeedback.overall_comments || "",
-              actionStepCategory: existingFeedback.action_step_category || "",
+              actionStepCategory: existingFeedback.action_step_category ? apiToCategoryMapping[existingFeedback.action_step_category] || "" : "",
               actionStep: existingFeedback.action_step || "",
               lessonObjectives: existingFeedback.lesson_objectives || "",
             }));
@@ -323,15 +394,28 @@ export default function CreateFeedbackPage() {
 
   // Save as draft
   const saveDraft = async () => {
+    if (!observerUserId) {
+      alert("Observer user record not found. Please refresh the page or contact administrator.");
+      return;
+    }
+    
     setSaving(true);
     try {
       // Check if we need to update existing draft or create new
       const existingFeedback = await feedbackApi.getBySchedule(observationId);
       
+      console.log('User data for feedback creation:', {
+        user: user,
+        authUserId: user?.id,
+        userEmail: user?.email,
+        observerUserId: observerUserId,
+        teacherId: formData.teacherId
+      });
+      
       const feedbackData = {
         schedule: observationId,
         teacher: formData.teacherId,
-        observer: user?.id, // Current user as observer
+        observer: observerUserId, // Current user as observer
         status: 'draft',
         score_classroom_management: formData.scores.classroomManagement,
         score_content_knowledge: formData.scores.contentKnowledge,
@@ -344,9 +428,11 @@ export default function CreateFeedbackPage() {
         overall_comments: formData.overallComments,
         lesson_objectives: formData.lessonObjectives,
         observation_notes: formData.observationNotes,
-        action_step_category: formData.actionStepCategory,
+        action_step_category: formData.actionStepCategory ? categoryToApiMapping[formData.actionStepCategory] || "" : "",
         action_step: formData.actionStep
       };
+
+      console.log('Feedback data being sent to API (draft):', feedbackData);
 
       if (existingFeedback.data && Array.isArray(existingFeedback.data) && existingFeedback.data.length > 0) {
         // Update existing draft
@@ -367,6 +453,11 @@ export default function CreateFeedbackPage() {
 
   // Submit feedback
   const submitFeedback = async () => {
+    if (!observerUserId) {
+      alert("Observer user record not found. Please refresh the page or contact administrator.");
+      return;
+    }
+    
     // Validation
     if (formData.strengths.some(s => !s.trim()) || formData.areasForImprovement.some(a => !a.trim())) {
       alert("Please fill in all strength and improvement areas");
@@ -388,11 +479,19 @@ export default function CreateFeedbackPage() {
       // Check if we need to update existing feedback or create new
       const existingFeedback = await feedbackApi.getBySchedule(observationId);
       
+      console.log('User data for feedback submission:', {
+        user: user,
+        authUserId: user?.id,
+        userEmail: user?.email,
+        observerUserId: observerUserId,
+        teacherId: formData.teacherId
+      });
+      
       const feedbackData = {
         schedule: observationId,
         teacher: formData.teacherId,
-        observer: user?.id, // Current user as observer
-        status: 'submitted',
+        observer: observerUserId, // Current user as observer
+        status: 'draft', // Create as draft first, then submit
         score_classroom_management: formData.scores.classroomManagement,
         score_content_knowledge: formData.scores.contentKnowledge,
         score_student_engagement: formData.scores.studentEngagement,
@@ -404,9 +503,11 @@ export default function CreateFeedbackPage() {
         overall_comments: formData.overallComments,
         lesson_objectives: formData.lessonObjectives,
         observation_notes: formData.observationNotes,
-        action_step_category: formData.actionStepCategory,
+        action_step_category: formData.actionStepCategory ? categoryToApiMapping[formData.actionStepCategory] || "" : "",
         action_step: formData.actionStep
       };
+
+      console.log('Feedback data being sent to API (submit):', feedbackData);
 
       let feedbackId;
       if (existingFeedback.data && Array.isArray(existingFeedback.data) && existingFeedback.data.length > 0) {
@@ -438,12 +539,15 @@ export default function CreateFeedbackPage() {
     }
   };
 
-  if (loading) {
+  if (loading || observerLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-64"></div>
         <div className="h-32 bg-gray-200 rounded"></div>
         <div className="h-48 bg-gray-200 rounded"></div>
+        <div className="text-center text-gray-500 mt-4">
+          {loading ? "Loading observation details..." : "Loading user information..."}
+        </div>
       </div>
     );
   }
@@ -484,9 +588,15 @@ export default function CreateFeedbackPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900">Create Observation Feedback</h1>
           <p className="text-gray-600 mt-1">Score and provide feedback for the observed teacher</p>
+          {/* Debug observer info */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+              <strong>Debug:</strong> Observer ID: {observerUserId || 'Loading...'} | Auth ID: {user?.id} | Email: {user?.email}
+            </div>
+          )}
         </div>
       </div>
 
@@ -773,19 +883,22 @@ export default function CreateFeedbackPage() {
             <Button
               variant="outline"
               onClick={saveDraft}
-              disabled={saving}
+              disabled={saving || !observerUserId}
             >
               <Save className="h-4 w-4 mr-2" />
               Save Draft
             </Button>
             <Button
               onClick={submitFeedback}
-              disabled={saving}
+              disabled={saving || !observerUserId}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
               <Send className="h-4 w-4 mr-2" />
               {saving ? "Submitting..." : "Submit Feedback"}
             </Button>
+            {!observerUserId && (
+              <p className="text-sm text-gray-500">Loading user information...</p>
+            )}
           </div>
         </CardContent>
       </Card>

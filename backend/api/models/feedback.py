@@ -124,7 +124,6 @@ class Feedback(TimeBaseModel):
 
 
 class FeedbackRevision(TimeBaseModel):
-    """Track revisions to feedback"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='revisions')
     revised_by = models.ForeignKey(Users, on_delete=models.CASCADE)

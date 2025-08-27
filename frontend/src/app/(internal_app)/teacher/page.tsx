@@ -4,31 +4,42 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
-import { baseUrl } from "@/lib/api";
+import { baseUrl, feedbackApi } from "@/lib/api";
 import { useState, useEffect } from "react";
 
 // Note: Observation data is now fetched from the backend API
 
-const recentFeedback = [
-  {
-    id: "1",
-    date: "Feb 20, 2023",
-    observer: "Administrator Johnson",
-    class: "Mathematics 101",
-    summary: "Strong presentation of complex concepts. Students were engaged throughout.",
-    rating: "Excellent",
-    ratingColor: "text-green-600"
-  },
-  {
-    id: "2",
-    date: "Jan 30, 2023",
-    observer: "Vice Administrator Smith",
-    class: "Mathematics 103",
-    summary: "Good classroom management. Consider incorporating more group activities.",
-    rating: "Good",
-    ratingColor: "text-blue-600"
-  }
-];
+interface FeedbackData {
+  id: string;
+  schedule: {
+    id: string;
+    date: string;
+    time: string;
+    observation_type: string;
+  };
+  teacher: {
+    id: string;
+    user: {
+      name: string;
+      email: string;
+    };
+    subject: string;
+    grade: string;
+  };
+  observer: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  status: string;
+  overall_rating?: string;
+  average_score?: number;
+  strengths?: string;
+  areas_for_improvement?: string;
+  overall_comments?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 const professionalDevelopment = [
   {
@@ -112,8 +123,10 @@ export default function TeacherDashboard() {
   const { user } = useAuth();
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
   const [observations, setObservations] = useState<ObservationSchedule[]>([]);
+  const [feedbackData, setFeedbackData] = useState<FeedbackData[]>([]);
   const [loading, setLoading] = useState(true);
   const [observationsLoading, setObservationsLoading] = useState(true);
+  const [feedbackLoading, setFeedbackLoading] = useState(true);
 
   // Fetch individual teacher data from backend
   useEffect(() => {
@@ -187,9 +200,9 @@ export default function TeacherDashboard() {
             new Date(a.date).getTime() - new Date(b.date).getTime()
           );
           
-          // Filter for upcoming observations (scheduled status)
+          // Filter for upcoming observations (scheduled status regardless of date)
           const upcomingObservations = sortedObservations.filter((obs: ObservationSchedule) => 
-            obs.status === 'Scheduled' && new Date(obs.date) >= new Date()
+            obs.status === 'Scheduled'
           );
           
           setObservations(upcomingObservations);
@@ -204,6 +217,42 @@ export default function TeacherDashboard() {
     };
 
     fetchObservations();
+  }, [teacherData?.id]);
+
+  // Fetch feedback data for the teacher
+  useEffect(() => {
+    const fetchFeedbackData = async () => {
+      if (!teacherData?.id) return;
+
+      try {
+        setFeedbackLoading(true);
+        
+        // Get feedback for this teacher
+        const response = await feedbackApi.getAll({ teacher: teacherData.id });
+        
+        if (response.data && Array.isArray(response.data)) {
+          console.log('Raw feedback data:', response.data);
+          
+          // Sort by creation date (most recent first) and take the latest 3
+          const sortedFeedback = response.data
+            .sort((a: FeedbackData, b: FeedbackData) => 
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+            .slice(0, 3);
+          
+          setFeedbackData(sortedFeedback);
+        } else {
+          setFeedbackData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching feedback data:', error);
+        setFeedbackData([]);
+      } finally {
+        setFeedbackLoading(false);
+      }
+    };
+
+    fetchFeedbackData();
   }, [teacherData?.id]);
   
   // Get teacher's name from API data or fallback to auth data
@@ -264,6 +313,35 @@ export default function TeacherDashboard() {
     }
   };
 
+  // Get feedback rating color
+  const getFeedbackRatingColor = (rating?: string) => {
+    if (!rating) return 'text-gray-600';
+    
+    switch (rating.toLowerCase()) {
+      case 'excellent':
+        return 'text-green-600';
+      case 'good':
+        return 'text-blue-600';
+      case 'satisfactory':
+        return 'text-yellow-600';
+      case 'needs improvement':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  // Get feedback summary text
+  const getFeedbackSummary = (feedback: FeedbackData) => {
+    if (feedback.overall_comments) {
+      return feedback.overall_comments;
+    }
+    if (feedback.strengths) {
+      return feedback.strengths;
+    }
+    return "No detailed feedback available.";
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome header */}
@@ -296,7 +374,7 @@ export default function TeacherDashboard() {
             <p className="text-4xl font-bold">{observationsLoading ? '...' : observations.length}</p>
             <p className="text-gray-600 mt-1">
               {observationsLoading ? 'Loading...' : 
-               observations.length > 0 ? `Next: ${formatDate(observations[0].date)}` : 'No upcoming observations'}
+               observations.length > 0 ? `Next: ${formatDate(observations[0].date)}` : 'No scheduled observations'}
             </p>
             <div className="mt-auto pt-4">
               <Link href="/teacher/observations">
@@ -386,9 +464,9 @@ export default function TeacherDashboard() {
           </div>
         ) : (
           <div className="p-8 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="text-lg font-medium text-gray-800">No upcoming observations!</h3>
-            <p className="text-gray-600 mt-1">You're all caught up for now.</p>
+            <div className="text-5xl mb-4">📅</div>
+            <h3 className="text-lg font-medium text-gray-800">No scheduled observations</h3>
+            <p className="text-gray-600 mt-1">No observations are currently scheduled. Check back later or contact your administrator.</p>
           </div>
         )}
       </Card>
@@ -406,29 +484,43 @@ export default function TeacherDashboard() {
             </div>
           </div>
           <div className="divide-y">
-            {recentFeedback.map((feedback) => (
-              <div key={feedback.id} className="p-4 hover:bg-gray-50">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="font-medium">{feedback.observer}</div>
-                  <div className="text-xs text-gray-500">{feedback.date}</div>
-                </div>
-                <div className="text-sm text-gray-600">{feedback.class}</div>
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg border text-sm">
-                  <p className="text-gray-700">{feedback.summary}</p>
-                  <div className="mt-2 flex justify-between items-center">
-                    <span className="text-xs text-gray-500">Overall Rating</span>
-                    <span className={`font-medium ${feedback.ratingColor}`}>{feedback.rating}</span>
+            {feedbackLoading ? (
+              <div className="p-4 text-center">
+                <p className="text-gray-500">Loading feedback...</p>
+              </div>
+            ) : feedbackData.length > 0 ? (
+              feedbackData.map((feedback) => (
+                <div key={feedback.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="font-medium">{feedback.observer.name}</div>
+                    <div className="text-xs text-gray-500">{formatDate(feedback.schedule.date)}</div>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {feedback.teacher.subject} • {feedback.teacher.grade}
+                  </div>
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border text-sm">
+                    <p className="text-gray-700">{getFeedbackSummary(feedback)}</p>
+                    <div className="mt-2 flex justify-between items-center">
+                      <span className="text-xs text-gray-500">Overall Rating</span>
+                      <span className={`font-medium ${getFeedbackRatingColor(feedback.overall_rating)}`}>
+                        {feedback.overall_rating || 'Not rated'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <Link href={`/teacher/feedback/${feedback.id}`}>
+                      <Button size="sm" variant="outline" className="rounded-full text-xs w-full">
+                        View Full Feedback
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <Link href={`/teacher/feedback/${feedback.id}`}>
-                    <Button size="sm" variant="outline" className="rounded-full text-xs w-full">
-                      View Full Feedback
-                    </Button>
-                  </Link>
-                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center">
+                <p className="text-gray-500">No recent feedback available.</p>
               </div>
-            ))}
+            )}
           </div>
         </Card>
       </div>

@@ -1,5 +1,5 @@
-// export const baseUrl = 'https://tet-bloom.onrender.com/api';
-export const baseUrl = 'http://127.0.0.1:8000/api';
+export const baseUrl = 'https://tet-bloom.onrender.com/api';
+// export const baseUrl = 'http://127.0.0.1:8000/api';
 const API_BASE_URL = baseUrl;
 
 export interface ApiResponse<T = any> {
@@ -27,8 +27,20 @@ async function apiRequest<T>(
 
   // Add authentication header if token is available
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  if (token && token !== 'null' && token !== 'undefined') {
+  console.log('API Request - Token from localStorage:', token ? 'Present' : 'Not found');
+  console.log('API Request - Token value check:', { 
+    token: token ? `${token.substring(0, 20)}...` : 'null/undefined',
+    isString: typeof token,
+    length: token?.length,
+    isNullString: token === 'null',
+    isUndefinedString: token === 'undefined'
+  });
+  
+  if (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
+    console.log('API Request - Added Authorization header with Bearer token');
+  } else {
+    console.log('API Request - No valid token available for authorization');
   }
 
   const config: RequestInit = {
@@ -234,6 +246,13 @@ export const scheduleApi = {
 
 // Auth API functions
 export const authApi = {
+  // Test authentication
+  testAuth: async () => {
+    return apiRequest('/auth/test-auth/', {
+      method: 'GET',
+    });
+  },
+
   // Change password for authenticated user
   changePassword: async (passwordData: {
     current_password: string;
@@ -337,5 +356,164 @@ export const feedbackApi = {
   // Get feedback by observer
   getByObserver: async (observerId: string) => {
     return apiRequest(`/feedback/?observer=${observerId}`);
+  },
+};
+
+// Lesson Plan API functions
+export const lessonPlanApi = {
+  create: async (lessonPlanData: any) => {
+    return apiRequest('/lesson-plans/', {
+      method: 'POST',
+      body: JSON.stringify(lessonPlanData),
+    });
+  },
+
+  createWithFile: async (formData: FormData) => {
+    return apiRequest('/lesson-plans/', {
+      method: 'POST',
+      headers: {}, // Let browser set content-type for FormData
+      body: formData,
+    });
+  },
+
+  getAll: async (filters?: { 
+    teacher?: string; 
+    status?: string; 
+    feedback_status?: string;
+    due_date_from?: string;
+    due_date_to?: string;
+  }) => {
+    let url = '/lesson-plans/';
+    if (filters) {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+    }
+    return apiRequest(url);
+  },
+
+  getById: async (id: string) => {
+    return apiRequest(`/lesson-plans/${id}/`);
+  },
+
+  update: async (id: string, lessonPlanData: any) => {
+    return apiRequest(`/lesson-plans/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(lessonPlanData),
+    });
+  },
+
+  updateWithFile: async (id: string, formData: FormData) => {
+    return apiRequest(`/lesson-plans/${id}/`, {
+      method: 'PUT',
+      headers: {}, // Let browser set content-type for FormData
+      body: formData,
+    });
+  },
+
+  patch: async (id: string, lessonPlanData: any) => {
+    return apiRequest(`/lesson-plans/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(lessonPlanData),
+    });
+  },
+
+  delete: async (id: string) => {
+    return apiRequest(`/lesson-plans/${id}/`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Submit a lesson plan
+  submit: async (id: string) => {
+    return apiRequest(`/lesson-plans/${id}/submit/`, {
+      method: 'POST',
+    });
+  },
+
+  // Provide feedback on a lesson plan (for administrators)
+  provideFeedback: async (id: string, feedbackData: {
+    feedback_status: string;
+    feedback_comment?: string;
+    reviewer?: string;
+  }) => {
+    return apiRequest(`/lesson-plans/${id}/provide_feedback/`, {
+      method: 'POST',
+      body: JSON.stringify(feedbackData),
+    });
+  },
+
+  // Resubmit a lesson plan that needs revision
+  resubmit: async (id: string, formData?: FormData) => {
+    return apiRequest(`/lesson-plans/${id}/resubmit/`, {
+      method: 'POST',
+      headers: formData ? {} : undefined, // Let browser set content-type for FormData
+      body: formData || undefined,
+    });
+  },
+
+  // Get lesson plans for a specific teacher
+  getByTeacher: async (teacherId: string) => {
+    return apiRequest(`/lesson-plans/?teacher=${teacherId}`);
+  },
+
+  // Get lesson plans by status
+  getByStatus: async (status: string) => {
+    return apiRequest(`/lesson-plans/?status=${status}`);
+  },
+
+  // Get lesson plans by feedback status
+  getByFeedbackStatus: async (feedbackStatus: string) => {
+    return apiRequest(`/lesson-plans/?feedback_status=${feedbackStatus}`);
+  },
+};
+
+// Lesson Plan Feedback API functions
+export const lessonPlanFeedbackApi = {
+  create: async (feedbackData: any) => {
+    return apiRequest('/lesson-plan-feedback/', {
+      method: 'POST',
+      body: JSON.stringify(feedbackData),
+    });
+  },
+
+  getAll: async (filters?: { lesson_plan?: string; reviewer?: string }) => {
+    let url = '/lesson-plan-feedback/';
+    if (filters) {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+    }
+    return apiRequest(url);
+  },
+
+  getById: async (id: string) => {
+    return apiRequest(`/lesson-plan-feedback/${id}/`);
+  },
+
+  update: async (id: string, feedbackData: any) => {
+    return apiRequest(`/lesson-plan-feedback/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(feedbackData),
+    });
+  },
+
+  delete: async (id: string) => {
+    return apiRequest(`/lesson-plan-feedback/${id}/`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Get feedback for a specific lesson plan
+  getByLessonPlan: async (lessonPlanId: string) => {
+    return apiRequest(`/lesson-plan-feedback/?lesson_plan=${lessonPlanId}`);
   },
 }; 
