@@ -249,7 +249,10 @@ export default function ObservationsPage() {
                   <div className="text-white/90 text-sm">Completed</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{observations.filter(o => o.status === 'canceled' || o.status === 'cancelled').length}</div>
+                  <div className="text-2xl font-bold">{observations.filter(o => 
+                    (o.status as string) === 'canceled' || 
+                    (o.status as string) === 'cancelled'
+                  ).length}</div>
                   <div className="text-white/90 text-sm">Canceled</div>
                 </div>
                 <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
@@ -403,9 +406,9 @@ export default function ObservationsPage() {
             .filter((observation) => {
               if (activeFilter === 'All') return true;
               if (activeFilter === 'Canceled') {
-                return observation.status === 'canceled' || observation.status === 'cancelled';
+                return (observation.status as string) === 'canceled' || (observation.status as string) === 'cancelled';
               }
-              return observation.status === activeFilter.toLowerCase();
+              return (observation.status as string) === activeFilter.toLowerCase();
             })
             .map((observation) => (
             <Card key={observation.id} className="border p-4 hover:border-primary/20 transition-all bg-white">
@@ -510,9 +513,9 @@ export default function ObservationsPage() {
             const filteredCount = observations.filter((observation) => {
               if (activeFilter === 'All') return true;
               if (activeFilter === 'Canceled') {
-                return observation.status === 'canceled' || observation.status === 'cancelled';
+                return (observation.status as string) === 'canceled' || (observation.status as string) === 'cancelled';
               }
-              return observation.status === activeFilter.toLowerCase();
+              return (observation.status as string) === activeFilter.toLowerCase();
             }).length;
             return `Showing ${filteredCount} of ${observations.length} observations${activeFilter !== 'All' ? ` (${activeFilter} filter active)` : ''}`;
           })()}
