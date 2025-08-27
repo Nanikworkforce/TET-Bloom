@@ -37,6 +37,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'tet-bloom.onrender.com',
     'tet-bloom-git-main-nanikworkforces-projects.vercel.app',
+    'tet-bloom-gamma.vercel.app',
 ]
 
 
