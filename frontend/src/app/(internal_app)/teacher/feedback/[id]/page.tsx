@@ -82,7 +82,7 @@ export default function FeedbackDetailPage() {
         const response = await feedbackApi.getById(feedbackId);
         
         if (response.data) {
-          const feedback = response.data;
+          const feedback = response.data as FeedbackData;
           setFeedbackData(feedback);
           
           // Set teacher response state based on backend data
