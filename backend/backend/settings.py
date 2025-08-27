@@ -163,7 +163,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://tet-bloom-jyvcrcrkg-nanikworkforces-projects.vercel.app",
     "https://tet-bloom.onrender.com",
-    "https://tet-bloom-git-main-nanikworkforces-projects.vercel.app"
+    "https://tet-bloom-git-main-nanikworkforces-projects.vercel.app",
+    "https://tet-bloom-gamma.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
