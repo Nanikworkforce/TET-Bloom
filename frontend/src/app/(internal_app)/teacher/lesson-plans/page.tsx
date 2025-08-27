@@ -625,12 +625,12 @@ export default function TeacherLessonPlansPage() {
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-gray-600">Due Date:</span>
-                              <span>{selectedPlan.dueDate}</span>
+                              <span>{formatDate(selectedPlan.due_date)}</span>
                             </div>
-                            {selectedPlan.submitDate && (
+                            {selectedPlan.submit_date && (
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Submitted:</span>
-                                <span style={{color: '#e4a414'}}>{selectedPlan.submitDate}</span>
+                                <span style={{color: '#e4a414'}}>{formatDate(selectedPlan.submit_date)}</span>
                               </div>
                             )}
                           </div>
